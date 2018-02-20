@@ -36,11 +36,6 @@ class Modules
 	const MAX_LENGTH_MODULE_NAME = 100;
 
 	/**
-	 * @var ErrorCollection
-	 */
-	private static $errorCollection=null;
-
-	/**
 	 * @var string
 	 */
 	private static $modulesRoot=null;
@@ -50,10 +45,6 @@ class Modules
 	 */
 	protected static function init ()
 	{
-		if (is_null(static::$errorCollection))
-		{
-			static::$errorCollection = new ErrorCollection();
-		}
 		if (is_null(static::$modulesRoot))
 		{
 			static::$modulesRoot = Application::getInstance()->getSettings()->getModulesRoot();
@@ -77,22 +68,22 @@ class Modules
 		//Проверяем на наличае бренда
 		if (strpos($moduleName,'.')===false)
 		{
-			static::$errorCollection->add('В имени модуля отсутствует бренд','MODULE_NAME_EMPTY_BRAND');
+			//static::$errorCollection->add('В имени модуля отсутствует бренд','MODULE_NAME_EMPTY_BRAND');
 			return false;
 		}
 
 		//Проверяем на использование только разрешенных символов и верный синтаксис
 		if (!preg_match(self::REGULAR_EXPRESSION, $moduleName))
 		{
-			static::$errorCollection->add('Использованы недопустимые символы в имени модуля');
+			//static::$errorCollection->add('Использованы недопустимые символы в имени модуля');
 			return false;
 		}
 
 		//Проверяем на допустимую длинну
 		if (strlen($moduleName)>self::MAX_LENGTH_MODULE_NAME)
 		{
-			static::$errorCollection->add('Имя модуля слишком длинное. Допустимая длина '.self::MAX_LENGTH_MODULE_NAME.' символов');
-			return false;
+			//static::$errorCollection->add('Имя модуля слишком длинное. Допустимая длина '.self::MAX_LENGTH_MODULE_NAME.' символов');
+			//return false;
 		}
 
 		return true;

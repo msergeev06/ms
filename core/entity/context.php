@@ -40,7 +40,7 @@ class Context
 	 * @var Environment
 	 * @access protected
 	 */
-	protected $env;
+	//protected $env;
 
 	/**
 	 * Массив параметров
@@ -72,10 +72,10 @@ class Context
 	{
 		$this->request = $request;
 		$this->server = $server;
-		if (isset($params['env']))
+/*		if (isset($params['env']))
 		{
 			$this->env = new Environment($params['env']);
-		}
+		}*/
 	}
 
 	/**
@@ -106,8 +106,8 @@ class Context
 	 * @access public
 	 * @return Environment
 	 */
-	public function getEnv ()
+/*	public function getEnv ()
 	{
 		return $this->env;
-	}
+	}*/
 }

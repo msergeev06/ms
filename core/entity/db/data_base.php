@@ -143,12 +143,12 @@ class DataBase {
 		$documentRoot = Application::getInstance()->getDocumentRoot();
 		$dirBackupDb = Application::getInstance()->getSettings()->getDirBackupDb();
 
-		if (!$documentRoot || !$dirBackupDb || file_exists($documentRoot.'backup'))
+		if (!$documentRoot || !$dirBackupDb || file_exists($documentRoot.'/backup'))
 		{
 			return false;
 		}
 
-		$f1 = fopen($documentRoot.'backup','w');
+		$f1 = fopen($documentRoot.'/backup','w');
 		fwrite($f1,date('Y-m-d H:i:s'));
 		fclose($f1);
 
@@ -184,11 +184,11 @@ class DataBase {
 		{
 			$comm = $this->getBackupCommand($filePath);
 			exec($comm);
-			unlink($documentRoot.'backup');
+			unlink($documentRoot.'/backup');
 			return true;
 		}
 
-		unlink($documentRoot.'backup');
+		unlink($documentRoot.'/backup');
 		return false;
 	}
 

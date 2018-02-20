@@ -11,12 +11,16 @@ use MSergeev\Core\Entity\Application;
 
 $app = Application::getInstance();
 $coreRoot = $app->getSettings()->getCoreRoot();
+require($coreRoot.'/exception/system.php');
+require($coreRoot.'/exception/class_not_found.php');
+//require($coreRoot.'/entity/error.php');
+//require($coreRoot.'/entity/error_collection.php');
+require($coreRoot.'/lib/modules.php');
 require($coreRoot.'/lib/loader.php');
 \MSergeev\Core\Lib\Loader::init();
-\MSergeev\Core\Lib\Loader::AddAutoLoadClasses(
+\MSergeev\Core\Lib\Loader::addAutoLoadClasses(
 	array(
 		/** Exceptions all*/
-		'MSergeev\Core\Exception\SystemException'               => $coreRoot.'/exception/system.php',
 		'MSergeev\Core\Exception\AccessDeniedException'         => $coreRoot.'/exception/access_denied.php',
 		'MSergeev\Core\Exception\ArgumentException'             => $coreRoot.'/exception/argument.php',
 		'MSergeev\Core\Exception\ArgumentNullException'         => $coreRoot.'/exception/argument_null.php',
@@ -108,8 +112,6 @@ require($coreRoot.'/lib/loader.php');
 		'MSergeev\Core\Entity\Server'               => $coreRoot.'/entity/server.php',
 		'MSergeev\Core\Entity\Component'            => $coreRoot.'/entity/component.php',
 		'MSergeev\Core\Entity\ComponentParameter'   => $coreRoot.'/entity/component_parameter.php',
-		'MSergeev\Core\Entity\Error'                => $coreRoot.'/entity/error.php',
-		'MSergeev\Core\Entity\ErrorCollection'      => $coreRoot.'/entity/error_collection.php',
 		'MSergeev\Core\Entity\WebixHelper'          => $coreRoot.'/entity/webix_helper.php',
 		'MSergeev\Core\Entity\Module'               => $coreRoot.'/entity/module.php',
 		/** Form */
@@ -142,14 +144,11 @@ require($coreRoot.'/lib/loader.php');
 		'MSergeev\Core\Tables\OptionsTable'         => $coreRoot.'/tables/options.php',
 		'MSergeev\Core\Tables\SectionsTable'        => $coreRoot.'/tables/sections.php',
 		'MSergeev\Core\Tables\UsersTable'           => $coreRoot.'/tables/users.php',
-		'MSergeev\Core\Tables\UsersPropertiesTable' => $coreRoot.'/tables/users_properties.php',
-
-		'MSergeev\Core\Tables\TestUserTable' => $coreRoot.'/tables/test_user.php',
-		'MSergeev\Core\Tables\TestInvoiceTable' => $coreRoot.'/tables/test_invoice.php'
+		'MSergeev\Core\Tables\UsersPropertiesTable' => $coreRoot.'/tables/users_properties.php'
 	)
 );
 
-spl_autoload_register('\MSergeev\Core\Lib\Loader::AutoLoadClasses');
+spl_autoload_register('\MSergeev\Core\Lib\Loader::autoLoadClasses');
 
 include_once($coreRoot.'/tools/tools.html.php');
 

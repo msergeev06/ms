@@ -34,7 +34,7 @@ class Settings
 	 * @param array $arr Массив настроек
 	 * @access public
 	 */
-	public function __construct(array $arr=null)
+	public function __construct(array $arr)
 	{
 		if (!empty($arr))
 		{
@@ -529,6 +529,11 @@ class Settings
 		}
 
 		return false;
+	}
+
+	public function getAllSettings ()
+	{
+		return $this->arSettings;
 	}
 
 	/**

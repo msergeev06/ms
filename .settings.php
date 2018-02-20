@@ -8,6 +8,7 @@ return array(
 		'SiteUrl' => $_SERVER['HTTP_HOST'].'',
 		'DocumentRoot' => $documentRoot,
 		'MsRoot' => $documentRoot.'/ms',
+		'LocalRoot' => $documentRoot.'/local',
 		'UploadDir' => $documentRoot.'/upload',
 		'CoreRoot' => $documentRoot.'/ms/core',
 		'TemplatesRoot' => $documentRoot.'/ms/templates',

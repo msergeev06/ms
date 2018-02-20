@@ -679,7 +679,7 @@ class Application
 	}
 
 	/**
-	 * Читает файл настроет из DocumentRoot или из CoreRoot
+	 * Читает файл настроек из CoreRoot, дополняет из LocalRoot и из DocumentRoot
 	 *
 	 * @access protected
 	 * @return array|mixed
@@ -688,13 +688,48 @@ class Application
 	{
 		$arSettings = array();
 
-		if (file_exists($this->getDocumentRoot().'/.settings.php'))
-		{
-			$arSettings = include($this->getDocumentRoot().'/.settings.php');
-		}
-		elseif (file_exists($this->getDocumentRoot().'/ms/.settings.php'))
+		if (file_exists($this->getDocumentRoot().'/ms/.settings.php'))
 		{
 			$arSettings = include($this->getDocumentRoot().'/ms/.settings.php');
+		}
+
+		if (file_exists($this->getDocumentRoot().'/local/.settings.php'))
+		{
+			$arTemp = include($this->getDocumentRoot().'/local/.settings.php');
+			$arSettings = static::mergeSettings($arSettings,$arTemp);
+		}
+
+		if (file_exists($this->getDocumentRoot().'/.settings.php'))
+		{
+			$arTemp = include($this->getDocumentRoot().'/.settings.php');
+			$arSettings = static::mergeSettings($arSettings,$arTemp);
+		}
+
+		return $arSettings;
+	}
+
+	/**
+	 * Объединяет файлы настроек
+	 *
+	 * @param array $arSettings - текущий массив настроек
+	 * @param array $arMerge - новые настройки
+	 *
+	 * @return array
+	 */
+	protected function mergeSettings (array $arSettings, array $arMerge)
+	{
+		if (!empty($arMerge))
+		{
+			foreach ($arMerge as $section=>$arr)
+			{
+				if (is_array($arr) && !empty($arr))
+				{
+					foreach ($arr as $setting=>$value)
+					{
+						$arSettings[$section][$setting] = $value;
+					}
+				}
+			}
 		}
 
 		return $arSettings;

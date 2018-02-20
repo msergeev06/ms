@@ -96,7 +96,7 @@ class Loader
 	 *
 	 * @throw Exception\ClassNotFoundException Если класс не был добавлен в автозагрузку
 	 */
-	public static function AutoLoadClasses ($className)
+	public static function autoLoadClasses ($className)
 	{
 		try
 		{
@@ -122,7 +122,7 @@ class Loader
 	 *
 	 * @param array $arClasses - массив классов
 	 */
-	public static function AddAutoLoadClasses (array $arClasses)
+	public static function addAutoLoadClasses (array $arClasses)
 	{
 		if (!empty($arClasses))
 		{

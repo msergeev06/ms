@@ -1,0 +1,14 @@
+/index.php
+/components/*
+!/components/ms/
+!/components/components
+/cache/*
+!/cache/cache
+/modules/*
+!/modules/modules
+/plugins/*
+!/plugins/plugins
+/templates/*
+!/templates/.default/
+/logs/*
+*.log

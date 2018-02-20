@@ -1,0 +1,17 @@
+<?php
+
+namespace MSergeev\Core\Exception\Io;
+
+class InvalidPathException extends IoException
+{
+	public function __construct($path, \Exception $previous = null)
+	{
+		$message = sprintf("Path '%s' is invalid.", $path);
+		parent::__construct($message, $path, $previous);
+	}
+
+	public function getClassName ()
+	{
+		return __CLASS__;
+	}
+}

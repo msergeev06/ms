@@ -9,14 +9,13 @@
  */
 use MSergeev\Core\Entity\Application;
 
-$footer = Application::getInstance()->getSettings()->getTemplatesRoot().'/'
-	.Application::getInstance()->getSiteTemplate().'/footer.php';
+/*$footer = Application::getInstance()->getSettings()->getTemplatesRoot().'/'
+	.Application::getInstance()->getSiteTemplate().'/footer.php';*/
 
-if (file_exists($footer)
+if (file_exists(SITE_TEMPLATE_PATH.'/footer.php')
 )
 {
-	include($footer);
-	//msDebugNoAdmin($footer);
+	include(SITE_TEMPLATE_PATH.'/footer.php');
 }
 
-Application::getInstance()->endBuffer();
+Application::getInstance()->endBufferPage();

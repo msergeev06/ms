@@ -29,6 +29,8 @@ $application->setTimes('START_EXEC_PROLOG_BEFORE_1',$start);
 $application->setState('PB');
 $application->loadSettings();
 require_once(dirname(__FILE__).'/include.php');
+set_error_handler('\MSergeev\Core\Lib\ErrorHandler::handler');
+\MSergeev\Core\Lib\Events::runEvents('core','OnPrologBefore');
 if ($arAutoLoadModules = $application->getSettings()->getAutoLoadModules())
 {
 	foreach ($arAutoLoadModules as $module)
@@ -39,4 +41,4 @@ if ($arAutoLoadModules = $application->getSettings()->getAutoLoadModules())
 		}
 	}
 }
-set_error_handler('\MSergeev\Core\Lib\ErrorHandler::handler');
+\MSergeev\Core\Lib\Events::runEvents('core','OnProlog');

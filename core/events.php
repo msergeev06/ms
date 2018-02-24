@@ -99,7 +99,27 @@ $arReturn['OnAfterAddNewFile'] = array(
 	)
 );
 
-/**  */
+/** OnPrologBefore */
+$arReturn['OnPrologBefore'] = array(
+	'DESCRIPTION' => 'Вызывается в файле prolog_before.php перед подключением обязательных модулей'
+);
 
+/** OnProlog */
+$arReturn['OnProlog'] = array(
+	'DESCRIPTION' => 'Вызывается в файле prolog_before.php после выполнения всех действий'
+);
+
+/** OnPrologAfter */
+$arReturn['OnPrologAfter'] = array(
+	'DESCRIPTION' => 'Вызывается в файле prolog_after.php перед подключением шаблона',
+	'PARAMETERS' => array(
+		'templatePath' => array(
+			'NAME' => 'Текущий шаблон страницы',
+			'TYPE' => 'string',
+			'MODIFIED' => true,
+			'DESCRIPTION' => 'Можно изменить'
+		)
+	)
+);
 
 return $arReturn;

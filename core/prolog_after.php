@@ -22,19 +22,15 @@ if(!headers_sent())
 $app->setTimes('START_EXEC_PROLOG_AFTER_2',microtime());
 $app->setState('WA');
 
-$app->startBuffer();
+$app->startBufferPage();
 
-define('SITE_TEMPLATE_PATH',$app->getSitePath(
-	$app->getSettings()->getTemplatesRoot().'/'.$app->getSiteTemplate()
-	)
-);
-define('MS_PROLOG_INCLUDED',true);
-
-if (file_exists($app->getSettings()->getCoreRoot().'/js/jquery-1.11.3.min.js'))
-{
-	$app->addJS($app->getSettings()->getCoreRoot().'/js/jquery-1.11.3.min.js');
-}
 $templatePath = $app->getSettings()->getTemplatesRoot().'/'.$app->getSiteTemplate();
+
+\MSergeev\Core\Lib\Events::runEvents('core','OnPrologAfter',array(&$templatePath));
+
+define('SITE_TEMPLATE_PATH',$app->getSitePath($templatePath));
+define('MS_PROLOG_INCLUDED',true);
+$app->includePlugin('ms.jquery');
 
 if (file_exists($templatePath.'/style.css'))
 {

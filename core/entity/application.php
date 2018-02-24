@@ -12,6 +12,7 @@
 
 namespace MSergeev\Core\Entity;
 
+use MSergeev\Core\Exception\InvalidOperationException;
 use MSergeev\Core\Lib;
 
 /**
@@ -101,6 +102,14 @@ class Application
 	private $arPluginsIncluded = array();
 
 	private $siteTemplate = null;
+
+	private $arBuffer = array();
+
+	private $arStack = array();
+
+	private $arIncludedJS = array();
+
+	private $arIncludedCSS = array();
 
 	/**
 	 * Конструктор объекта приложений
@@ -339,129 +348,6 @@ class Application
 	}
 
 	/**
-	 * Стартует буферизацию страницы. Являетя оберткой функции Lib\Buffer::start
-	 *
-	 * @param string $name Идентификатор страницы
-	 *
-	 * @uses Lib\Buffer::start
-	 * @access public
-	 * @return bool
-	 */
-	public function startBuffer ($name='page')
-	{
-		Lib\Buffer::start($name);
-
-		return true;
-	}
-
-	/**
-	 * Возвращает метку вместо которой будет установлен title страницы
-	 * Является оберткой функции Lib\Buffer::showTitle
-	 *
-	 * @param string $title [optional] Title страницы
-	 * @uses Lib\Buffer::showTitle
-	 * @access public
-	 * @return string
-	 */
-	public function showTitle($title=null)
-	{
-		return Lib\Buffer::showTitle($title);
-	}
-
-	/**
-	 * Устанавливает title страницы
-	 * Является оберткой функции Lib\Buffer::setTitle
-	 *
-	 * @param string $title [optional] title страницы, по-умолчанию '' (без названия)
-	 * @uses Lib\Buffer::setTitle
-	 * @access public
-	 */
-	public function setTitle($title='')
-	{
-		Lib\Buffer::setTitle($title);
-	}
-
-	/**
-	 * Выводит meta-теги на странице
-	 * Является оберткой сразу 3 функций: Lib\Buffet::showRefresh, Lib\Buffer::showCSS, Lib\Buffer::showJS
-	 *
-	 * @uses Lib\Buffer::showRefresh
-	 * @uses Lib\Buffer::showCSS
-	 * @uses Lib\Buffer::showJS
-	 * @access public
-	 *
-	 * @return string Метка на страницу
-	 */
-	public function showMeta ()
-	{
-		return Lib\Buffer::showRefresh()."\n"
-			.Lib\Buffer::showCSS()."\n"
-			.Lib\Buffer::showJS();
-	}
-
-	/**
-	 * Добавляет JS файл к загружаемым на странице скриптам
-	 * Является оберткой функции Lib\Buffer::addJS
-	 *
-	 * @param string $file Путь к файлу JS от корня
-	 * @uses Lib\Buffer::addJS
-	 * @access public
-	 * @return bool
-	 */
-	public function addJS ($file)
-	{
-		if (file_exists($file))
-		{
-			Lib\Buffer::addJS($file);
-
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	/**
-	 * Добавляет CSS файл к загружаемым на странице файлам стилей
-	 * Является оберткой функции Lib\Buffer::addCSS
-	 *
-	 * @param string $file Путь к файлу CSS от корня
-	 * @uses Lib\Buffer::addCSS
-	 * @access public
-	 * @return bool
-	 */
-	public function addCSS ($file)
-	{
-		if (file_exists($file))
-		{
-			Lib\Buffer::addCSS($file);
-
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	/**
-	 * Добавляет произвольный JS код в нижнюю часть страницы
-	 * Является оберткой функции Lib\Buffer::addJsToDownPage
-	 *
-	 * @param string $code Добавляемый код JS
-	 * @uses Lib\Buffer::addJsToDownPage
-	 * @access public
-	 * @return bool
-	 */
-	public function addJsToDownPage ($code=null)
-	{
-		Lib\Buffer::addJsToDownPage($code);
-
-		return true;
-	}
-
-	/**
 	 * Пожключает указанный плагин
 	 *
 	 * @param string $pluginName Имя плагина
@@ -599,29 +485,6 @@ class Application
 	public function getRequestUrl ()
 	{
 		return $this->context->getServer()->getRequestUri();
-	}
-
-	/**
-	 * Возвращает метку установки кода плагина Webix
-	 *
-	 * @access public
-	 * @return string
-	 */
-	public function showWebixJS()
-	{
-		return Lib\Buffer::showWebixJS();
-	}
-
-	/**
-	 * Завершает буферизацию вывода и выводит результат
-	 * Явдяется оберткой функции Lib\Buffer::end
-	 *
-	 * @uses Lib\Buffer::end
-	 * @access public
-	 */
-	public function endBuffer()
-	{
-		Lib\Buffer::end();
 	}
 
 	/**
@@ -785,18 +648,6 @@ class Application
 	}
 
 	/**
-	 * Устанавливает Refresh для страницы. Отложенная функция
-	 *
-	 * @param string $url   Путь, куда будет произведен refresh
-	 * @param int    $time  Время в секундах
-	 * @access public
-	 */
-	public function setRefresh ($url='',$time=0)
-	{
-		Lib\Buffer::setRefresh($url,$time);
-	}
-
-	/**
 	 * Возвращает true если сервер работает в utf-8 ражиме. False - в ином случае.
 	 *
 	 * @access public
@@ -812,4 +663,282 @@ class Application
 		return $isUtfMode;
 	}
 
+
+
+	//Буферизация вывода
+
+	/**
+	 * @deprecated
+	 */
+	public function endBuffer()
+	{
+		$this->endBufferPage();
+	}
+	/**
+	 * @deprecated
+	 * @params $name
+	 * @deprecated
+	 */
+	public function startBuffer ($name='page')
+	{
+		$this->startBufferPage();
+	}
+
+
+
+
+	/**
+	 * Стартует буферизацию страницы
+	 */
+	public function startBufferPage()
+	{
+		ob_start(array(&$this,'getPage'));
+		$this->arBuffer['page_title'] = '';
+		$this->arBuffer['head_css'] = '';
+		$this->arBuffer['head_js'] = '';
+	}
+
+	/**
+	 * Завершает буферизацию вывода и выводит буфер страницы
+	 */
+	public function endBufferPage ()
+	{
+		if (defined("SHOW_SQL_WORK_TIME") && SHOW_SQL_WORK_TIME === true)
+		{
+			$DB = $this->getConnection();
+			echo '<div style="border: 1px solid black; background-color: white; padding: 10px;">';
+			echo '<p>'.$DB->getCountQuery().' '.Lib\Tools::sayRusRight($DB->getCountQuery(),'запрос','запроса','запросов').' за '.$DB->getAllQueryTime().' сек.</p>';
+			echo "</div><br>";
+		}
+		ob_end_flush();
+	}
+
+	/**
+	 * Обрабатывает собранный буфер страницы и возвращает его
+	 *
+	 * @param string $buffer Буфер страницы
+	 *
+	 * @return mixed
+	 */
+	public function getPage ($buffer)
+	{
+		if (!empty($this->arBuffer))
+		{
+			foreach ($this->arBuffer as $name=>$buff)
+			{
+				$buffer = str_replace('#'.strtoupper($name).'#',$buff,$buffer);
+			}
+		}
+
+		$buffer = preg_replace('/[#]{1}[A-Z0-9_]+[#]{1}/','',$buffer);
+
+		return $buffer;
+	}
+
+	/**
+	 * Устанавливает Refresh для страницы. Отложенная функция
+	 *
+	 * @param string $url   Путь, куда будет произведен refresh
+	 * @param int    $time  Время в секундах
+	 * @access public
+	 */
+	public function setRefresh ($url='',$time=0)
+	{
+		if ($url!='')
+		{
+			//Если работает в windows (denwer)
+			if (strpos ($url,'\\')!==false)
+			{
+				list(,$url) = explode('www',$url);
+				$url = str_replace('\\','/',$url);
+			}
+			//TODO: Разобраться, что тут происходит
+			$url = str_replace(Application::getInstance()->getSettings()->getSiteProtocol(),'',$url);
+			$url = str_replace('://','',$url);
+			$url = str_replace(Application::getInstance()->getContext()->getServer()->getHttpHost(),'',$url);
+			$url = $this->getSitePath($url);
+		}
+		else
+		{
+			$url = Application::getInstance()->getContext()->getServer()->getRequestUri();
+		}
+		$this->arBuffer['refresh'] = '<META HTTP-EQUIV=REFRESH CONTENT="'
+			.(int)$time
+			.'; URL='
+			.'//'.Application::getInstance()->getContext()->getServer()->getHttpHost().$url
+			.'">';
+	}
+
+	/**
+	 * Добавляет шаблон вывода на страницу
+	 *
+	 * @param string $view Название шаблона
+	 */
+	public function showBufferContent($view)
+	{
+		if (!isset($this->arBuffer[strtolower($view)]))
+		{
+			$this->arBuffer[strtolower($view)] = '';
+		}
+
+		echo '#',strtoupper($view),'#';
+	}
+
+	/**
+	 * Добавляет/перезаписывает значение указанного шаблона вывода
+	 *
+	 * @param string $view Название шаблона
+	 * @param string $content Добавляемое значение
+	 * @param bool $add Флаг добавления true, перезаписи false
+	 */
+	public function addBufferContent ($view, $content, $add=true)
+	{
+		if (!isset($this->arBuffer[strtolower($view)]))
+		{
+			$this->arBuffer[strtolower($view)] = '';
+		}
+
+		if ($add)
+		{
+			$this->arBuffer[strtolower($view)] .= $content;
+		}
+		else
+		{
+			$this->arBuffer[strtolower($view)] = $content;
+		}
+	}
+
+	/**
+	 * Начинает обработку буфера для указанного шаблона вывода
+	 *
+	 * @param string $view Название шаблона
+	 */
+	public function startBufferContent($view)
+	{
+		ob_start();
+		$this->arStack[] = strtolower($view);
+	}
+
+	/**
+	 * Сохраняет буфер в указанный шаблон вывода
+	 *
+	 * @param string $view Название шаблона
+	 */
+	public function endBufferContent ($view)
+	{
+		try
+		{
+			$stack = array_pop($this->arStack);
+			if ($stack == $view)
+			{
+				$buffer = ob_get_flush();
+				$this->arBuffer[$view] = $buffer;
+			}
+			else
+			{
+				throw new InvalidOperationException('Wrong name of view content');
+			}
+		}
+		catch (InvalidOperationException $e)
+		{
+			die($e->showException());
+		}
+	}
+
+	/**
+	 * Возвращает метку вместо которой будет установлен title страницы
+	 *
+	 * @param string $title [optional] Title страницы
+	 */
+	public function showTitle($title=null)
+	{
+		if (!is_null($title))
+		{
+			$this->addBufferContent('page_title',$title,false);
+		}
+
+		$this->showBufferContent('page_title');
+	}
+
+	/**
+	 * Устанавливает title страницы
+	 *
+	 * @param string $title [optional] title страницы, по-умолчанию '' (без названия)
+	 */
+	public function setTitle($title='')
+	{
+		$this->addBufferContent('page_title',$title,false);
+	}
+
+	/**
+	 * Выводит meta-теги на странице
+
+	 * @return string Метка на страницу
+	 */
+	public function showMeta ()
+	{
+		$this->showBufferContent('refresh');
+		$this->showBufferContent('head_css');
+		$this->showBufferContent('head_js');
+	}
+
+	/**
+	 * Добавляет JS файл к загружаемым на странице скриптам
+	 *
+	 * @param string $fullPath Путь к файлу JS от корня
+	 */
+	public function addJS ($fullPath)
+	{
+		if (file_exists($fullPath))
+		{
+			$path = $this->getSitePath($fullPath);
+			if (!in_array($path,$this->arIncludedJS))
+			{
+				$this->arIncludedJS[] = $path;
+				$this->addBufferContent(
+					'head_js',
+					'<script type="text/javascript" src="'.$path.'"></script>'."\n"
+				);
+			}
+		}
+	}
+
+	/**
+	 * Добавляет CSS файл к загружаемым на странице файлам стилей
+	 *
+	 * @param string $fullPath Путь к файлу CSS от корня
+	 */
+	public function addCSS ($fullPath)
+	{
+		if (file_exists($fullPath))
+		{
+			$path = $this->getSitePath($fullPath);
+			if (!in_array($path,$this->arIncludedCSS))
+			{
+				$this->arIncludedCSS[] = $path;
+				$this->addBufferContent(
+					'head_css',
+					'<link href="'.$path.'" type="text/css"  rel="stylesheet" />'."\n"
+				);
+			}
+		}
+	}
+
+	/**
+	 * Добавляет произвольный JS код в нижнюю часть страницы
+	 *
+	 * @param string $code Добавляемый код JS
+	 */
+	public function addJsToDownPage ($code)
+	{
+		$this->addBufferContent('down_js',$code."\n");
+	}
+
+	/**
+	 * Выводит шаблон для размещения кода JS внизу страницы
+	 */
+	public function showDownJs ()
+	{
+		$this->showBufferContent('down_js');
+	}
 }

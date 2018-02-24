@@ -121,6 +121,7 @@ class Loader
 	 * @api
 	 *
 	 * @param array $arClasses - массив классов
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/loader/method_add_auto_load_classes
 	 */
 	public static function addAutoLoadClasses (array $arClasses)
 	{
@@ -144,6 +145,7 @@ class Loader
 	 * @param string $moduleName Имя модуля
 	 *
 	 * @return string|bool Строковое значение версии, либо false
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/loader/method_get_module_version
 	 */
 	public static function getModuleVersion ($moduleName)
 	{
@@ -166,6 +168,7 @@ class Loader
 	 * @param string $moduleName Имя модуля
 	 *
 	 * @return string|bool Строковое представление даты версии пакета, либо false
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/loader/method_get_module_version_date
 	 */
 	public static function getModuleVersionDate ($moduleName)
 	{
@@ -188,6 +191,7 @@ class Loader
 	 * @param string $moduleName
 	 *
 	 * @return bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/loader/method_get_module_info
 	 */
 	public static function getModuleInfo ($moduleName)
 	{
@@ -208,6 +212,7 @@ class Loader
 	 * @api
 	 *
 	 * @return array|bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/loader/method_get_array_modules_versions
 	 */
 	public static function getArrayModulesVersions ()
 	{
@@ -238,6 +243,7 @@ class Loader
 	 * @param string $nameModule Имя пакета
 	 *
 	 * @return bool true - если пакет подключен или уже был подключен, иначе false
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/loader/method_include_module
 	 */
 	public static function includeModule ($nameModule=null)
 	{
@@ -384,9 +390,12 @@ class Loader
 	 * @param string|null $requiredVersion Требуемая версия
 	 *
 	 * @return bool TRUE - установлен, FALSE в противном случае
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/loader/method_isset_module
 	 */
 	public static function issetModule ($nameModule, $requiredVersion=null)
 	{
+		if ($nameModule == 'ms.core') return true;
+
 		if (isset(static::$arModules[$nameModule]))
 		{
 			if (!is_null($requiredVersion))

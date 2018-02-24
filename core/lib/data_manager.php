@@ -25,6 +25,7 @@ abstract class DataManager
 	 * @api
 	 *
 	 * @return string Имя класса
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_class_name
 	 */
 	final public static function getClassName ()
 	{
@@ -39,6 +40,7 @@ abstract class DataManager
 	 * @example 'ms_core_options'
 	 *
 	 * @return string название таблицы в базе
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_table_name
 	 */
 	final public static function getTableName()
 	{
@@ -82,6 +84,7 @@ abstract class DataManager
 	 * @example 'Опции'
 	 *
 	 * @return string Текст описания таблицы
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_table_title
 	 */
 	public static function getTableTitle()
 	{
@@ -95,6 +98,7 @@ abstract class DataManager
 	 * @see static::getMapArray
 	 *
 	 * @return Fields\ScalarField[] Массив сущностей полей таблицы базы данных
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_map
 	 */
 	abstract protected static function getMap();
 
@@ -105,6 +109,7 @@ abstract class DataManager
 	 * @api
 	 *
 	 * @return Fields\ScalarField[] Обработанный массив сущностей полей таблицы базы данных
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_map_array
 	 */
 	final public static function getMapArray()
 	{
@@ -126,19 +131,11 @@ abstract class DataManager
 	 * @api
 	 *
 	 * @return array Массив дефолтных значений таблицы
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_values
 	 */
 	public static function getValues ()
 	{
 		return array();
-	}
-
-	/**
-	 * @deprecated 0.2.0
-	 * @return array
-	 */
-	public static function getArrayDefaultValues ()
-	{
-		return static::getValues();
 	}
 
 	/**
@@ -148,6 +145,7 @@ abstract class DataManager
 	 * @api
 	 *
 	 * @return array Массив связей таблиц
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_table_links
 	 */
 	public static function getTableLinks ()
 	{
@@ -158,6 +156,7 @@ abstract class DataManager
 	 * Возвращает дополнительный SQL запрос, используемый после создания таблицы
 	 *
 	 * @return null|string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_additional_create_sql
 	 */
 	public static function getAdditionalCreateSql ()
 	{
@@ -168,6 +167,7 @@ abstract class DataManager
 	 * Возвращает дополнительный SQL запрос, используемый после удаления таблицы
 	 *
 	 * @return null|string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_additional_delete_sql
 	 */
 	public static function getAdditionalDeleteSql ()
 	{
@@ -181,6 +181,7 @@ abstract class DataManager
 	 * @param bool  $bShowSql   Необходимость отобразить sql запрос вместо запроса
 	 *
 	 * @return Db\DBResult Результат mysql запроса
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_add
 	 */
 	final public static function add ($arAdd, $bShowSql=false)
 	{
@@ -211,13 +212,12 @@ abstract class DataManager
 	/**
 	 * Обновляет значения в таблице
 	 *
-	 * @ignore
-	 *
 	 * @param mixed $primary Поле PRIMARY таблицы
 	 * @param array $arUpdate Массив значений таблицы в поле 'VALUES'
-	 * @param bool  @bShowSql Флаг, показать SQL запрос вместо выполнения
+	 * @param bool  $bShowSql Флаг, показать SQL запрос вместо выполнения
 	 *
 	 * @return Db\DBResult Результат mysql запроса
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_update
 	 */
 	final public static function update ($primary, $arUpdate, $bShowSql=false)
 	{
@@ -251,6 +251,7 @@ abstract class DataManager
 	 * @param bool  $confirm Флаг, подтверждающий удаление всех связанных записей в других таблицах
 	 *
 	 * @return Db\DBResult Результат mysql запроса
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_delete
 	 */
 	final public static function delete ($primary, $confirm=false)
 	{
@@ -268,6 +269,7 @@ abstract class DataManager
 	 * @param bool  $showSql        Флаг - показать SQL запрос вместо выборки
 	 *
 	 * @return array
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_by_primary
 	 */
 	final public static function getByPrimary ($primaryValue, $primaryName=null, array $arSelect = array(), $showSql=false)
 	{
@@ -293,6 +295,7 @@ abstract class DataManager
 	 * @param bool  $showSql    Флаг - показать SQL запрос вместо выборки
 	 *
 	 * @return array
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_by_id
 	 */
 	final public static function getById($id, array $arSelect = array(), $showSql=false)
 	{
@@ -305,6 +308,7 @@ abstract class DataManager
 	 * @api
 	 *
 	 * @return string|bool Название поля, либо false
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_primary_field
 	 */
 	final public static function getPrimaryField ()
 	{
@@ -320,24 +324,12 @@ abstract class DataManager
 	}
 
 	/**
-	 * @deprecated 0.2.0
-	 *
-	 *
-	 * @param string $type Тип объекта Query
-	 *
-	 * @return Db\Query объект Query заданного типа
-	 */
-	public static function query ($type)
-	{
-		return null;
-	}
-
-	/**
 	 * Функция добавляет в таблицу значения по-умолчанию, описанные в файле таблицы
 	 *
 	 * @api
 	 *
 	 * @return bool|Db\DBResult Результат mysql запроса, либо false
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_insert_default_rows
 	 */
 	final public static function insertDefaultRows ()
 	{
@@ -360,6 +352,7 @@ abstract class DataManager
 	 * @api
 	 *
 	 * @return Db\DBResult Результат mysql запроса
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_create_table
 	 */
 	final public static function createTable ()
 	{
@@ -387,6 +380,7 @@ abstract class DataManager
 	 * @api
 	 *
 	 * @return bool Связи существуют - true, инае - false
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_check_table_links
 	 */
 	final public static function checkTableLinks()
 	{
@@ -435,6 +429,8 @@ abstract class DataManager
 
 	/**
 	 * Вызывается после создания таблицы
+	 *
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_on_after_create_table
 	 */
 	public static function OnAfterCreateTable (){}
 
@@ -445,6 +441,7 @@ abstract class DataManager
 	 * @param bool  $showSql        Флаг - показать SQL запрос вместо выборки
 	 *
 	 * @return array|string|bool    Массив полей записи, SQL-запрос, либо false
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_one
 	 */
 	final public static function getOne ($arParams=array(),$showSql=false)
 	{
@@ -471,6 +468,7 @@ abstract class DataManager
 	 * @param bool  $showSql  Показать SQL запрос, вместо выборки (для отладки)
 	 *
 	 * @return array|bool Массив значений таблицы, массив с SQL запросом, либо в случае неудачи false
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_list
 	 */
 	final public static function getList ($arParams=array(),$showSql=false)
 	{

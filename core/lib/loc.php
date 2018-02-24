@@ -34,13 +34,14 @@ class Loc
 	 * @param string $prefix префикс для кодов фраз
 	 *
 	 * @return bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/loc/method_include_loc_file
 	 */
 	public static function includeLocFile ($filename, $prefix='ms_')
 	{
 		if (!isset(static::$arIncludedFiles[$filename]))
 		{
 			static::$arIncludedFiles[$filename]=true;
-			$filename = static::prepareLocFile($filename);
+			$filename = static::prepareLocFile($filename,$prefix);
 			//msDebugNoAdmin($filename);
 			if (!$filename || !file_exists($filename))
 			{
@@ -79,6 +80,7 @@ class Loc
 	 * @param array  $arReplace Массив замен вида код_тега=>замена
 	 *
 	 * @return mixed
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/loc/method_get_message
 	 */
 	public static function getMessage ($name,$arReplace=array())
 	{
@@ -91,7 +93,7 @@ class Loc
 			}
 		}
 
-		return (!is_null($message))?$message:'';
+		return (!is_null($message))?$message:'['.strtoupper($name).']';
 	}
 
 	/**
@@ -106,6 +108,7 @@ class Loc
 	 * @param string $prefix    Префикс
 	 *
 	 * @return mixed
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/loc/method_get_module_message
 	 */
 	public static function getModuleMessage ($module,$name,$arReplace=array(),$prefix='ms_')
 	{
@@ -130,6 +133,7 @@ class Loc
 	 * @param string $prefix Префикс (по-умолчанию 'ms_')
 	 *
 	 * @return array
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/loc/method_show_all_messages_module
 	 */
 	public static function showAllMessagesModule ($name='',$prefix='ms_')
 	{
@@ -207,6 +211,7 @@ class Loc
 	 * Возвращает весь массив загруженных фраз
 	 *
 	 * @return array
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/loc/method_get_ar_mess
 	 */
 	public static function getArMess()
 	{

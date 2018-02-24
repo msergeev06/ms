@@ -7,6 +7,8 @@
  * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
+ * @copyright 2017 Mikhail Sergeev
+ * @copyright 2018 Mikhail Sergeev
  * @since 0.2.0
  */
 
@@ -93,6 +95,7 @@ class File
 	 * @param array $arFile - параметры файла
 	 *
 	 * @return bool|int
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/file/method_add_new_img
 	 */
 	public static function addNewImg ($moduleName, array $arFile)
 	{
@@ -217,6 +220,7 @@ class File
 	 *                                      Необязательный. По умолчанию "0".
 	 *
 	 * @return string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/file/method_show_image
 	 */
 	public static function showImage ($strImage, $maxWidth=0,$maxHeight=0,$sParams=null,$imageUrl='',$bPopup=false,$popupTitle=false,$sizeWHTTP=0,$sizeHHTTP=0)
 	{
@@ -344,6 +348,7 @@ class File
 	 * @param int $fileID
 	 *
 	 * @return bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/file/method_delete_file
 	 */
 	public static function deleteFile ($fileID=null)
 	{
@@ -474,6 +479,7 @@ class File
 	 * @param string $path
 	 *
 	 * @return string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/file/method_get_file_type
 	 */
 	public static function getFileType($path)
 	{
@@ -523,6 +529,7 @@ class File
 	 * @param string $path
 	 *
 	 * @return string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/file/method_get_file_extension
 	 */
 	public static function getFileExtension($path)
 	{
@@ -542,6 +549,7 @@ class File
 	 * @param string $path
 	 *
 	 * @return mixed|string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/file/method_get_file_name
 	 */
 	public static function getFileName($path)
 	{

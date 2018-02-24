@@ -16,23 +16,20 @@ use MSergeev\Core\Entity\Db\Query;
 use MSergeev\Core\Entity\Db\SqlHelper;
 use MSergeev\Core\Entity\Db\DBResult;
 
-class Sections
+abstract class Sections
 {
-	public static $tableName = "ms_core_sections";
-	public static $selectFields = array('ID','ACTIVE','SORT','NAME','LEFT_MARGIN','RIGHT_MARGIN','DEPTH_LEVEL','PARENT_SECTION_ID');
-	public static $tableClassName = null;
+	protected static $selectFields = array('ID','ACTIVE','SORT','NAME','LEFT_MARGIN','RIGHT_MARGIN','DEPTH_LEVEL','PARENT_SECTION_ID');
+	protected static $tableClassName = null;
 
 	/**
-	 * Возвращает значение параметра класса, содержащую имя таблицы
+	 * Возвращает имя таблицы
 	 *
 	 * @api
 	 *
 	 * @return string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_table_name
 	 */
-	public static function getTableName()
-	{
-		return static::$tableName;
-	}
+	abstract public static function getTableName();
 
 	/**
 	 * Возвращает название класса таблицы по имени таблицы
@@ -42,6 +39,7 @@ class Sections
 	 * @use Tools::getClassNameByTableName('table')
 	 *
 	 * @return string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_class_name
 	 */
 	public static function getClassName()
 	{
@@ -59,6 +57,7 @@ class Sections
 	 * @api
 	 *
 	 * @return array
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_select_fields
 	 */
 	public static function getSelectFields ()
 	{
@@ -73,8 +72,9 @@ class Sections
 	 * @param bool $bActive - выбрать только активные разделы
 	 *
 	 * @return bool|array
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_tree_list
 	 */
-	public static function getTreeList ($bActive=false)
+	final public static function getTreeList ($bActive=false)
 	{
 		/** @var DataManager $className */
 		$className = static::getClassName();
@@ -104,14 +104,15 @@ class Sections
 	 * @param int $ID - ID раздела
 	 *
 	 * @return bool|array
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_info
 	 */
-	public static function getInfo ($ID)
+	final public static function getInfo ($ID)
 	{
 		/** @var DataManager $className */
 		$className = static::getClassName();
 		$arResult = $className::getOne(
 			array(
-				'select' => static::$selectFields,
+				'select' => static::getSelectFields(),
 				'filter' => array('ID'=>intval($ID))
 			)
 		);
@@ -135,14 +136,15 @@ class Sections
 	 * @param bool $bActive     вывести только активные разделы
 	 *
 	 * @return bool|array
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_child
 	 */
-	public static function getChild ($ID, $bActive=false, $DEPTH_LEVEL=0)
+	final public static function getChild ($ID, $bActive=false, $DEPTH_LEVEL=0)
 	{
 		/** @var DataManager $className */
 		$className = static::getClassName();
 		$arSection = static::getInfo($ID);
 		$arGetList = array(
-			'select' => static::$selectFields,
+			'select' => static::getSelectFields(),
 			'filter' => array(
 				'>=LEFT_MARGIN'=>$arSection['LEFT_MARGIN'],
 				'<=RIGHT_MARGIN'=>$arSection['RIGHT_MARGIN']
@@ -176,14 +178,15 @@ class Sections
 	 * @param bool $bActive     вернуть только активные разделы
 	 *
 	 * @return bool|array
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_parent
 	 */
-	public static function getParent ($ID, $bActive=false)
+	final public static function getParent ($ID, $bActive=false)
 	{
 		/** @var DataManager $className */
 		$className = static::getClassName();
 		$arSection = static::getInfo($ID);
 		$arGetList = array(
-			'select' => static::$selectFields,
+			'select' => static::getSelectFields(),
 			'filter' => array(
 				'<=LEFT_MARGIN'=>$arSection['LEFT_MARGIN'],
 				'>=RIGHT_MARGIN'=>$arSection['RIGHT_MARGIN']),
@@ -212,14 +215,15 @@ class Sections
 	 * @param bool $bActive     вернуть только активные разделы
 	 *
 	 * @return bool|array
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_branch
 	 */
-	public static function getBranch ($ID, $bActive=false)
+	final public static function getBranch ($ID, $bActive=false)
 	{
 		/** @var DataManager $className */
 		$className = static::getClassName();
 		$arSection = static::getInfo($ID);
 		$arGetList = array(
-			'select' => static::$selectFields,
+			'select' => static::getSelectFields(),
 			'filter' => array(
 				'>RIGHT_MARGIN'=>$arSection['LEFT_MARGIN'],
 				'<LEFT_MARGIN'=>$arSection['RIGHT_MARGIN']),
@@ -247,8 +251,9 @@ class Sections
 	 * @param int $ID       ID раздела
 	 *
 	 * @return bool|int
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_parent_id
 	 */
-	public static function getParentID ($ID)
+	final public static function getParentID ($ID)
 	{
 		$arSection = static::getInfo($ID);
 		if (isset($arSection['PARENT_SECTION_ID']))
@@ -269,8 +274,9 @@ class Sections
 	 * @param int $ID        ID раздела
 	 *
 	 * @return array|bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_parent_info
 	 */
-	public static function getParentInfo ($ID)
+	final public static function getParentInfo ($ID)
 	{
 		if ($arSection = static::getInfo(static::getParentID($ID)))
 		{
@@ -290,8 +296,9 @@ class Sections
 	 * @param $arSection
 	 *
 	 * @return bool|int
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_add_section
 	 */
-	public static function addSection ($arSection)
+	final public static function addSection ($arSection)
 	{
 		/*		Создание узла – самое простое действие над деревом. Для того, что бы его осуществить нам потребуется уровень и
 				правый ключ родительского узла (узел в который добавляется новый), либо максимальный правый ключ, если у
@@ -394,8 +401,9 @@ class Sections
 	 *
 	 * @param int       $sectionID   ID раздела
 	 * @param int|null  $sort        Новый индекс сортировки, если необходим
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_sort_section
 	 */
-	public static function sortSection ($sectionID, $sort=null)
+	final public static function sortSection ($sectionID, $sort=null)
 	{
 		$arSection = static::getInfo($sectionID);
 		if (!is_null($sort))
@@ -673,8 +681,9 @@ class Sections
 	 *
 	 * @param int       $sectionID      ID раздела
 	 * @param int|null  $newParentID    ID нового родительского раздела
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_change_parent
 	 */
-	public static function changeParent ($sectionID, $newParentID=null)
+	final public static function changeParent ($sectionID, $newParentID=null)
 	{
 		$arSection = static::getInfo($sectionID);
 		//msDebug(is_null($newParentID));
@@ -1016,8 +1025,9 @@ class Sections
 	 * @param bool  $mainSection    Флаг, обозначающий необходимость вернуть самый верхний раздел
 	 *
 	 * @return array|bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_parent_from_tree
 	 */
-	protected static function getParentFromTree ($sectionID, $mainSection=false)
+	final protected static function getParentFromTree ($sectionID, $mainSection=false)
 	{
 		if (intval($sectionID)>0)
 		{
@@ -1047,8 +1057,9 @@ class Sections
 	 *
 	 * @param $arSection
 	 * @param $arParams
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_keys_and_level
 	 */
-	protected static function getKeysAndLevel ($arSection, &$arParams)
+	final protected static function getKeysAndLevel ($arSection, &$arParams)
 	{
 		$arParams['level'] = $arSection['DEPTH_LEVEL'];
 		$arParams['left_key'] = $arSection['LEFT_MARGIN'];
@@ -1060,8 +1071,9 @@ class Sections
 	 *
 	 * @param $arSection
 	 * @param $arParams
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_parent_level
 	 */
-	protected static function getParentLevel ($arSection, &$arParams)
+	final protected static function getParentLevel ($arSection, &$arParams)
 	{
 		$arParams['level_up'] = (($arSection['DEPTH_LEVEL']<=0)?0:($arSection['DEPTH_LEVEL']-1));
 	}
@@ -1073,8 +1085,9 @@ class Sections
 	 * @param $arUpdate
 	 *
 	 * @return DBResult
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_update_section
 	 */
-	protected static function updateSection ($sectionID, $arUpdate)
+	final protected static function updateSection ($sectionID, $arUpdate)
 	{
 		/** @var DataManager $className */
 		$className = static::getClassName();
@@ -1091,8 +1104,9 @@ class Sections
 	 * @api
 	 *
 	 * @param int $sectionID ID удаляемого раздела
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_delete_section
 	 */
-	public static function deleteSection ($sectionID)
+	final public static function deleteSection ($sectionID)
 	{
 		/*		Удаление узла не намного сложнее, но требуется учесть, что у удаляемого узла могут быть подчиненные узлы. Для
 				осуществления этого действия нам потребуется левый и правый ключ удаляемого узла.*/
@@ -1181,8 +1195,9 @@ class Sections
 	 * @param int $sectionID ID раздела
 	 *
 	 * @return DBResult
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_deactivate_section
 	 */
-	public static function deactivateSection($sectionID)
+	final public static function deactivateSection($sectionID)
 	{
 		$arUpdate = array('ACTIVE'=>false);
 
@@ -1199,8 +1214,9 @@ class Sections
 	 * @param int $sectionID ID раздела
 	 *
 	 * @return DBResult
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_activate_section
 	 */
-	public static function activateSection ($sectionID)
+	final public static function activateSection ($sectionID)
 	{
 		$arUpdate = array('ACTIVE'=>true);
 
@@ -1221,8 +1237,9 @@ class Sections
 	 * @see static::changeParent ($sectionID, $newParentID=null)
 	 *
 	 * @param $arSection
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_check_update_fields
 	 */
-	protected static function checkUpdateFields (&$arSection)
+	final protected static function checkUpdateFields (&$arSection)
 	{
 		//Левая граница
 		if (isset($arSection['LEFT_MARGIN']))
@@ -1247,8 +1264,9 @@ class Sections
 	 * @param null|array $arSection
 	 *
 	 * @return null|array
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_check_add_fields
 	 */
-	protected static function checkAddFields ($arSection=null)
+	final protected static function checkAddFields ($arSection=null)
 	{
 		if (is_null($arSection) || !isset($arSection['NAME']) || strlen($arSection['NAME'])<=0)
 		{
@@ -1281,8 +1299,9 @@ class Sections
 	 * @api
 	 *
 	 * @return array|bool Массив проблеммных записей, либо false
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_check_table
 	 */
-	public static function checkTable ()
+	final public static function checkTable ()
 	{
 		/* ОСНОВНЫЕ ПРАВИЛА ХРАНЕНИЯ ДЕРЕВА КАТАЛОГОВ
 		 *

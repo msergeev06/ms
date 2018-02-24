@@ -8,13 +8,13 @@
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2018 Mikhail Sergeev
  * @since 0.2.0
+ * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/start
  */
 
 namespace MSergeev\Core\Lib;
 
 
 use MSergeev\Core\Entity\Application;
-use MSergeev\Core\Entity\ErrorCollection;
 use MSergeev\Core\Lib\IO\Files;
 
 class Modules
@@ -59,6 +59,7 @@ class Modules
 	 * @param string $moduleName
 	 *
 	 * @return bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_check_module_name
 	 */
 	public static function checkModuleName ($moduleName)
 	{
@@ -100,6 +101,7 @@ class Modules
 	 * @param string $moduleName
 	 *
 	 * @return array|bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_parse_module_name
 	 */
 	public static function parseModuleName ($moduleName)
 	{
@@ -128,6 +130,7 @@ class Modules
 	 * @param string $moduleName - полное имя модуля
 	 *
 	 * @return bool|string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_get_module_namespace
 	 */
 	public static function getModuleNamespace ($moduleName)
 	{
@@ -179,6 +182,7 @@ class Modules
 	 * @param string $moduleName
 	 *
 	 * @return bool|string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_get_module_namespace_tables
 	 */
 	public static function getModuleNamespaceTables ($moduleName)
 	{
@@ -203,6 +207,7 @@ class Modules
 	 * @param string $moduleName
 	 *
 	 * @return array|bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_get_module_table_files
 	 */
 	public static function getModuleTableFiles ($moduleName)
 	{
@@ -233,6 +238,7 @@ class Modules
 	 * @param string $moduleName
 	 *
 	 * @return bool|string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_get_path_to_module_tables_files
 	 */
 	public static function getPathToModuleTablesFiles ($moduleName)
 	{
@@ -254,6 +260,7 @@ class Modules
 	 * @param string $filename
 	 *
 	 * @return string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_get_table_class_by_file_name
 	 */
 	public static function getTableClassByFileName ($filename)
 	{
@@ -284,6 +291,7 @@ class Modules
 	 * @param string $moduleName полное имя модуля
 	 *
 	 * @return array|bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_get_module_table_names
 	 */
 	public static function getModuleTableNames ($moduleName)
 	{
@@ -321,6 +329,7 @@ class Modules
 	 * @param string $moduleName   Имя модуля
 	 *
 	 * @return string|bool  Путь, либо false
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_get_upload
 	 */
 	public static function getUpload ($moduleName)
 	{
@@ -344,6 +353,7 @@ class Modules
 	 * @param string $namespace
 	 *
 	 * @return null|string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_get_module_from_namespace
 	 */
 	public static function getModuleFromNamespace ($namespace)
 	{
@@ -373,6 +383,7 @@ class Modules
 	 * @param string $moduleName
 	 *
 	 * @return bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_install_module
 	 */
 	public static function installModule ($moduleName)
 	{
@@ -395,6 +406,7 @@ class Modules
 	 * @param string $moduleName
 	 *
 	 * @return bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_un_install_module
 	 */
 	public static function unInstallModule ($moduleName)
 	{
@@ -419,22 +431,38 @@ class Modules
 	 * @param string $versionRequired Требуемая версия модуля. Формат "XX.XX.XX"
 	 *
 	 * @return bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_check_version
 	 */
 	public static function checkVersion($versionCurrent, $versionRequired)
 	{
-		$arr1 = explode(".",$versionCurrent);
-		$arr2 = explode(".",$versionRequired);
-		if (intval($arr2[0])>intval($arr1[0])) return false;
-		elseif (intval($arr2[0])<intval($arr1[0])) return true;
-		else
+		if (function_exists('version_compare'))
 		{
-			if (intval($arr2[1])>intval($arr1[1])) return false;
-			elseif (intval($arr2[1])<intval($arr1[1])) return true;
+			$res = version_compare($versionCurrent,$versionRequired);
+			if ($res>=0)
+			{
+				return true;
+			}
 			else
 			{
-				if (intval($arr2[2])>intval($arr1[2])) return false;
-				elseif (intval($arr2[2])<intval($arr1[2])) return true;
-				else return true;
+				return false;
+			}
+		}
+		else
+		{
+			$arr1 = explode(".",$versionCurrent);
+			$arr2 = explode(".",$versionRequired);
+			if (intval($arr2[0])>intval($arr1[0])) return false;
+			elseif (intval($arr2[0])<intval($arr1[0])) return true;
+			else
+			{
+				if (intval($arr2[1])>intval($arr1[1])) return false;
+				elseif (intval($arr2[1])<intval($arr1[1])) return true;
+				else
+				{
+					if (intval($arr2[2])>intval($arr1[2])) return false;
+					elseif (intval($arr2[2])<intval($arr1[2])) return true;
+					else return true;
+				}
 			}
 		}
 	}

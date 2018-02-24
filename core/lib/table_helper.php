@@ -8,6 +8,7 @@
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  * @since 0.1.0
+ * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/table_helper/start
  */
 
 namespace MSergeev\Core\Lib;
@@ -25,6 +26,7 @@ class TableHelper
 	 * @param array $arParams Массив дополнительных параметров
 	 *
 	 * @return Fields\IntegerField
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/table_helper/method_primary_field
 	 */
 	public static function primaryField ($arParams=array())
 	{
@@ -56,6 +58,7 @@ class TableHelper
 	 * @param array $arParams Массив дополнительных параметров
 	 *
 	 * @return Fields\BooleanField
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/table_helper/method_active_field
 	 */
 	public static function activeField($arParams=array())
 	{
@@ -70,7 +73,8 @@ class TableHelper
 		}
 		$arResult = array(
 			'required' => true,
-			'default_value' => true,
+			'default_create' => true,
+			'default_insert' => true,
 			'title' => 'Активность'
 		);
 		self::parseParams($arResult,$arParams);
@@ -87,6 +91,7 @@ class TableHelper
 	 * @param array $arParams Массив дополнительных параметров
 	 *
 	 * @return Fields\IntegerField
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/table_helper/method_sort_field
 	 */
 	public static function sortField($arParams=array())
 	{
@@ -101,7 +106,8 @@ class TableHelper
 		}
 		$arResult = array(
 			'required' => true,
-			'default_value' => 500,
+			'default_create' => Options::getOptionInt('MS_CORE_SORT_DEFAULT',500),
+			'default_insert' => Options::getOptionInt('MS_CORE_SORT_DEFAULT',500),
 			'title' => 'Сортировка'
 		);
 		self::parseParams($arResult,$arParams);
@@ -138,6 +144,21 @@ class TableHelper
 		{
 			$arResult['default_value'] = $arParams['default_value'];
 			unset($arParams['default_value']);
+		}
+		if (isset($arParams['default_create']))
+		{
+			$arResult['default_create'] = $arParams['default_create'];
+			unset($arParams['default_create']);
+		}
+		if (isset($arParams['default_insert']))
+		{
+			$arResult['default_insert'] = $arParams['default_insert'];
+			unset($arParams['default_insert']);
+		}
+		if (isset($arParams['default_update']))
+		{
+			$arResult['default_update'] = $arParams['default_update'];
+			unset($arParams['default_update']);
 		}
 		if (isset($arParams['title']))
 		{

@@ -8,6 +8,7 @@
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  * @since 0.1.0
+ * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/start
  */
 
 namespace MSergeev\Core\Lib;
@@ -28,6 +29,7 @@ class Tools
 	 * @api
 	 *
 	 * @return string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_generate_code
 	 */
 	public static function generateCode ()
 	{
@@ -65,6 +67,7 @@ class Tools
 	 * @param string $char Русский символ
 	 *
 	 * @return string Латинский символ
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_convert_rus_to_lat
 	 */
 	public static function convertRusToLat ($char)
 	{
@@ -266,6 +269,7 @@ class Tools
 	 * @example false => 'N'
 	 *
 	 * @return string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_bool_to_str
 	 */
 	public static function boolToStr () {
 		$bool = func_get_arg (0);
@@ -291,6 +295,7 @@ class Tools
 	 * @example 'abrakadabra' => false
 	 *
 	 * @return bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_str_to_bool
 	 */
 	public static function strToBool () {
 		$str = func_get_arg(0);
@@ -307,13 +312,12 @@ class Tools
 	}
 
 	/**
-	 * multiplication
-	 *
-	 * @ignore
+	 * Перемножает элементы переданного массива
 	 *
 	 * @param $arMultiplier
 	 *
 	 * @return int
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_multiplication
 	 */
 	public static function multiplication ($arMultiplier)
 	{
@@ -326,20 +330,6 @@ class Tools
 	}
 
 	/**
-	 * Формирует относительный путь из абсолютного
-	 *
-	 * @deprecated
-	 * @see Application::getInstance()->getSitePath()
-	 *
-	 * @param string $path Абсолютный путь
-	 *
-	 * @return string Относительный путь
-	 */
-	public static function getSitePath ($path) {
-		return Application::getInstance()->getSitePath($path);
-	}
-
-	/**
 	 * Возвращает имя класса, описывающего таблицу, по ее имени в базе данных
 	 *
 	 * @api
@@ -347,27 +337,75 @@ class Tools
 	 * @param string $strTableName Имя таблицы в базе данных
 	 *
 	 * @return string Имя класса описывающего таблицу
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_get_class_name_by_table_name
 	 */
 	public static function getClassNameByTableName ($strTableName)
 	{
-		$strClassName = "MSergeev\\";
-		$strTableName = str_replace("ms_","",$strTableName);
+		$strClassName = '';
 		$arStr = explode("_",$strTableName);
+		$moduleName = null;
+		$module_name = null;
+		$brand = null;
 		for($i=0;$i<count($arStr);$i++)
 		{
-			if($i==0)
+			//На первом месте идет бренд
+			if ($i==0)
 			{
+				//ms превращается в MSergeev
+				if ($arStr[$i]=='ms')
+				{
+					$strClassName .= "MSergeev\\";
+				}
+				//если это не ms, сохраняем бренд
+				else
+				{
+					$strClassName .= static::setFirstCharToBig($arStr[$i])."\\";
+					$brand = $arStr[$i];
+				}
+			}
+			//На втором месте идет модуль
+			elseif($i==1)
+			{
+				//С ядром все просто
 				if ($arStr[$i] == "core")
 				{
 					$strClassName .= "Core\\Tables\\";
 				}
 				else
 				{
-					$strClassName .= "Modules\\";
-					$arStr[$i] = static::setFirstCharToBig($arStr[$i]);
-					$strClassName .= $arStr[$i]."\\Tables\\";
+					//Если модуль с таким именем есть, сохраняем его
+					if (Loader::issetModule(strtolower($brand.'.'.$arStr[$i])))
+					{
+						$strClassName .= "Modules\\";
+						$strClassName .= static::setFirstCharToBig($arStr[$i])."\\Tables\\";
+					}
+					//если такого модуля нет, значит имя состоит из нескольких слов через _
+					//сохраняем часть названия модуля
+					else
+					{
+						$moduleName = static::setFirstCharToBig($arStr[$i]);
+						$module_name = $arStr[$i];
+					}
 				}
 			}
+			//Если название модуля состоит из нескольких слов
+			elseif (!is_null($moduleName))
+			{
+				//Ести такой модуль существует, записываем его
+				if (Loader::issetModule(strtolower($brand.'.'.$module_name.'_'.$arStr[$i])))
+				{
+					$strClassName .= "Modules\\".$moduleName;
+					$strClassName .= static::setFirstCharToBig($arStr[$i])."\\Tables\\";
+					$moduleName = null;
+				}
+				//если не все слова названия модуля собрали, собираем дальше
+				else
+				{
+					$moduleName .= static::setFirstCharToBig($arStr[$i]);
+					$module_name .= '_'.$arStr[$i];
+				}
+			}
+			//После названия модуля идет непосредственно название таблицы, сохраняем его
 			else
 			{
 				$arStr[$i] = static::setFirstCharToBig($arStr[$i]);
@@ -389,6 +427,7 @@ class Tools
 	 * @param array  $arParams    Передаваемые параметры
 	 *
 	 * @return mixed
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_run_table_class_function
 	 */
 	public static function runTableClassFunction ($strTable,$strFunction,$arParams=array())
 	{
@@ -412,6 +451,7 @@ class Tools
 	 * @param string $str Исходная строка
 	 *
 	 * @return string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_set_first_char_to_big
 	 */
 	public static function setFirstCharToBig ($str)
 	{
@@ -434,6 +474,7 @@ class Tools
 	 * @param string $strFloat Исходная строка
 	 *
 	 * @return float Значение
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_validate_float_val
 	 */
 	public static function validateFloatVal ($strFloat)
 	{
@@ -452,17 +493,34 @@ class Tools
 	 * @param string $strInt Исходная строка
 	 *
 	 * @return int Значение
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_validate_int_val
 	 */
 	public static function validateIntVal ($strInt)
 	{
 		return intval($strInt);
 	}
 
+	/**
+	 * Преобразует полученное значение к строковому значению
+	 *
+	 * @param $str
+	 *
+	 * @return string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_validate_string_val
+	 */
 	public static function validateStringVal ($str)
 	{
 		return htmlspecialchars($str);
 	}
 
+	/**
+	 * Преобразует полученное значение к булевому значению
+	 *
+	 * @param $value
+	 *
+	 * @return bool|int
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_validate_bool_val
+	 */
 	public static function validateBoolVal ($value)
 	{
 		if (
@@ -497,6 +555,14 @@ class Tools
 		return $value;
 	}
 
+	/**
+	 * Преобразует полученное значение к значению даты
+	 *
+	 * @param $date
+	 *
+	 * @return bool|Date
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_validate_date_val
+	 */
 	public static function validateDateVal ($date)
 	{
 		if ($date instanceof Date)
@@ -559,15 +625,54 @@ class Tools
 		return $value;
 	}
 
+	/**
+	 * Возвращает имя файла с описанием таблицы по имени таблицы БД
+	 *
+	 * @param $strTableName
+	 *
+	 * @return bool|string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_get_file_by_table_name
+	 */
 	public static function getFileByTableName ($strTableName)
 	{
-		$strTableName = str_replace('ms_','',$strTableName);
 		$arStr = explode('_',$strTableName);
-		$module = $arStr[0];
-		unset($arStr[0]);
-		$file = implode('_',$arStr);
+		$brand = $arStr[0];
+		$start = 1;
+		if ($arStr[1]=='core')
+		{
+			$module = 'core';
+			$start = 2;
+		}
+		else
+		{
+			$module = '';
+		}
+		$table = '';
+		for ($i=$start;$i<count($arStr);$i++)
+		{
+			if ($module == '' || !Loader::issetModule($brand.'.'.$module))
+			{
+				if ($module != '') $module .= '_';
+
+				$module .= $arStr[$i];
+				continue;
+			}
+			else
+			{
+				if ($table != '') $table .= '_';
+
+				$table .= $arStr[$i];
+			}
+		}
 		$app = Application::getInstance();
-		$filename = $app->getSettings()->getMsRoot().'/modules/'.$module.'/tables/'.$file.'.php';
+		if ($module == 'core')
+		{
+			$filename = $app->getSettings()->getMsRoot().'/core/tables/'.$table.'.php';
+		}
+		else
+		{
+			$filename = $app->getSettings()->getMsRoot().'/modules/'.$brand.'.'.$module.'/tables/'.$table.'.php';
+		}
 		if (file_exists($filename))
 		{
 			return $filename;
@@ -586,6 +691,7 @@ class Tools
 	 * @param string $string Исходная строка
 	 *
 	 * @return string Транслитированная строка
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_transliterate
 	 */
 	public static function transliterate($string)
 	{
@@ -662,16 +768,36 @@ class Tools
 		return strtr($string, $converter);
 	}
 
+	/**
+	 * Возвращает имя текущей директории
+	 *
+	 * @return string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_get_cur_dir
+	 */
 	public static function getCurDir ()
 	{
 		return dirname(Application::getInstance()->getContext()->getServer()->getRequestUri());
 	}
 
+	/**
+	 * Возвращает путь к текущему скрипту
+	 *
+	 * @return null|string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_get_cur_path
+	 */
 	public static function getCurPath ()
 	{
 		return Application::getInstance()->getContext()->getServer()->getScriptName();
 	}
 
+	/**
+	 * Проверяет является ли переданный путь директорией
+	 *
+	 * @param $needle
+	 *
+	 * @return bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_is_dir
+	 */
 	public static function isDir ($needle)
 	{
 		$bDir = false;
@@ -694,6 +820,16 @@ class Tools
 		return $bDir;
 	}
 
+	/**
+	 * Обрезает переданную строку до указанного количества символов, добавляя в конце троеточие «…»
+	 *
+	 * @param        $string
+	 * @param int    $number
+	 * @param string $dots
+	 *
+	 * @return string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_crop_string
+	 */
 	public static function cropString ($string, $number=50, $dots='...')
 	{
 		if (strlen(mb_convert_encoding($string, 'windows-1251', 'utf-8'))>$number)
@@ -737,6 +873,17 @@ class Tools
 		return strrpos($haystack, $needle);
 	}
 
+	/**
+	 * Выбирает нужный падеж для переданного числа
+	 *
+	 * @param int    $value
+	 * @param string $subjectiveCase
+	 * @param string $genitiveSingular
+	 * @param string $genitivePlural
+	 *
+	 * @return mixed|null
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_say_rus_right
+	 */
 	public static function sayRusRight ($value, $subjectiveCase=null, $genitiveSingular=null, $genitivePlural=null)
 	{
 		Loc::includeLocFile(__FILE__,'ms_core_');
@@ -764,6 +911,15 @@ class Tools
 		return str_replace(self::$search, self::$replace, $str);
 	}
 
+	/**
+	 * Проверяет, содержит ли переменная сериализированные данные
+	 *
+	 * @param string $str
+	 * @param int    $max_depth
+	 *
+	 * @return bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_check_serialized_data
+	 */
 	public static function checkSerializedData($str, $max_depth = 200)
 	{
 		if(preg_match('/O\\:\\d/', $str)) // serialized objects

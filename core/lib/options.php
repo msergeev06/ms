@@ -51,6 +51,7 @@ class Options
 	 * @param null|string $optionDefaultValue Значение опции по-умолчанию
 	 *
 	 * @return bool|string Значение указанной опции, либо false
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/options/method_get_option_str
 	 */
 	public static function getOptionStr ($optionName, $optionDefaultValue = null)
 	{
@@ -76,6 +77,7 @@ class Options
 	 * @param null|int $optionDefaultValue Значение опции по-умолчанию
 	 *
 	 * @return bool|int Целочисленное значение указанной опции, либо false
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/options/method_get_option_int
 	 */
 	public static function getOptionInt($optionName, $optionDefaultValue = null)
 	{
@@ -101,6 +103,7 @@ class Options
 	 * @param null|float $optionDefaultValue Значение опции по-умолчанию
 	 *
 	 * @return bool|float Вещественное значение указанной опции, либо false
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/options/method_get_option_float
 	 */
 	public static function getOptionFloat($optionName, $optionDefaultValue = null)
 	{
@@ -124,6 +127,7 @@ class Options
 	 *
 	 * @param string $optionName  Название опции
 	 * @param mixed  $optionValue Значение опции
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/options/method_set_default_option
 	 */
 	public static function setDefaultOption ($optionName, $optionValue)
 	{
@@ -140,6 +144,7 @@ class Options
 	 * @param mixed  $optionValue Значение опции
 	 *
 	 * @return bool true - опция сохранена, false - ошибка сохранения
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/options/method_set_option
 	 */
 	public static function setOption ($optionName, $optionValue)
 	{

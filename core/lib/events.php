@@ -7,6 +7,8 @@
  * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
+ * @copyright 2017 Mikhail Sergeev
+ * @copyright 2018 Mikhail Sergeev
  * @since 0.1.0
  */
 
@@ -147,6 +149,7 @@ class Events
 	 * @param string $fullPath      Полный путь к исполняемому файлу
 	 * @param array  $toMethodArg   Массив аргументов для функции-обработчика событий.
 	 *                                  Необязательный параметр
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/events/method_un_register_module_dependences
 	 */
 	public static function unRegisterModuleDependences(
 		$fromModule, $eventID, $toModule='', $toClass = "", $toMethod = "", $toPath="", $fullPath="",
@@ -205,6 +208,7 @@ class Events
 	 * @param bool   $fromDB        Флаг принудительной загрузки обработчиков событий из DB
 	 *
 	 * @return array                Пустой массив, или массив обработчиков
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/events/get_module_events
 	 */
 	public static function getModuleEvents ($fromModule, $eventID, $fromDB=false)
 	{
@@ -267,6 +271,7 @@ class Events
 	 * @param array $arParams - массив параментров, передаваемых в обработчик
 	 *
 	 * @return bool|mixed
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/events/method_execute_module_event
 	 */
 	public static function executeModuleEvent ($arEvent, $arParams=array())
 	{
@@ -340,6 +345,7 @@ class Events
 	 * @param bool   $fromDB        Флаг принудительной загрузки обработчиков событий из DB
 	 *
 	 * @return bool
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/events/method_run_events
 	 */
 	public static function runEvents ($fromModule,$eventID,$arParams=array(),$fromDB=false)
 	{
@@ -415,6 +421,7 @@ class Events
 	 *
 	 * @return array
 	 * @since 0.2.0
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/events/method_get_module_events_info
 	 */
 	public static function getModuleEventsInfo ($module=null)
 	{

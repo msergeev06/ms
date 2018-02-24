@@ -26,6 +26,7 @@ class Installer
 	 *
 	 * @return bool
 	 * @since 0.2.0
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/installer/method_create_module_tables
 	 */
 	public static function createModuleTables ($strModuleName)
 	{
@@ -63,6 +64,7 @@ class Installer
 	 * @link http://php.net/manual/ru/function.exec.php
 	 *
 	 * @param string $moduleName
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/installer/method_create_backup_db_for_module
 	 */
 	public static function createBackupDbForModule ($moduleName)
 	{
@@ -84,6 +86,7 @@ class Installer
 	 *
 	 * @api
 	 *
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/installer/method_create_core_tables
 	 */
 	public static function createCoreTables ()
 	{

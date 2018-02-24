@@ -44,22 +44,26 @@ class SectionsTable extends Lib\DataManager
 			)),
 			new Fields\IntegerField('LEFT_MARGIN',array(
 				'required' => true,
-				'default_value' => 0,
+				'default_create' => 0,
+				'default_insert' => 0,
 				'title' => 'Левая граница'
 			)),
 			new Fields\IntegerField('RIGHT_MARGIN',array(
 				'required' => true,
-				'default_value' => 0,
+				'default_create' => 0,
+				'default_insert' => 0,
 				'title' => 'Правая граница'
 			)),
 			new Fields\IntegerField('DEPTH_LEVEL',array(
 				'required' => true,
-				'default_value' => 0,
+				'default_create' => 0,
+				'default_insert' => 0,
 				'title' => 'Уровень вложенности'
 			)),
 			new Fields\IntegerField('PARENT_SECTION_ID',array(
 				'required' => true,
-				'default_value' => 0,
+				'default_create' => 0,
+				'default_insert' => 0,
 				//'link' => 'ms_core_sections.ID',
 				'link' => static::getTableName().'.ID',
 				'title' => 'Родительский раздел'

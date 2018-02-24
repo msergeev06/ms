@@ -8,6 +8,7 @@
  * @author Mikhail Sergeev
  * @copyright 2017 Mikhail Sergeev
  * @since 0.1.0
+ * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/shell_tools/start
  */
 
 namespace MSergeev\Core\Lib;
@@ -62,6 +63,7 @@ class ShellTools
 	 * @param null|string   $colorBackground    Код цвета фона
 	 *
 	 * @return string
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/shell_tools/method_get_colored_string
 	 */
 	public static function getColoredString($string, $colorText=null, $colorBackground=null)
 	{
@@ -83,6 +85,7 @@ class ShellTools
 	 * Возвращает список кодов цвета текста
 	 *
 	 * @return array
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/shell_tools/method_get_text_colors
 	 */
 	public static function getTextColors ()
 	{
@@ -93,6 +96,7 @@ class ShellTools
 	 * Возвращает список кодов цвета фона
 	 *
 	 * @return array
+	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/shell_tools/method_get_background_colors
 	 */
 	public static function getBackgroundColors ()
 	{

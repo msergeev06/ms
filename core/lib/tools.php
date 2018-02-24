@@ -720,9 +720,7 @@ class Tools
 
 	public static function htmlspecialchars ($str)
 	{
-		static $search =  array("&amp;",     "&lt;",     "&gt;",     "&quot;",     "&#34",     "&#x22",     "&#39",     "&#x27",     "<",    ">",    "\"");
-		static $replace = array("&amp;amp;", "&amp;lt;", "&amp;gt;", "&amp;quot;", "&amp;#34", "&amp;#x22", "&amp;#39", "&amp;#x27", "&lt;", "&gt;", "&quot;");
-		return str_replace($search, $replace, $str);
+		return str_replace(self::$searchEx, self::$replaceEx, $str);
 	}
 
 	public static function strrpos ($haystack, $needle)
@@ -764,11 +762,6 @@ class Tools
 	public static function htmlspecialcharsBack ($str)
 	{
 		return str_replace(self::$search, self::$replace, $str);
-	}
-
-	public static function htmlspecialcharsEx ($str)
-	{
-		return str_replace(self::$searchEx, self::$replaceEx, $str);
 	}
 
 	public static function checkSerializedData($str, $max_depth = 200)

@@ -11,8 +11,6 @@
 
 namespace MSergeev\Core\Entity\Db\Fields;
 
-use MSergeev\Core\Exception\ArgumentNullException;
-use MSergeev\Core\Exception\ArgumentOutOfRangeException;
 use MSergeev\Core\Entity\Type\Date;
 
 /**
@@ -77,7 +75,7 @@ class TimeField extends ScalarField
 		parent::__construct($name, $parameters);
 
 		$this->dataType = 'time';
-		$this->fieldType = 'MSergeev\Core\Entity\Date';
+		$this->fieldType = 'MSergeev\Core\Entity\Type\Date';
 	}
 
 	/**

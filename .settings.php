@@ -32,5 +32,11 @@ return array(
 		'DirLogs' => $documentRoot.'/logs',
 		'SystemLogFile' => $documentRoot.'/logs/sys-log-'.date('Ymd').'.log',
 		'ExpireLogFiles' => 10
+	),
+	'Time' => array(
+		'Timezone' => 'Europe/Moscow',
+		'SiteDate' => 'd.m.Y',
+		'SiteDateTime' => 'd.m.Y H:i:s',
+		'SiteTime' => 'H:i:s'
 	)
 );

@@ -79,7 +79,7 @@ class DateTimeField extends ScalarField
 
 		//$this->dataType = 'timestamp';
 		$this->dataType = 'datetime';
-		$this->fieldType = 'MSergeev\Core\Entity\Date';
+		$this->fieldType = 'MSergeev\Core\Entity\Type\Date';
 	}
 
 	/**

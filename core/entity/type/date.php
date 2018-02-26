@@ -13,6 +13,7 @@
 
 namespace MSergeev\Core\Entity\Type;
 
+use MSergeev\Core\Entity\Application;
 use MSergeev\Core\Exception;
 use MSergeev\Core\Lib\Loader;
 use MSergeev\Core\Lib\Loc;
@@ -21,26 +22,14 @@ use MSergeev\Modules\Dates\Lib\WorkCalendar;
 class Date extends \DateTime
 {
 	/**
-	 * Текущая метка времени UNIX
-	 * @var int
-	 */
-	protected $timestamp = NULL;
-
-	/**
-	 * Дата и время в формате базы данных (YYYY-MM-DD HH:II;SS)
-	 * @var string
-	 */
-	protected $dateTimeDB = null;
-
-	/**
 	 * Конструктор объекта даты
 	 *
 	 * Основные форматы
-	 * db               YYYY-MM-DD
-	 * site             DD.MM.YYYY
-	 * db_datetime      YYYY-MM-DD HH:II:SS
-	 * site_datetime    DD.MM.YYYY HH:II:SS
-	 * site_time        HH:II:SS
+	 * db               YYYY-MM-DD (Y-m-d)
+	 * site             DD.MM.YYYY (d.m.Y)
+	 * db_datetime      YYYY-MM-DD HH:II:SS (Y-m-d H:i:s)
+	 * site_datetime    DD.MM.YYYY HH:II:SS (d.m.Y H:i:s)
+	 * site_time        HH:II:SS (H:i:s)
 	 *
 	 * Список возможных символов для составления строки format
 	 *      День
@@ -99,126 +88,625 @@ class Date extends \DateTime
 	 */
 	public function __construct ($date = NULL, $format = NULL, \DateTimeZone $timezone = NULL)
 	{
-		if (is_null ($date))
+		$settings = Application::getInstance()->getSettings();
+		//Определяем временнУю зону и верно ли она задана
+		if (is_null($timezone) || !in_array($timezone, static::getTimezonesList()))
 		{
-			$this->timestamp = time ();
-			$this->dateTimeDB = $this->getDateTimeDB();
-
+			$timezone = new \DateTimeZone($settings->getTimezone());
+		}
+		//Если дата не задана, будем использовать текущее время
+		if (is_null($date))
+		{
+			parent::__construct('now', $timezone);
 			return $this;
 		}
-
-		if (is_null ($format))
+		//Если формат не задан, считаем что это формат БД
+		if (is_null($format))
 		{
-			$this->timestamp = $this->createFromFormatEx ('U', $date, $timezone);;
-			$this->dateTimeDB = $this->getDateTimeDB();
-
-			return $this;
+			$format = 'db';
 		}
-
+		//В зависимости от формата формируем дату
 		switch ($format)
 		{
-			case 'db':
-				$this->timestamp = $this->createFromFormatEx ('Y-m-d', $date, $timezone);
-				$this->dateTimeDB = $this->getDateTimeDB();
-				return $this;
-			case 'site':
-				$this->timestamp = $this->createFromFormatEx ('d.m.Y', $date, $timezone);
-				$this->dateTimeDB = $this->getDateTimeDB();
-				return $this;
-			case 'db_datetime':
-				$this->timestamp = $this->createFromFormatEx ('Y-m-d H:i:s', $date, $timezone);
-				$this->dateTimeDB = $this->getDateTimeDB();
-				return $this;
-			case 'site_datetime':
-				$this->timestamp = $this->createFromFormatEx ('d.m.Y H:i:s', $date, $timezone);
-				$this->dateTimeDB = $this->getDateTimeDB();
-				return $this;
-			case 'site_time':
-				$this->timestamp = $this->createFromFormatEx ('H:i:s', $date, $timezone);
-				$this->dateTimeDB = $this->getDateTimeDB();
-				return $this;
-			default:
-				$this->timestamp = $this->createFromFormatEx ($format, $date, $timezone);
-				$this->dateTimeDB = $this->getDateTimeDB();
-				return $this;
+			case 'time': //timestamp
+				$dt = parent::createFromFormat('U', $date, $timezone);
+				break;
+			case 'db': //YYYY-MM-DD
+				$dt = parent::createFromFormat('Y-m-d', $date, $timezone);
+				break;
+			case 'db_datetime': //YYYY-MM-DD HH:II:SS
+				$dt = parent::createFromFormat('Y-m-d H:i:s', $date, $timezone);
+				break;
+			case 'db_time': //HH:II:SS
+				$dt = parent::createFromFormat('H:i:s', $date, $timezone);
+				break;
+			case 'site': //DD.MM.YYYY (или другой из настроек)
+				$dt = parent::createFromFormat($settings->getSiteDate(), $date, $timezone);
+				break;
+			case 'site_datetime': //DD.MM.YYYY HH:II:SS (или другой из настроек)
+				$dt = parent::createFromFormat($settings->getSiteDateTime(), $date, $timezone);
+				break;
+			case 'site_time': //HH:II:SS (или другой из настроек)
+				$dt = parent::createFromFormat($settings->getSiteTime(), $date, $timezone);
+				break;
+			default: //Другой формат
+				$dt = parent::createFromFormat($format, $date, $timezone);
+				break;
 		}
 
+		try
+		{
+			if ($dt === false)
+			{
+				throw new Exception\ArgumentException('Wrong date "' . $date . '" in format "' . $format . '"');
+			}
+		}
+		catch (Exception\ArgumentException $e)
+		{
+			die($e->showException());
+		}
+
+		parent::__construct($dt->format('Y-m-d H:i:s'), $timezone);
+		unset($dt);
+
+		return $this;
+	}
+
+	/** Static */
+
+	/**
+	 * Возвращает массив со списком возможных временнЫх зон
+	 *
+	 * @return array
+	 */
+	public static function getTimezonesList ()
+	{
+		$arTimezones = array(
+			'Africa/Abidjan',
+			'Africa/Accra',
+			'Africa/Addis_Ababa',
+			'Africa/Algiers',
+			'Africa/Asmara',
+			'Africa/Bamako',
+			'Africa/Bangui',
+			'Africa/Banjul',
+			'Africa/Bissau',
+			'Africa/Blantyre',
+			'Africa/Brazzaville',
+			'Africa/Bujumbura',
+			'Africa/Cairo',
+			'Africa/Casablanca',
+			'Africa/Ceuta',
+			'Africa/Conakry',
+			'Africa/Dakar',
+			'Africa/Dar_es_Salaam',
+			'Africa/Djibouti',
+			'Africa/Douala',
+			'Africa/El_Aaiun',
+			'Africa/Freetown',
+			'Africa/Gaborone',
+			'Africa/Harare',
+			'Africa/Johannesburg',
+			'Africa/Juba',
+			'Africa/Kampala',
+			'Africa/Khartoum',
+			'Africa/Kigali',
+			'Africa/Kinshasa',
+			'Africa/Lagos',
+			'Africa/Libreville',
+			'Africa/Lome',
+			'Africa/Luanda',
+			'Africa/Lubumbashi',
+			'Africa/Lusaka',
+			'Africa/Malabo',
+			'Africa/Maputo',
+			'Africa/Maseru',
+			'Africa/Mbabane',
+			'Africa/Mogadishu',
+			'Africa/Monrovia',
+			'Africa/Nairobi',
+			'Africa/Ndjamena',
+			'Africa/Niamey',
+			'Africa/Nouakchott',
+			'Africa/Ouagadougou',
+			'Africa/Porto-Novo',
+			'Africa/Sao_Tome',
+			'Africa/Tripoli',
+			'Africa/Tunis',
+			'Africa/Windhoek',
+
+			'America/Adak',
+			'America/Anchorage',
+			'America/Anguilla',
+			'America/Antigua',
+			'America/Araguaina',
+			'America/Argentina/Buenos_Aires',
+			'America/Argentina/Catamarca',
+			'America/Argentina/Cordoba',
+			'America/Argentina/Jujuy',
+			'America/Argentina/La_Rioja',
+			'America/Argentina/Mendoza',
+			'America/Argentina/Rio_Gallegos',
+			'America/Argentina/Salta',
+			'America/Argentina/San_Juan',
+			'America/Argentina/San_Luis',
+			'America/Argentina/Tucuman',
+			'America/Argentina/Ushuaia',
+			'America/Aruba',
+			'America/Asuncion',
+			'America/Atikokan',
+			'America/Bahia',
+			'America/Bahia_Banderas',
+			'America/Barbados',
+			'America/Belem',
+			'America/Belize',
+			'America/Blanc-Sablon',
+			'America/Boa_Vista',
+			'America/Bogota',
+			'America/Boise',
+			'America/Cambridge_Bay',
+			'America/Campo_Grande',
+			'America/Cancun',
+			'America/Caracas',
+			'America/Cayenne',
+			'America/Cayman',
+			'America/Chicago',
+			'America/Chihuahua',
+			'America/Costa_Rica',
+			'America/Creston',
+			'America/Cuiaba',
+			'America/Curacao',
+			'America/Danmarkshavn',
+			'America/Dawson',
+			'America/Dawson_Creek',
+			'America/Denver',
+			'America/Detroit',
+			'America/Dominica',
+			'America/Edmonton',
+			'America/Eirunepe',
+			'America/El_Salvador',
+			'America/Fort_Nelson',
+			'America/Fortaleza',
+			'America/Glace_Bay',
+			'America/Godthab',
+			'America/Goose_Bay',
+			'America/Grand_Turk',
+			'America/Grenada',
+			'America/Guadeloupe',
+			'America/Guatemala',
+			'America/Guayaquil',
+			'America/Guyana',
+			'America/Halifax',
+			'America/Havana',
+			'America/Hermosillo',
+			'America/Indiana/Indianapolis',
+			'America/Indiana/Knox',
+			'America/Indiana/Marengo',
+			'America/Indiana/Petersburg',
+			'America/Indiana/Tell_City',
+			'America/Indiana/Vevay',
+			'America/Indiana/Vincennes',
+			'America/Indiana/Winamac',
+			'America/Inuvik',
+			'America/Iqaluit',
+			'America/Jamaica',
+			'America/Juneau',
+			'America/Kentucky/Louisville',
+			'America/Kentucky/Monticello',
+			'America/Kralendijk',
+			'America/La_Paz',
+			'America/Lima',
+			'America/Los_Angeles',
+			'America/Lower_Princes',
+			'America/Maceio',
+			'America/Managua',
+			'America/Manaus',
+			'America/Marigot',
+			'America/Martinique',
+			'America/Matamoros',
+			'America/Mazatlan',
+			'America/Menominee',
+			'America/Merida',
+			'America/Metlakatla',
+			'America/Mexico_City',
+			'America/Miquelon',
+			'America/Moncton',
+			'America/Monterrey',
+			'America/Montevideo',
+			'America/Montserrat',
+			'America/Nassau',
+			'America/New_York',
+			'America/Nipigon',
+			'America/Nome',
+			'America/Noronha',
+			'America/North_Dakota/Beulah',
+			'America/North_Dakota/Center',
+			'America/North_Dakota/New_Salem',
+			'America/Ojinaga',
+			'America/Panama',
+			'America/Pangnirtung',
+			'America/Paramaribo',
+			'America/Phoenix',
+			'America/Port-au-Prince',
+			'America/Port_of_Spain',
+			'America/Porto_Velho',
+			'America/Puerto_Rico',
+			'America/Punta_Arenas',
+			'America/Rainy_River',
+			'America/Rankin_Inlet',
+			'America/Recife',
+			'America/Regina',
+			'America/Resolute',
+			'America/Rio_Branco',
+			'America/Santarem',
+			'America/Santiago',
+			'America/Santo_Domingo',
+			'America/Sao_Paulo',
+			'America/Scoresbysund',
+			'America/Sitka',
+			'America/St_Barthelemy',
+			'America/St_Johns',
+			'America/St_Kitts',
+			'America/St_Lucia',
+			'America/St_Thomas',
+			'America/St_Vincent',
+			'America/Swift_Current',
+			'America/Tegucigalpa',
+			'America/Thule',
+			'America/Thunder_Bay',
+			'America/Tijuana',
+			'America/Toronto',
+			'America/Tortola',
+			'America/Vancouver',
+			'America/Whitehorse',
+			'America/Winnipeg',
+			'America/Yakutat',
+			'America/Yellowknife',
+
+			'Antarctica/Casey',
+			'Antarctica/Davis',
+			'Antarctica/DumontDUrville',
+			'Antarctica/Macquarie',
+			'Antarctica/Mawson',
+			'Antarctica/McMurdo',
+			'Antarctica/Palmer',
+			'Antarctica/Rothera',
+			'Antarctica/Syowa',
+			'Antarctica/Troll',
+			'Antarctica/Vostok',
+
+			'Arctic/Longyearbyen',
+
+			'Asia/Aden',
+			'Asia/Almaty',
+			'Asia/Amman',
+			'Asia/Anadyr',
+			'Asia/Aqtau',
+			'Asia/Aqtobe',
+			'Asia/Ashgabat',
+			'Asia/Atyrau',
+			'Asia/Baghdad',
+			'Asia/Bahrain',
+			'Asia/Baku',
+			'Asia/Bangkok',
+			'Asia/Barnaul',
+			'Asia/Beirut',
+			'Asia/Bishkek',
+			'Asia/Brunei',
+			'Asia/Chita',
+			'Asia/Choibalsan',
+			'Asia/Colombo',
+			'Asia/Damascus',
+			'Asia/Dhaka',
+			'Asia/Dili',
+			'Asia/Dubai',
+			'Asia/Dushanbe',
+			'Asia/Famagusta',
+			'Asia/Gaza',
+			'Asia/Hebron',
+			'Asia/Ho_Chi_Minh',
+			'Asia/Hong_Kong',
+			'Asia/Hovd',
+			'Asia/Irkutsk',
+			'Asia/Jakarta',
+			'Asia/Jayapura',
+			'Asia/Jerusalem',
+			'Asia/Kabul',
+			'Asia/Kamchatka',
+			'Asia/Karachi',
+			'Asia/Kathmandu',
+			'Asia/Khandyga',
+			'Asia/Kolkata',
+			'Asia/Krasnoyarsk',
+			'Asia/Kuala_Lumpur',
+			'Asia/Kuching',
+			'Asia/Kuwait',
+			'Asia/Macau',
+			'Asia/Magadan',
+			'Asia/Makassar',
+			'Asia/Manila',
+			'Asia/Muscat',
+			'Asia/Nicosia',
+			'Asia/Novokuznetsk',
+			'Asia/Novosibirsk',
+			'Asia/Omsk',
+			'Asia/Oral',
+			'Asia/Phnom_Penh',
+			'Asia/Pontianak',
+			'Asia/Pyongyang',
+			'Asia/Qatar',
+			'Asia/Qyzylorda',
+			'Asia/Riyadh',
+			'Asia/Sakhalin',
+			'Asia/Samarkand',
+			'Asia/Seoul',
+			'Asia/Shanghai',
+			'Asia/Singapore',
+			'Asia/Srednekolymsk',
+			'Asia/Taipei',
+			'Asia/Tashkent',
+			'Asia/Tbilisi',
+			'Asia/Tehran',
+			'Asia/Thimphu',
+			'Asia/Tokyo',
+			'Asia/Tomsk',
+			'Asia/Ulaanbaatar',
+			'Asia/Urumqi',
+			'Asia/Ust-Nera',
+			'Asia/Vientiane',
+			'Asia/Vladivostok',
+			'Asia/Yakutsk',
+			'Asia/Yangon',
+			'Asia/Yekaterinburg',
+			'Asia/Yerevan',
+
+			'Atlantic/Azores',
+			'Atlantic/Bermuda',
+			'Atlantic/Canary',
+			'Atlantic/Cape_Verde',
+			'Atlantic/Faroe',
+			'Atlantic/Madeira',
+			'Atlantic/Reykjavik',
+			'Atlantic/South_Georgia',
+			'Atlantic/St_Helena',
+			'Atlantic/Stanley',
+
+			'Australia/Adelaide',
+			'Australia/Brisbane',
+			'Australia/Broken_Hill',
+			'Australia/Currie',
+			'Australia/Darwin',
+			'Australia/Eucla',
+			'Australia/Hobart',
+			'Australia/Lindeman',
+			'Australia/Lord_Howe',
+			'Australia/Melbourne',
+			'Australia/Perth',
+			'Australia/Sydney',
+
+			'Europe/Amsterdam',
+			'Europe/Andorra',
+			'Europe/Astrakhan',
+			'Europe/Athens',
+			'Europe/Belgrade',
+			'Europe/Berlin',
+			'Europe/Bratislava',
+			'Europe/Brussels',
+			'Europe/Bucharest',
+			'Europe/Budapest',
+			'Europe/Busingen',
+			'Europe/Chisinau',
+			'Europe/Copenhagen',
+			'Europe/Dublin',
+			'Europe/Gibraltar',
+			'Europe/Guernsey',
+			'Europe/Helsinki',
+			'Europe/Isle_of_Man',
+			'Europe/Istanbul',
+			'Europe/Jersey',
+			'Europe/Kaliningrad',
+			'Europe/Kiev',
+			'Europe/Kirov',
+			'Europe/Lisbon',
+			'Europe/Ljubljana',
+			'Europe/London',
+			'Europe/Luxembourg',
+			'Europe/Madrid',
+			'Europe/Malta',
+			'Europe/Mariehamn',
+			'Europe/Minsk',
+			'Europe/Monaco',
+			'Europe/Moscow',
+			'Europe/Oslo',
+			'Europe/Paris',
+			'Europe/Podgorica',
+			'Europe/Prague',
+			'Europe/Riga',
+			'Europe/Rome',
+			'Europe/Samara',
+			'Europe/San_Marino',
+			'Europe/Sarajevo',
+			'Europe/Saratov',
+			'Europe/Simferopol',
+			'Europe/Skopje',
+			'Europe/Sofia',
+			'Europe/Stockholm',
+			'Europe/Tallinn',
+			'Europe/Tirane',
+			'Europe/Ulyanovsk',
+			'Europe/Uzhgorod',
+			'Europe/Vaduz',
+			'Europe/Vatican',
+			'Europe/Vienna',
+			'Europe/Vilnius',
+			'Europe/Volgograd',
+			'Europe/Warsaw',
+			'Europe/Zagreb',
+			'Europe/Zaporozhye',
+			'Europe/Zurich',
+
+			'Indian/Antananarivo',
+			'Indian/Chagos',
+			'Indian/Christmas',
+			'Indian/Cocos',
+			'Indian/Comoro',
+			'Indian/Kerguelen',
+			'Indian/Mahe',
+			'Indian/Maldives',
+			'Indian/Mauritius',
+			'Indian/Mayotte',
+			'Indian/Reunion',
+
+			'Pacific/Apia',
+			'Pacific/Auckland',
+			'Pacific/Bougainville',
+			'Pacific/Chatham',
+			'Pacific/Chuuk',
+			'Pacific/Easter',
+			'Pacific/Efate',
+			'Pacific/Enderbury',
+			'Pacific/Fakaofo',
+			'Pacific/Fiji',
+			'Pacific/Funafuti',
+			'Pacific/Galapagos',
+			'Pacific/Gambier',
+			'Pacific/Guadalcanal',
+			'Pacific/Guam',
+			'Pacific/Honolulu',
+			'Pacific/Kiritimati',
+			'Pacific/Kosrae',
+			'Pacific/Kwajalein',
+			'Pacific/Majuro',
+			'Pacific/Marquesas',
+			'Pacific/Midway',
+			'Pacific/Nauru',
+			'Pacific/Niue',
+			'Pacific/Norfolk',
+			'Pacific/Noumea',
+			'Pacific/Pago_Pago',
+			'Pacific/Palau',
+			'Pacific/Pitcairn',
+			'Pacific/Pohnpei',
+			'Pacific/Port_Moresby',
+			'Pacific/Rarotonga',
+			'Pacific/Saipan',
+			'Pacific/Tahiti',
+			'Pacific/Tarawa',
+			'Pacific/Tongatapu',
+			'Pacific/Wake',
+			'Pacific/Wallis'
+		);
+
+		return $arTimezones;
 	}
 
 	/**
-	 * Разбирает строку, содержащую время, в соответствии с заданным форматом
+	 * Возвращает список значений для <select>
 	 *
-	 * Алиас функции \DateTime::createFromFormat
-	 * @link http://php.net/manual/ru/datetime.createfromformat.php
+	 * @return array
+	 */
+	public static function getTimezonesSelectValues ()
+	{
+		$arValues = array();
+		Loc::includeLocFile(__FILE__,'ms_core_');
+		foreach (static::getTimezonesList() as $code)
+		{
+			$_code = strtolower(str_replace('/','_',$code));
+			$arValues[] = array(
+				'VALUE' => $code,
+				'NAME' => Loc::getMessage('ms_core_timezone_'.$_code)
+			);
+		}
+
+		return $arValues;
+	}
+
+	/**
+	 * Вызывает функцию установки временнОй зоны по умолчанию. Вызывается в прологе
 	 *
-	 * @param string        $format
-	 * @param string        $time
-	 * @param \DateTimeZone $timezone
+	 * @param string $timezone
+	 */
+	public static function setDefaultTimezone($timezone = 'Europe/Moscow')
+	{
+		if (is_null($timezone) || !in_array($timezone,static::getTimezonesList()))
+		{
+			$timezone = 'Europe/Moscow';
+		}
+
+		date_default_timezone_set($timezone);
+	}
+
+	/**
+	 * Возвращает текущее время, либо переданной в параметре в заданном формате
 	 *
-	 * @return int
+	 * Является обёрткой функции date {@link http://php.net/manual/ru/function.date.php}
+	 *
+	 * @param string $format
+	 * @param int    $timestamp
+	 *
+	 * @return bool|string
 	 * @since 0.2.0
 	 */
-	public function createFromFormatEx ($format, $time, \DateTimeZone $timezone = NULL)
+	public static function getDateTimestamp ($format = "Y-m-d", $timestamp = NULL)
 	{
-		if (is_null ($timezone))
+		$date = new self();
+		if (!is_null ($timestamp))
 		{
-			$date = \DateTime::createFromFormat ($format, $time);
+			$date->setTimestamp($timestamp);
+		}
+
+		return $date->format($format);
+	}
+
+	/**
+	 * Возвращает текущее время или переданное в параметре в формате базы данных
+	 *
+	 * @param int $timestamp
+	 *
+	 * @return bool|string
+	 * @since 0.2.0
+	 */
+	public static function getDateDBTimestamp ($timestamp = NULL)
+	{
+		$date = new self();
+		if (!is_null ($timestamp))
+		{
+			$date->setTimestamp($timestamp);
+		}
+
+		return $date->format('Y-m-d');
+	}
+
+	/**
+	 * Проверяет правильность указанной даты
+	 *
+	 * Верные даты: 'YYYY-MM-DD' и 'YYYY-M-D'
+	 * Существует зависимость от ошибки 2038 года - максимально возможной датой является 31.12.2037
+	 *
+	 * @api
+	 *
+	 * @param string $date Дата
+	 *
+	 * @return bool true - если дата верна, иначе false
+	 * @since 0.2.0
+	 */
+	public static function checkDate ($date)
+	{
+		$arData = explode ('-', $date);
+		if (
+			(intval ($arData[2]) >= 1 && intval ($arData[2]) <= 31)
+			&& (intval ($arData[1]) >= 1 && intval ($arData[1] <= 12))
+			&& (intval ($arData[0]) >= 0000 && intval ($arData[0]) <= 9999)
+		)
+		{
+			return TRUE;
 		} else
 		{
-			$date = \DateTime::createFromFormat ($format, $time, $timezone);
-		}
-
-		if ($date)
-		{
-			return $date->getTimestamp();
-		}
-		else
-		{
-			//msDebugNoAdmin($format);
-			//msDebugNoAdmin($time);
-			//msDebugNoAdmin($date);
-			//msDebugNoAdmin(debug_backtrace());
-			return false;
+			return FALSE;
 		}
 	}
 
-	/**
-	 * Устанавливает произвольную дату из параметров
-	 *
-	 * Алиас функции \DateTime::setDate
-	 * @link  http://php.net/manual/ru/datetime.setdate.php
-	 *
-	 * @param int $year  - год
-	 * @param int $month - месяц
-	 * @param int $day   - день
-	 *
-	 * @return void
-	 * @since 0.2.0
-	 */
-	public function setDate ($year, $month, $day)
-	{
-		$date = parent::setDate(intval($year),intval($month),intval($day));
-		$this->timestamp = $date->getTimestamp();
-	}
-
-	/**
-	 * Устанавливает произвольное время из параметров
-	 *
-	 * Алиас функции \DateTime::setTime
-	 * @link http://php.net/manual/ru/datetime.setdate.php
-	 *
-	 * @param int $hour - часы
-	 * @param int $minute - минуты
-	 * @param int $second - секунды
-	 *
-	 * @return void
-	 * @since 0.2.0
-	 */
-	public function setTime ($hour, $minute, $second=0)
-	{
-		$time = parent::setTime(intval($hour),intval($minute),intval($second));
-		$this->timestamp = $time->getTimestamp();
-	}
+	/** SET */
 
 	/**
 	 * Устанавливает дату из массива
@@ -245,7 +733,7 @@ class Date extends \DateTime
 
 		if (!isset($arDate['DAY']) || is_null ($arDate['DAY']))
 		{
-			$day = $date->getDate ('j');
+			$day = $date->format('j');
 		} else
 		{
 			$day = $arDate['DAY'];
@@ -253,7 +741,7 @@ class Date extends \DateTime
 
 		if (!isset($arDate['MONTH']) || is_null ($arDate['MONTH']))
 		{
-			$month = $date->getDate ('n');
+			$month = $date->format ('n');
 		} else
 		{
 			$month = $arDate['MONTH'];
@@ -261,7 +749,7 @@ class Date extends \DateTime
 
 		if (!isset($arDate['YEAR']) || is_null ($arDate['YEAR']))
 		{
-			$year = $date->getDate ('Y');
+			$year = $date->format ('Y');
 		} else
 		{
 			$year = $arDate['YEAR'];
@@ -269,7 +757,7 @@ class Date extends \DateTime
 
 		if (!isset($arDate['HOUR']) || is_null ($arDate['HOUR']))
 		{
-			$hour = $date->getDate ('G');
+			$hour = $date->format ('G');
 		} else
 		{
 			$hour = $arDate['HOUR'];
@@ -277,7 +765,7 @@ class Date extends \DateTime
 
 		if (!isset($arDate['MIN']) || is_null ($arDate['MIN']))
 		{
-			$min = intval ($date->getDate ('i'));
+			$min = (int)$date->format ('i');
 		} else
 		{
 			$min = $arDate['MIN'];
@@ -291,61 +779,147 @@ class Date extends \DateTime
 			$sec = $arDate['SEC'];
 		}
 
-		$this->timestamp = mktime (
-			$hour,
-			$min,
-			$sec,
-			$month,
-			$day,
-			$year
-		);
+		$this->setDate($year, $month, $day);
+		$this->setTime($hour, $min, $sec);
+
+		return $this;
 	}
 
 	/**
 	 * Устанавливает начало дня (время 00:00:00) для текущей метки времени
 	 * @since 0.2.0
 	 */
-	public function setStartDay()
+	public function setStartDay ()
 	{
-		$this->setTime(0,0);
+		$this->setTime(0, 0);
+
+		return $this;
 	}
 
 	/**
 	 * Устанавливает конец дня (время 23:59:59) для текущей метки времени
 	 * @since 0.2.0
 	 */
-	public function setEndDay()
+	public function setEndDay ()
 	{
-		$this->setTime(23,59,59);
+		$this->setTime(23, 59, 59);
+
+		return $this;
 	}
 
 	/**
-	 * Возвращает текущую метку времени
+	 * Меняет текущую метку времени на завтрашний день
 	 *
-	 * @return int
+	 * @return $this
 	 * @since 0.2.0
 	 */
-	public function getTimestamp ()
+	public function setNextDay ()
 	{
-		return $this->timestamp;
+		$this->modify("+1 days");
+
+		return $this;
 	}
 
 	/**
-	 * Устанавливает метку времени
+	 * Меняет текущую метку времени на вчерашний день
 	 *
-	 * @param int $timestamp
-	 *
-	 * @return void
+	 * @return $this
 	 * @since 0.2.0
 	 */
-	public function setTimestamp ($timestamp=null)
+	public function setPrevDay ()
 	{
-		if (!is_null($timestamp))
-		{
-			$this->timestamp = $timestamp;
-			$this->dateTimeDB = $this->getDateTimeDB();
-		}
+		$this->modify("-1 days");
+
+		return $this;
 	}
+
+	/**
+	 * Меняет текущую метку времени на следующий месяц
+	 *
+	 * @return $this
+	 * @since 0.2.0
+	 */
+	public function setNextMonth()
+	{
+		$this->modify("+1 month");
+
+		return $this;
+	}
+
+	/**
+	 * Меняет текущую метку премени на вредыдущий месяц
+	 *
+	 * @return $this
+	 * @since 0.2.0
+	 */
+	public function setPrevMonth()
+	{
+		$this->modify("-1 month");
+
+		return $this;
+	}
+
+	/**
+	 * Меняет текущую метку времени на следующий год
+	 *
+	 * @return $this
+	 * @since 0.2.0
+	 */
+	public function setNextYear()
+	{
+		$this->modify("+1 year");
+
+		return $this;
+	}
+
+	/**
+	 * Меняет текущую метку времени на предыдущий год
+	 *
+	 * @return $this
+	 * @since 0.2.0
+	 */
+	public function setPrevYear()
+	{
+		$this->modify("-1 year");
+
+		return $this;
+	}
+
+	/**
+	 * Меняет текущую метку времени, устанавливая первый день текущего месяца
+	 * @since 0.2.0
+	 */
+	public function setFirstDayOfMonth()
+	{
+		$this->modify('first day of '.$this->format('F').' '.$this->format('Y'));
+
+		return $this;
+	}
+
+	/**
+	 * Меняет текущую метку времени, устанавливая последний день текущего месяца
+	 * @since 0.2.0
+	 */
+	public function setLastDayOfMonth()
+	{
+		$this->modify('last day of '.$this->format('F').' '.$this->format('Y'));
+
+		return $this;
+	}
+
+	/**
+	 * Меняет текущую метку времени, устанавливая первый день текущего года
+	 * @since 0.2.0
+	 */
+	public function setFirstDayOfYear()
+	{
+		$this->setDate($this->format('Y'),1,1);
+
+		return $this;
+	}
+
+
+	/** GET */
 
 	/**
 	 * Возвращает текущую или переданную в параметре метку времени в заданном формате
@@ -360,12 +934,15 @@ class Date extends \DateTime
 	 */
 	public function getDate ($format = "Y-m-d", $timestamp = NULL)
 	{
-		if (is_null ($timestamp))
+		if (!is_null($timestamp))
 		{
-			$timestamp = $this->getTimestamp ();
+			$tmp = new self();
+			$tmp->setTimestamp($timestamp);
+
+			return $tmp->format($format);
 		}
 
-		return date ($format, $timestamp);
+		return $this->format($format);
 	}
 
 	/**
@@ -378,12 +955,9 @@ class Date extends \DateTime
 	 */
 	public function getDateSite ($timestamp = NULL)
 	{
-		if (is_null ($timestamp))
-		{
-			$timestamp = $this->getTimestamp ();
-		}
+		$formatSiteDate = Application::getInstance()->getSettings()->getSiteDate();
 
-		return date ("d.m.Y", $timestamp);
+		return $this->getDate($formatSiteDate,$timestamp);
 	}
 
 	/**
@@ -396,12 +970,9 @@ class Date extends \DateTime
 	 */
 	public function getDateTimeSite ($timestamp = NULL)
 	{
-		if (is_null ($timestamp))
-		{
-			$timestamp = $this->getTimestamp ();
-		}
+		$formatDateTimeSite = Application::getInstance()->getSettings()->getSiteDateTime();
 
-		return date ("d.m.Y H:i:s", $timestamp);
+		return $this->getDate($formatDateTimeSite,$timestamp);
 	}
 
 	/**
@@ -414,12 +985,7 @@ class Date extends \DateTime
 	 */
 	public function getDateDB ($timestamp = NULL)
 	{
-		if (is_null ($timestamp))
-		{
-			$timestamp = $this->getTimestamp ();
-		}
-
-		return date ("Y-m-d", $timestamp);
+		return $this->getDate('Y-m-d',$timestamp);
 	}
 
 	/**
@@ -432,51 +998,7 @@ class Date extends \DateTime
 	 */
 	public function getDateTimeDB ($timestamp = NULL)
 	{
-		if (is_null ($timestamp))
-		{
-			$timestamp = $this->getTimestamp ();
-		}
-
-		return date ("Y-m-d H:i:s", $timestamp);
-	}
-
-	/**
-	 * Проверяет, является текущая или переданная в параметре метка времени сегодняшним днем
-	 *
-	 * @param Date $date
-	 *
-	 * @return bool
-	 * @since 0.2.0
-	 */
-	public function isToday($date=null)
-	{
-		if (is_null($date))
-		{
-			$date = $this;
-		}
-
-		$date->setTime(0,0);
-		$checkDate = new Date();
-		$checkDate->setTime(0,0);
-
-		return ($date->timestamp == $checkDate->timestamp);
-	}
-
-	/**
-	 * Проверяет совпадают ли даты текущей метки времени и переданной в параметре
-	 *
-	 * @param Date $date
-	 *
-	 * @return bool
-	 * @since 0.2.0
-	 */
-	public function isDateEqual (Date $date)
-	{
-		$date->setTime(0,0);
-		$tmp = $this;
-		$tmp->setTime(0,0);
-
-		return ($date->getTimestamp() == $tmp->getTimestamp());
+		return $this->getDate('Y-m-d H:i:s',$timestamp);
 	}
 
 	/**
@@ -489,186 +1011,22 @@ class Date extends \DateTime
 	 */
 	public function getTime ($timestamp = NULL)
 	{
-		if (is_null ($timestamp))
-		{
-			$timestamp = $this->getTimestamp ();
-		}
-
-		return date ("H:i:s", $timestamp);
+		return $this->getDate('H:i:s',$timestamp);
 	}
 
 	/**
-	 * Меняет текущую метку времени на завтрашний день
+	 * Возвращает время в формате сайта для текущей даты или для переданного timestamp
 	 *
-	 * @return $this
-	 * @since 0.2.0
-	 */
-	public function nextDay ()
-	{
-		$this->setTimestamp(strtotime ("+1 days", $this->getTimestamp ()));
-		return $this;
-	}
-
-	/**
-	 * Меняет текущую метку времени на вчерашний день
-	 *
-	 * @return $this
-	 * @since 0.2.0
-	 */
-	public function prevDay ()
-	{
-		$this->setTimestamp(strtotime ("-1 days", $this->getTimestamp ()));
-		return $this;
-	}
-
-	/**
-	 * Меняет текущую метку времени на следующий месяц
-	 *
-	 * @return $this
-	 * @since 0.2.0
-	 */
-	public function nextMonth()
-	{
-		$this->setTimestamp(strtotime('+1 month', $this->getTimestamp()));
-		return $this;
-	}
-
-	/**
-	 * Меняет текущую метку премени на вредыдущий месяц
-	 *
-	 * @return $this
-	 * @since 0.2.0
-	 */
-	public function prevMonth()
-	{
-		$this->setTimestamp(strtotime('-1 month', $this->getTimestamp()));
-		return $this;
-	}
-
-	/**
-	 * Меняет текущую метку времени на следующий год
-	 *
-	 * @return $this
-	 * @since 0.2.0
-	 */
-	public function nextYear()
-	{
-		$this->setTimestamp(strtotime('+1 year', $this->getTimestamp()));
-		return $this;
-	}
-
-	/**
-	 * Меняет текущую метку времени на предыдущий год
-	 *
-	 * @return $this
-	 * @since 0.2.0
-	 */
-	public function prevYear()
-	{
-		$this->setTimestamp(strtotime('-1 year', $this->getTimestamp()));
-		return $this;
-	}
-
-	/**
-	 * Меняет текущую метку времени, устанавливая первый день текущего месяца
-	 * @since 0.2.0
-	 */
-	public function setFirstDayOfMonth()
-	{
-		$phrase = 'first day of '.$this->getDate('F').' '.$this->getDate('Y');
-		$this->setTimestamp(strtotime($phrase));
-	}
-
-	/**
-	 * Меняет текущую метку времени, устанавливая последний день текущего месяца
-	 * @since 0.2.0
-	 */
-	public function setLastDayOfMonth()
-	{
-		$phrase = 'last day of '.$this->getDate('F').' '.$this->getDate('Y');
-		$this->setTimestamp(strtotime($phrase));
-	}
-
-	/**
-	 * Меняет текущую метку времени, устанавливая первый день текущего года
-	 * @since 0.2.0
-	 */
-	public function setFirstDayOfYear()
-	{
-		$dateTime = $this->getDateTimeDB();
-		list($date,$time) = explode(' ',$dateTime);
-		list($year,,) = explode('-',$date);
-		$day = $month = '01';
-		$strDate = $year.'-'.$month.'-'.$day.' '.$time;
-		$this->setTimestamp($this->createFromFormatEx('Y-m-d H:i:s',$strDate));
-	}
-
-	/**
-	 * Возвращает true, если сегодняшний день выходной
-	 *
-	 * Если параметр отсутствует или равен true, а также если модуль dates установлен, проверка осуществляется с
-	 * использованием метода этого модуля. Это позволит считать выходными праздничные дни, а не только субботу и
-	 * воскресенье. Если передан параметр false, метод фактически смотрит суббота сегодня или воскресенье.
-	 *
-	 * @param bool $fromDates - флаг работы с использованием модуля dates
-	 *
-	 * @return bool
-	 * @since 0.2.0
-	 */
-	public function isWeekEnd ($fromDates=true)
-	{
-		if ($fromDates && Loader::issetModule('dates') && Loader::includeModule('dates'))
-		{
-			return WorkCalendar::isWeekEnd($this);
-		}
-		else
-		{
-			if ($this->getDate('w')>=1 && $this->getDate('w')<=5)
-			{
-				return false;
-			}
-			else
-			{
-				return true;
-			}
-		}
-	}
-
-	/**
-	 * Обертка функции strtotime для текущей метки времени, либо переданной в параметре
-	 *
-	 * Параметры в функции идентичны strtotime {@link http://php.net/manual/ru/function.strtotime.php}
-	 * за исключением метки времени, так как если она не передана, используется метка времени объекта,
-	 * а не текущее время
-	 *
-	 * @param string $time - строковое представление времени
-	 * @param int $now - метка времени
-	 *
-	 * @return $this
-	 * @since 0.2.0
-	 */
-	public function strToTime ($time, $now = NULL)
-	{
-		if (is_null ($now))
-		{
-			$now = $this->getTimestamp ();
-		}
-		$this->setTimestamp(strtotime ($time, $now));
-
-		return $this;
-	}
-
-	/**
-	 * Возвращает строковое представление объекта в формате даты сайта
+	 * @param int $timestamp - метка времени unix
 	 *
 	 * @return string
-	 * @since 0.2.0
 	 */
-	public function __toString ()
+	public function getTimeSite ($timestamp = NULL)
 	{
-		return $this->getDateSite ();
-	}
+		$formatTimeSite = Application::getInstance()->getSettings()->getSiteTime();
 
+		return $this->getDate($formatTimeSite,$timestamp);
+	}
 
 	/**
 	 * Возвращает краткое наименование дня недели
@@ -685,11 +1043,11 @@ class Date extends \DateTime
 	{
 		if (is_null($day))
 		{
-			$day = intval($this->getDate('w'));
+			$day = $this->format('w');
 		}
 		Loc::includeLocFile(__FILE__,'ms_core_');
 
-		switch (intval($day))
+		switch ((int)$day)
 		{
 			case 0:
 				return Loc::getModuleMessage('core','date_su');
@@ -726,11 +1084,11 @@ class Date extends \DateTime
 	{
 		if (is_null($day))
 		{
-			$day = intval($this->getDate('w'));
+			$day = $this->format('w');
 		}
 		Loc::includeLocFile(__FILE__,'ms_core_');
 
-		switch (intval($day))
+		switch ((int)$day)
 		{
 			case 0:
 				return Loc::getModuleMessage('core','date_sunday');
@@ -767,11 +1125,11 @@ class Date extends \DateTime
 	{
 		if (is_null($month))
 		{
-			$month = intval($this->getDate('n'));
+			$month = $this->format('n');
 		}
 		Loc::includeLocFile(__FILE__,'ms_core_');
 
-		switch ($month)
+		switch ((int)$month)
 		{
 			case 1:
 				return Loc::getModuleMessage('core','date_january');
@@ -818,11 +1176,11 @@ class Date extends \DateTime
 	{
 		if (is_null($month))
 		{
-			$month = intval($this->getDate('n'));
+			$month = $this->format('n');
 		}
 		Loc::includeLocFile(__FILE__,'ms_core_');
 
-		switch ($month)
+		switch ((int)$month)
 		{
 			case 1:
 				return Loc::getModuleMessage('core','date_accusative_january');
@@ -869,11 +1227,11 @@ class Date extends \DateTime
 	{
 		if (is_null($month))
 		{
-			$month = intval($this->getDate('n'));
+			$month = $this->format('n');
 		}
 		Loc::includeLocFile(__FILE__,'ms_core_');
 
-		switch ($month)
+		switch ((int)$month)
 		{
 			case 1:
 				return Loc::getModuleMessage('core','date_short_jan');
@@ -904,72 +1262,112 @@ class Date extends \DateTime
 		}
 	}
 
+
+	/** IS */
+
 	/**
-	 * Возвращает текущее время, либо переданной в параметре в заданном формате
+	 * Проверяет, является текущая или переданная в параметре метка времени сегодняшним днем
 	 *
-	 * Является обёрткой функции date {@link http://php.net/manual/ru/function.date.php}
+	 * @param Date $date
 	 *
-	 * @param string $format
-	 * @param int    $timestamp
-	 *
-	 * @return bool|string
+	 * @return bool
 	 * @since 0.2.0
 	 */
-	public static function getDateTimestamp ($format = "Y-m-d", $timestamp = NULL)
+	public function isToday($date=null)
 	{
-		if (is_null ($timestamp))
+		if (is_null($date))
 		{
-			$timestamp = time ();
+			$date = $this;
 		}
+		$now = new self();
 
-		return date ($format, $timestamp);
+		return ($date->format('Y-m-d') == $now->format('Y-m-d'));
 	}
 
 	/**
-	 * Возвращает текущее время или переданное в параметре в формате базы данных
+	 * Проверяет совпадают ли даты текущей метки времени и переданной в параметре
 	 *
-	 * @param int $timestamp
+	 * @param Date $date
 	 *
-	 * @return bool|string
+	 * @return bool
 	 * @since 0.2.0
 	 */
-	public static function getDateDBTimestamp ($timestamp = NULL)
+	public function isDateEqual (Date $date)
 	{
-		if (is_null ($timestamp))
-		{
-			$timestamp = time ();
-		}
-
-		return date ("Y-m-d", $timestamp);
+		return ($date->format('Y-m-d') == $this->format('Y-m-d'));
 	}
 
 	/**
-	 * Проверяет правильность указанной даты
+	 * Возвращает true, если сегодняшний день выходной
 	 *
-	 * Верные даты: 'YYYY-MM-DD' и 'YYYY-M-D'
-	 * Существует зависимость от ошибки 2038 года - максимально возможной датой является 31.12.2037
+	 * Если параметр отсутствует или равен true, а также если модуль dates установлен, проверка осуществляется с
+	 * использованием метода этого модуля. Это позволит считать выходными праздничные дни, а не только субботу и
+	 * воскресенье. Если передан параметр false, метод фактически смотрит суббота сегодня или воскресенье.
 	 *
-	 * @api
+	 * @param bool $fromDates - флаг работы с использованием модуля dates
 	 *
-	 * @param string $date Дата
-	 *
-	 * @return bool true - если дата верна, иначе false
+	 * @return bool
 	 * @since 0.2.0
 	 */
-	public static function checkDate ($date)
+	public function isWeekEnd ($fromDates=true)
 	{
-		$arData = explode ('-', $date);
-		if (
-			(intval ($arData[2]) >= 1 && intval ($arData[2]) <= 31)
-			&& (intval ($arData[1]) >= 1 && intval ($arData[1] <= 12))
-			&& (intval ($arData[0]) >= 1970 && intval ($arData[0]) <= 2037)
-			//TODO: Подправить код после решения вопроса с ошибкой 2038 года
-		)
+		if ($fromDates && Loader::issetModule('ms.dates') && Loader::includeModule('ms.dates'))
 		{
-			return TRUE;
-		} else
-		{
-			return FALSE;
+			return WorkCalendar::isWeekEnd($this);
 		}
+		else
+		{
+			if ($this->format('w')>=1 && $this->format('w')<=5)
+			{
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+	}
+
+
+	/** OTHER */
+
+	/**
+	 * Обертка функции strtotime для текущей метки времени, либо переданной в параметре
+	 *
+	 * Параметры в функции идентичны strtotime {@link http://php.net/manual/ru/function.strtotime.php}
+	 * за исключением метки времени, так как если она не передана, используется метка времени объекта,
+	 * а не текущее время
+	 *
+	 * @param string $time - строковое представление времени
+	 * @param int $now - метка времени
+	 *
+	 * @return $this
+	 * @since 0.2.0
+	 */
+	public function strToTime ($time, $now = NULL)
+	{
+		if (!is_null ($now))
+		{
+			$tmp = new self();
+			$tmp->setTimestamp($now);
+			$tmp->modify($time);
+
+			return $tmp;
+		}
+		return $this->modify($time);
+	}
+
+
+	/** MAGIC */
+
+	/**
+	 * Возвращает строковое представление объекта в формате даты сайта
+	 *
+	 * @return string
+	 * @since 0.2.0
+	 */
+	public function __toString ()
+	{
+		return $this->getDateSite ();
 	}
 }

@@ -11,8 +11,6 @@
 
 namespace MSergeev\Core\Entity\Db\Fields;
 
-use MSergeev\Core\Exception\ArgumentNullException;
-use MSergeev\Core\Exception\ArgumentOutOfRangeException;
 use MSergeev\Core\Entity\Type\Date;
 use MSergeev\Core\Exception\ArgumentTypeException;
 

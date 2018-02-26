@@ -12,6 +12,8 @@
 
 namespace MSergeev\Core\Entity;
 
+use MSergeev\Core\Entity\Type\Date;
+
 class Settings
 {
 	/**
@@ -507,12 +509,72 @@ class Settings
 	}
 
 	/**
-	 * @deprecated
-	 * @return bool
+	 * Возвращает временнУю зону (Timezone)
+	 *
+	 * @return string
 	 */
-	public function isAutoLoadPackages ()
+	public function getTimezone ()
 	{
-		return false;
+		if (isset($this->arSettings['time']['timezone'])
+			&& in_array($this->arSettings['time']['timezone'],Date::getTimezonesList()))
+		{
+			return $this->arSettings['time']['timezone'];
+		}
+		else
+		{
+			return 'Europe/Moscow';
+		}
+	}
+
+	/**
+	 * Возвращает формат показа даты
+	 *
+	 * @return string
+	 */
+	public function getSiteDate ()
+	{
+		if (isset($this->arSettings['time']['sitedate']))
+		{
+			return $this->arSettings['time']['sitedate'];
+		}
+		else
+		{
+			return 'd.m.Y';
+		}
+	}
+
+	/**
+	 * Возвращает формат показа даты и веремени
+	 *
+	 * @return string
+	 */
+	public function getSiteDateTime()
+	{
+		if (isset($this->arSettings['time']['sitedatetime']))
+		{
+			return $this->arSettings['time']['sitedatetime'];
+		}
+		else
+		{
+			return 'd.m.Y H:i:s';
+		}
+	}
+
+	/**
+	 * Возвращает формат показа времени
+	 *
+	 * @return string
+	 */
+	public function getSiteTime ()
+	{
+		if (isset($this->arSettings['time']['sitetime']))
+		{
+			return $this->arSettings['time']['sitetime'];
+		}
+		else
+		{
+			return 'H:i:s';
+		}
 	}
 
 	/**

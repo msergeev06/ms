@@ -1,21 +1,21 @@
 <?php
 /**
- * MSergeev\Core\Entity\Component
+ * Ms\Core\Entity\Component
  * Основной объект компонентов. Все компоненты наследуют его или его потомков
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2017 Mikhail Sergeev
- * @since
+ * @since 0.2.0
  */
 
-namespace MSergeev\Core\Entity;
-use MSergeev\Core\Exception;
+namespace Ms\Core\Entity;
+use Ms\Core\Exception;
 
 /**
  * Class Component
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity
  */
 class Component

@@ -1,20 +1,20 @@
 <?php
 /**
- * MSergeev\Core\Entity\ErrorCollection
+ * Ms\Core\Entity\ErrorCollection
  * Объект коллекции ошибок
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2017 Mikhail Sergeev
  * @since 0.2.0
  */
 
-namespace MSergeev\Core\Entity;
+namespace Ms\Core\Entity;
 
 /**
  * Class ErrorCollection
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity
  * @extends Type\Dictionary
  */

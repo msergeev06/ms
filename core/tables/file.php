@@ -1,9 +1,9 @@
 <?php
 
-namespace MSergeev\Core\Tables;
+namespace Ms\Core\Tables;
 
-use MSergeev\Core\Entity\Db\Fields;
-use MSergeev\Core\Lib;
+use Ms\Core\Entity\Db\Fields;
+use Ms\Core\Lib;
 
 class FileTable extends Lib\DataManager
 {
@@ -12,7 +12,7 @@ class FileTable extends Lib\DataManager
 		return 'Загруженные файлы';
 	}
 
-	public static function getMap ()
+	protected static function getMap ()
 	{
 		return array(
 			new Fields\IntegerField('ID',array(

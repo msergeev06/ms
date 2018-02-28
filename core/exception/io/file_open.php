@@ -1,6 +1,6 @@
 <?php
 
-namespace MSergeev\Core\Exception\Io;
+namespace Ms\Core\Exception\Io;
 
 class FileOpenException extends IoException
 {

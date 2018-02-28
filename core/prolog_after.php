@@ -3,12 +3,12 @@
  * Prolog After
  * Загрушается все, что отвечает за вывод информации
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2017 Mikhail Sergeev
  */
 
-use MSergeev\Core\Entity\Application;
+use Ms\Core\Entity\Application;
 
 $app = Application::getInstance();
 
@@ -26,7 +26,7 @@ $app->startBufferPage();
 
 $templatePath = $app->getSettings()->getTemplatesRoot().'/'.$app->getSiteTemplate();
 
-\MSergeev\Core\Lib\Events::runEvents('core','OnPrologAfter',array(&$templatePath));
+\Ms\Core\Lib\Events::runEvents('core','OnPrologAfter',array(&$templatePath));
 
 define('SITE_TEMPLATE_PATH',$app->getSitePath($templatePath));
 define('MS_PROLOG_INCLUDED',true);

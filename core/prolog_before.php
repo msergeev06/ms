@@ -3,12 +3,12 @@
  * Prolog Before
  * Загружается ядро и основной функционал
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2017 Mikhail Sergeev
  */
 
-use MSergeev\Core\Entity;
+use Ms\Core\Entity;
 
 $start = microtime();
 $GLOBALS["MS_STATE"] = "PB";
@@ -29,16 +29,17 @@ $application->setTimes('START_EXEC_PROLOG_BEFORE_1',$start);
 $application->setState('PB');
 $application->loadSettings();
 require_once(dirname(__FILE__).'/include.php');
-set_error_handler('\MSergeev\Core\Lib\ErrorHandler::handler');
-\MSergeev\Core\Lib\Events::runEvents('core','OnPrologBefore');
+set_error_handler('\Ms\Core\Lib\ErrorHandler::handler');
+defined('MS_AUTOLOAD_CLASSES_ENABLED',true);
+\Ms\Core\Lib\Events::runEvents('core','OnPrologBefore');
 if ($arAutoLoadModules = $application->getSettings()->getAutoLoadModules())
 {
 	foreach ($arAutoLoadModules as $module)
 	{
-		if (\MSergeev\Core\Lib\Loader::issetModule($module))
+		if (\Ms\Core\Lib\Loader::issetModule($module))
 		{
-			\MSergeev\Core\Lib\Loader::includeModule($module);
+			\Ms\Core\Lib\Loader::includeModule($module);
 		}
 	}
 }
-\MSergeev\Core\Lib\Events::runEvents('core','OnProlog');
+\Ms\Core\Lib\Events::runEvents('core','OnProlog');

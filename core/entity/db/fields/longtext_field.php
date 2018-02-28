@@ -1,19 +1,20 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\Fields\LongtextField
+ * Ms\Core\Entity\Db\Fields\LongtextField
  * Сущность поля базы данных, содержащего текст
  *
- * @package MSergeev\Core
- * @subpackage Entity
+ * @package Ms\Core
+ * @subpackage Entity\Db\Fields
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Entity\Db\Fields;
+namespace Ms\Core\Entity\Db\Fields;
 
 /**
  * Class LongtextField
- * @package MSergeev\Core\Entity
+ * @package Ms\Core
+ * @subpackage Entity\Db\Fields
  * @extends StringField
  *
  * @var int                 $size                   Размер типа varchar базы данных

@@ -1,9 +1,9 @@
 <?php
 
-namespace MSergeev\Core\Lib\IO;
+namespace Ms\Core\Lib\IO;
 
-use MSergeev\Core\Lib;
-use MSergeev\Core\Exception\Io\InvalidPathException;
+use Ms\Core\Lib;
+use Ms\Core\Exception\Io\InvalidPathException;
 
 class Path
 {

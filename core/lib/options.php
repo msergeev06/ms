@@ -1,21 +1,21 @@
 <?php
 /**
- * MSergeev\Core\Lib\Options
+ * Ms\Core\Lib\Options
  * Опции ядра и модулей.
  * Используется для хранения и получения различных опций ядра и установленных модулей
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  * @since 0.1.0
  */
 
-namespace MSergeev\Core\Lib;
+namespace Ms\Core\Lib;
 
-use MSergeev\Core\Entity\Db\Query;
-use MSergeev\Core\Entity\Application;
-use MSergeev\Core\Tables;
+use Ms\Core\Entity\Db\Query;
+use Ms\Core\Entity\Application;
+use Ms\Core\Tables;
 
 class Options
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace MSergeev\Core\Tables;
+namespace Ms\Core\Tables;
 
-use MSergeev\Core\Lib;
-use MSergeev\Core\Entity\Db\Fields;
+use Ms\Core\Lib;
+use Ms\Core\Entity\Db\Fields;
 
 class UsersPropertiesTable extends Lib\DataManager
 {
@@ -12,7 +12,7 @@ class UsersPropertiesTable extends Lib\DataManager
 		return 'Свойства пользователей';
 	}
 
-	public static function getMap ()
+	protected static function getMap ()
 	{
 		return array(
 			Lib\TableHelper::primaryField(),

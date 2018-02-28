@@ -1,9 +1,9 @@
 <?php
 /**
- * MSergeev\Core\Lib\Loader
+ * Ms\Core\Lib\Loader
  * Класс для подключения модулей
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
@@ -11,11 +11,11 @@
  * @since 0.1.0
  */
 
-namespace MSergeev\Core\Lib;
+namespace Ms\Core\Lib;
 
-use MSergeev\Core\Entity\Application;
-use MSergeev\Core\Entity\Type\Date;
-use MSergeev\Core\Exception;
+use Ms\Core\Entity\Application;
+use Ms\Core\Entity\Type\Date;
+use Ms\Core\Exception;
 
 class Loader
 {

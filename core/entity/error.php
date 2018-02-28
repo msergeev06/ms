@@ -1,16 +1,16 @@
 <?php
 /**
- * MSergeev\Core\Entity\Error
+ * Ms\Core\Entity\Error
  * Объект ошибки
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2017 Mikhail Sergeev
  * @since 0.2.0
  */
 
-namespace MSergeev\Core\Entity;
+namespace Ms\Core\Entity;
 
 class Error
 {

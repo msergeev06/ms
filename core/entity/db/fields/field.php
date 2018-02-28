@@ -1,19 +1,22 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\Fields\Field
+ * Ms\Core\Entity\Db\Fields\Field
  * Сущность поля базы данных
  *
- * @package MSergeev\Core
+ * @package Ms\Core
+ * @subpackage Entity\Db\Fields
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2017 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Entity\Db\Fields;
-use MSergeev\Core\Exception;
+namespace Ms\Core\Entity\Db\Fields;
+
+use Ms\Core\Exception;
 
 /**
  * Class Field
- * @package MSergeev\Core\Entity
+ * @package MSergeev\Core
+ * @subpackage Entity\Db\Fields
 
  * @var string                      $name                   Название поля в API
  * @var string                      $dataType               Тип поля в базе данных

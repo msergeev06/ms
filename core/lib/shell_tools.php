@@ -1,6 +1,6 @@
 <?php
 /**
- * MSergeev
+ * Ms\Core\Lib\ShellTools
  *
  * Инструменты для работы в shell
  *
@@ -11,7 +11,7 @@
  * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/shell_tools/start
  */
 
-namespace MSergeev\Core\Lib;
+namespace Ms\Core\Lib;
 
 class ShellTools
 {

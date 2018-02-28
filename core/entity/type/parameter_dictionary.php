@@ -1,17 +1,17 @@
 <?php
 /**
- * MSergeev\Core\Entity\Type\ParameterDictionary
+ * Ms\Core\Entity\Type\ParameterDictionary
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity\Type
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2018 Mikhail Sergeev
  * @since 0.2.0
  */
 
-namespace MSergeev\Core\Entity\Type;
+namespace Ms\Core\Entity\Type;
 
-use MSergeev\Core\Exception\NotSupportedException;
+use Ms\Core\Exception\NotSupportedException;
 
 class ParameterDictionary extends Dictionary
 {

@@ -1,6 +1,6 @@
-<?
+<?php
 
-use MSergeev\Core\Entity\Application;
+use \Ms\Core\Entity\Application;
 
 /**
  * nf_pp
@@ -726,8 +726,8 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 }
 
 /**
- * MSergeev
- * @package core
+ * Ms
+ * @package Ms\Core
  * @author Mikhail Sergeev
  * @copyright 2016 Mikhail Sergeev
  */

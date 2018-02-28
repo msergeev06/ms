@@ -1,23 +1,23 @@
 <?php
 /**
- * MSergeev\Core\Entity\Request
+ * Ms\Core\Entity\Request
  * ББазовый класс запроса
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2017 Mikhail Sergeev
  * @since 0.2.0
  */
 
-namespace MSergeev\Core\Entity;
+namespace Ms\Core\Entity;
 
-use MSergeev\Core\Lib;
-use MSergeev\Core\Exception;
+use Ms\Core\Lib;
+use Ms\Core\Exception;
 
 /**
  * Class Request Содержит текущий запрос
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity
  * @abstract
  */

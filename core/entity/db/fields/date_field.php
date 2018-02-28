@@ -1,22 +1,22 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\Fields\DateField
+ * Ms\Core\Entity\Db\Fields\DateField
  * Сущность поля базы данных, содержащего дату
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Entity\Db\Fields;
+namespace Ms\Core\Entity\Db\Fields;
 
-use MSergeev\Core\Entity\Type\Date;
-use MSergeev\Core\Exception\ArgumentTypeException;
+use Ms\Core\Entity\Type\Date;
+use Ms\Core\Exception\ArgumentTypeException;
 
 /**
  * Class DateField
- * @package MSergeev\Core\Entity\Db\Fields
+ * @package Ms\Core\Entity\Db\Fields
  * @extends ScalarField
  *
  * @var bool                $is_primary             Поле является PRIMARY
@@ -76,7 +76,7 @@ class DateField extends ScalarField
 		parent::__construct($name, $parameters);
 
 		$this->dataType = 'date';
-		$this->fieldType = 'MSergeev\Core\Entity\Type\Date';
+		$this->fieldType = 'Ms\Core\Entity\Type\Date';
 	}
 
 	/**

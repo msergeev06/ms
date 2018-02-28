@@ -1,19 +1,20 @@
 <?php
 /**
- * MSergeev\Core\Entity\IntegerField
+ * Ms\Core\Entity\Db\Fields\IntegerField
  * Сущность поля базы данных, содержащего целое число
  *
- * @package MSergeev\Core
- * @subpackage Entity
+ * @package Ms\Core
+ * @subpackage Entity\Db\Fields
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Entity\Db\Fields;
+namespace Ms\Core\Entity\Db\Fields;
 
 /**
  * Class IntegerField
- * @package MSergeev\Core\Entity
+ * @package Ms\Core
+ * @subpackage Entity\Db\Fields
  * @extends ScalarField
  *
  * @var int                 $size                   Размерность поля int базы данных

@@ -1,22 +1,22 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\Query\QuerySelect
+ * Ms\Core\Entity\Db\Query\QuerySelect
  * Сущность SELECT запроса к базе данных
  *
- * @package MSergeev\Core
- * @subpackage Entity
+ * @package Ms\Core
+ * @subpackage Entity\Db\Query
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2018 Mikhail Sergeev
  * @since 0.2.0
  */
 
-namespace MSergeev\Core\Entity\Db\Query;
+namespace Ms\Core\Entity\Db\Query;
 
-use MSergeev\Core\Exception;
-use MSergeev\Core\Lib\DataManager;
-use MSergeev\Core\Entity\Db\SqlHelper;
-use MSergeev\Core\Entity\Db\Fields;
-use MSergeev\Core\Lib\Tools;
+use Ms\Core\Exception;
+use Ms\Core\Lib\DataManager;
+use Ms\Core\Entity\Db\SqlHelper;
+use Ms\Core\Entity\Db\Fields;
+use Ms\Core\Lib\Tools;
 
 class QuerySelect extends QueryBase
 {

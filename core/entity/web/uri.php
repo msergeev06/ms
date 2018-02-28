@@ -1,15 +1,15 @@
 <?php
 /**
- * MSergeev\Core\Entity\Web\Uri
+ * Ms\Core\Entity\Web\Uri
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity\Web
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2018 Mikhail Sergeev
  * @since 0.2.0
  */
 
-namespace MSergeev\Core\Entity\Web;
+namespace Ms\Core\Entity\Web;
 
 class Uri
 {

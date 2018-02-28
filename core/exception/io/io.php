@@ -1,8 +1,8 @@
 <?php
 
-namespace MSergeev\Core\Exception\Io;
+namespace Ms\Core\Exception\Io;
 
-use MSergeev\Core\Exception\SystemException;
+use Ms\Core\Exception\SystemException;
 
 /**
  * This exception is thrown when an I/O error occurs.

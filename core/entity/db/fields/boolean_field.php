@@ -1,19 +1,20 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\Fields\BooleanField
+ * Ms\Core\Entity\Db\Fields\BooleanField
  * Сущность поля базы данных, содержащего булево значение
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Entity\Db\Fields;
+namespace Ms\Core\Entity\Db\Fields;
 
 /**
  * Class BooleanField
- * @package MSergeev\Core\Entity
+ * @package Ms\Core
+ * @subpackage Entity
  * @extends ScalarField
  *
  * @var array               $values                 Варианты значений поля

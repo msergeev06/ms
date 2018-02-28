@@ -1,6 +1,6 @@
 <?php
 
-namespace MSergeev\Core\Exception;
+namespace Ms\Core\Exception;
 
 /**
  * Exception is thrown when "empty" value is passed to a function that does not accept it as a valid argument.

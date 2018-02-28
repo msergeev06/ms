@@ -1,6 +1,6 @@
 <?php
 
-namespace MSergeev\Core\Exception;
+namespace Ms\Core\Exception;
 
 /**
  * Exception is thrown when function argument is not valid.

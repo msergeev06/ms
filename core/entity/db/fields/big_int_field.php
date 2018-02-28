@@ -1,19 +1,19 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\Fields\BigIntField
+ * Ms\Core\Entity\Db\Fields\BigIntField
  * Сущность поля базы данных, содержащего большое целое число
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Entity\Db\Fields;
+namespace Ms\Core\Entity\Db\Fields;
 
 /**
  * Class BigIntField
- * @package MSergeev\Core\Entity
+ * @package Ms\Core\Entity
  * @extends IntegerField
  *
  * @var int                 $size                   Размерность поля bigint базы данных

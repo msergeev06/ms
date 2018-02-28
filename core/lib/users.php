@@ -1,21 +1,21 @@
 <?php
 /**
- * MSergeev\Core\Lib\Users
+ * Ms\Core\Lib\Users
  * Обработка данных пользователей
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  * @since 0.1.0
  */
 
-namespace MSergeev\Core\Lib;
+namespace Ms\Core\Lib;
 
-use MSergeev\Core\Entity\Application;
-use MSergeev\Core\Entity\Db\Query;
-use MSergeev\Core\Tables;
-use MSergeev\Core\Entity\Db\SqlHelper;
+use Ms\Core\Entity\Application;
+use Ms\Core\Entity\Db\Query;
+use Ms\Core\Tables;
+use Ms\Core\Entity\Db\SqlHelper;
 
 class Users
 {

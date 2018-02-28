@@ -1,9 +1,9 @@
 <?php
 /**
- * MSergeev\Core\Lib\TableHelper
+ * Ms\Core\Lib\TableHelper
  * Помощник обработки данных таблиц
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
@@ -11,9 +11,9 @@
  * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/table_helper/start
  */
 
-namespace MSergeev\Core\Lib;
+namespace Ms\Core\Lib;
 
-use \MSergeev\Core\Entity\Db\Fields;
+use \Ms\Core\Entity\Db\Fields;
 
 class TableHelper
 {

@@ -1,10 +1,10 @@
 <?php
 
-namespace MSergeev\Core\Tables;
+namespace Ms\Core\Tables;
 
-use MSergeev\Core\Lib\DataManager;
-use MSergeev\Core\Entity\Db\Fields;
-use MSergeev\Core\Lib\TableHelper;
+use Ms\Core\Lib\DataManager;
+use Ms\Core\Entity\Db\Fields;
+use Ms\Core\Lib\TableHelper;
 
 class EventHandlersTable extends DataManager
 {
@@ -13,7 +13,7 @@ class EventHandlersTable extends DataManager
 		return 'Обработчики событий';
 	}
 
-	public static function getMap ()
+	protected static function getMap ()
 	{
 		return array(
 			TableHelper::primaryField(),

@@ -1,21 +1,21 @@
 <?php
 /**
- * MSergeev\Core\Lib\DataManager
+ * Ms\Core\Lib\DataManager
  * Используется для описания и обработки таблиц базы данных.
  * Наследуется в классах описания таблиц ядра и модулей
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  * @since 0.1.0
  */
 
-namespace MSergeev\Core\Lib;
+namespace Ms\Core\Lib;
 
-use MSergeev\Core\Exception;
-use MSergeev\Core\Entity\Db\Fields;
-use MSergeev\Core\Entity\Db;
+use Ms\Core\Exception;
+use Ms\Core\Entity\Db\Fields;
+use Ms\Core\Entity\Db;
 
 abstract class DataManager
 {
@@ -44,34 +44,16 @@ abstract class DataManager
 	 */
 	final public static function getTableName()
 	{
+		//Разбираем Brand\ModuleName\Tables\NameTable
 		$arClass = explode('\\',static::getClassName());
-		if ($arClass[0]=='MSergeev')
-		{
-			$name = 'ms_';
-		}
-		else
-		{
-			$name = strtolower($arClass[0]).'_';
-		}
-		for($i=1; $i<count($arClass)-1;$i++)
-		{
-			if ($arClass[$i]!='Tables' && $arClass[$i]!='Modules')
-			{
-				$name .= strtolower($arClass[$i]).'_';
-			}
-		}
-		$arCamel = preg_split('/([[:upper:]][[:lower:]]+)/', $arClass[count($arClass)-1], null, PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
-		if ($arCamel)
-		{
-			foreach ($arCamel as $camel)
-			{
-				if ($camel != 'Table')
-				{
-					$name .= strtolower($camel).'_';
-				}
-			}
-		}
-		$name = substr($name,0,strlen($name)-1);
+		//Сохраняем Brand
+		$name = strtolower($arClass[0]).'_';
+		//Сохраняем ModuleName
+		$name .= Tools::camelCaseToUnderscore($arClass[1]).'_';
+		//Сохраняет NameTable
+		$table = Tools::camelCaseToUnderscore($arClass[3]);
+		//Удаляем _table
+		$name .= str_replace('_table','',$table);
 
 		return $name;
 	}

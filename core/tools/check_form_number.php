@@ -1,8 +1,8 @@
 <? include ($_SERVER['DOCUMENT_ROOT'].'/ms/core/prolog_before.php');
-use MSergeev\Core\Lib\Loader;
-use MSergeev\Core\Lib\Modules;
+use Ms\Core\Lib\Loader;
+use Ms\Core\Lib\Modules;
 
-$app = \MSergeev\Core\Entity\Application::getInstance();
+$app = \Ms\Core\Entity\Application::getInstance();
 $request = $app->getContext()->getRequest();
 header('Content-Type: application/json');
 

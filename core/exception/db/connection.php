@@ -1,13 +1,14 @@
 <?php
 /**
- * MSergeev
- * @package Core
+ * Ms\Core\Exception\Db\ConnectionException
+ *
+ * @package Ms\Core
  * @subpackage Exception\Db
  * @author Mikhail Sergeev
  * @copyright 2017 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Exception\Db;
+namespace Ms\Core\Exception\Db;
 
 /**
  * Class ConnectionException used to indicate errors during database connection process.

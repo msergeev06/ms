@@ -1,20 +1,20 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\DBResult
+ * Ms\Core\Entity\Db\DBResult
  * Осуществляет обработку результата запроса к базе данных
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity\Db
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2017 Mikhail Sergeev
  * @since 0.1.0
  */
 
-namespace MSergeev\Core\Entity\Db;
+namespace Ms\Core\Entity\Db;
 
-use MSergeev\Core\Entity\Application;
-use MSergeev\Core\Lib;
-use MSergeev\Core\Entity\Db\Query;
+use Ms\Core\Entity\Application;
+use Ms\Core\Lib;
+use Ms\Core\Entity\Db\Query;
 
 class DBResult
 {
@@ -23,6 +23,7 @@ class DBResult
 	 * @var resource
 	 */
 	protected $result;
+
 	/**
 	 * Номер ошибки mysql запроса
 	 * @var number|null

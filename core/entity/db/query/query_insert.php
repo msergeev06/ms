@@ -1,21 +1,21 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\Query\QueryInsert
+ * Ms\Core\Entity\Db\Query\QueryInsert
  * Сущность INSERT запроса к базе данных
  *
  * @package MSergeev\Core
- * @subpackage Entity
+ * @subpackage Entity\Db\Query
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2018 Mikhail Sergeev
  * @since 0.2.0
  */
 
-namespace MSergeev\Core\Entity\Db\Query;
+namespace Ms\Core\Entity\Db\Query;
 
-use MSergeev\Core\Entity\Db\SqlHelper;
-use MSergeev\Core\Exception;
-use MSergeev\Core\Lib;
-use MSergeev\Core\Entity\Db\Fields;
+use Ms\Core\Entity\Db\SqlHelper;
+use Ms\Core\Exception;
+use Ms\Core\Lib;
+use Ms\Core\Entity\Db\Fields;
 
 class QueryInsert extends QueryBase
 {

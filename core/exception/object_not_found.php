@@ -1,6 +1,6 @@
 <?php
 
-namespace MSergeev\Core\Exception;
+namespace Ms\Core\Exception;
 
 /**
  * Exception is thrown when an object is not present.

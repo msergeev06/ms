@@ -1,8 +1,8 @@
 <?php
 
-namespace MSergeev\Core\Lib\Text;
+namespace Ms\Core\Lib\Text;
 
-use MSergeev\Core\Entity\Application;
+use Ms\Core\Entity\Application;
 
 class UtfSafeString
 {

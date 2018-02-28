@@ -1,9 +1,9 @@
 <?php
 /**
- * MSergeev\Core\Lib\Tools
+ * Ms\Core\Lib\Tools
  * Набор различных инструментов
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
@@ -11,10 +11,10 @@
  * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/start
  */
 
-namespace MSergeev\Core\Lib;
+namespace Ms\Core\Lib;
 
-use MSergeev\Core\Entity\Application;
-use MSergeev\Core\Entity\Type\Date;
+use Ms\Core\Entity\Application;
+use Ms\Core\Entity\Type\Date;
 
 class Tools
 {
@@ -351,17 +351,8 @@ class Tools
 			//На первом месте идет бренд
 			if ($i==0)
 			{
-				//ms превращается в MSergeev
-				if ($arStr[$i]=='ms')
-				{
-					$strClassName .= "MSergeev\\";
-				}
-				//если это не ms, сохраняем бренд
-				else
-				{
-					$strClassName .= static::setFirstCharToBig($arStr[$i])."\\";
-					$brand = $arStr[$i];
-				}
+				$strClassName .= static::setFirstCharToBig($arStr[$i])."\\";
+				$brand = $arStr[$i];
 			}
 			//На втором месте идет модуль
 			elseif($i==1)
@@ -376,7 +367,6 @@ class Tools
 					//Если модуль с таким именем есть, сохраняем его
 					if (Loader::issetModule(strtolower($brand.'.'.$arStr[$i])))
 					{
-						$strClassName .= "Modules\\";
 						$strClassName .= static::setFirstCharToBig($arStr[$i])."\\Tables\\";
 					}
 					//если такого модуля нет, значит имя состоит из нескольких слов через _
@@ -394,7 +384,7 @@ class Tools
 				//Ести такой модуль существует, записываем его
 				if (Loader::issetModule(strtolower($brand.'.'.$module_name.'_'.$arStr[$i])))
 				{
-					$strClassName .= "Modules\\".$moduleName;
+					$strClassName .= $moduleName;
 					$strClassName .= static::setFirstCharToBig($arStr[$i])."\\Tables\\";
 					$moduleName = null;
 				}
@@ -1033,5 +1023,17 @@ class Tools
 		return trim($str);
 	}
 
+	/**
+	 * Превращает CamelCase в camel_case
+	 *
+	 * @param $strCamelCase
+	 *
+	 * @return string
+	 */
+	public static function camelCaseToUnderscore ($strCamelCase)
+	{
+		$strCamelCase = preg_replace('/(?<=\\w)(?=[A-Z])/','_$1', $strCamelCase);
 
+		return strtolower($strCamelCase);
+	}
 }

@@ -1,19 +1,20 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\Fields\TextField
+ * Ms\Core\Entity\Db\Fields\TextField
  * Сущность поля базы данных, содержащего текст
  *
- * @package MSergeev\Core
- * @subpackage Entity
+ * @package Ms\Core
+ * @subpackage Entity\Db\Fields
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Entity\Db\Fields;
+namespace Ms\Core\Entity\Db\Fields;
 
 /**
  * Class TextField
- * @package MSergeev\Core\Entity\Db\Fields
+ * @package Ms\Core
+ * @subpackage Entity\Db\Fields
  * @extends StringField
  *
  * @var int                 $size                   Размер типа varchar базы данных

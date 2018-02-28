@@ -1,9 +1,9 @@
 <?php
 /**
- * MSergeev\Core\Lib\Events
+ * Ms\Core\Lib\Events
  * Управление событиями
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
@@ -12,11 +12,11 @@
  * @since 0.1.0
  */
 
-namespace MSergeev\Core\Lib;
+namespace Ms\Core\Lib;
 
-use MSergeev\Core\Tables;
-use MSergeev\Core\Entity\Db;
-use MSergeev\Core\Entity\Application;
+use Ms\Core\Tables;
+use Ms\Core\Entity\Db;
+use Ms\Core\Entity\Application;
 
 class Events
 {
@@ -336,8 +336,8 @@ class Events
 	/**
 	 * Получает список зарегистрированных обработчиков события и запускает их
 	 *
-	 * @see MSergeev\Core\Lib\Events::getModuleEvents
-	 * @see MSergeev\Core\Lib\Events::executeModuleEvent
+	 * @see Ms\Core\Lib\Events::getModuleEvents
+	 * @see Ms\Core\Lib\Events::executeModuleEvent
 	 *
 	 * @param string $fromModule    Идентификатор модуля который инициирует событие
 	 * @param string $eventID       Идентификатор события

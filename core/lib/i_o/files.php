@@ -1,18 +1,18 @@
 <?php
 /**
- * MSergeev\Core\Lib\IO\Files
+ * Ms\Core\Lib\IO\Files
  * Работа с файловой системой
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Lib\IO
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2018 Mikhail Sergeev
  * @since 0.2.0
  */
 
-namespace MSergeev\Core\Lib\IO;
+namespace Ms\Core\Lib\IO;
 
-use MSergeev\Core\Entity;
+use Ms\Core\Entity;
 
 class Files
 {

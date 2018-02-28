@@ -1,15 +1,17 @@
 <?php
 /**
- * MSergeev
- * @package core
+ * Ms\Core\Tables\OptionsTable
+ *
+ * @package Ms\Core
+ * @subpackage Tables
  * @author Mikhail Sergeev
  * @copyright 2016 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Tables;
+namespace Ms\Core\Tables;
 
-use MSergeev\Core\Entity\Db\Fields;
-use MSergeev\Core\Lib\DataManager;
+use Ms\Core\Entity\Db\Fields;
+use Ms\Core\Lib\DataManager;
 
 class OptionsTable extends DataManager
 {
@@ -18,7 +20,7 @@ class OptionsTable extends DataManager
 		return "Таблица настроек";
 	}
 
-	public static function getMap ()
+	protected static function getMap ()
 	{
 		return array(
 			new Fields\IntegerField ('ID', array(

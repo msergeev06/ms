@@ -1,9 +1,9 @@
 <?php
 /**
- * MSergeev\Core\Lib\Modules
+ * Ms\Core\Lib\Modules
  * Класс для работы с модулями
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2018 Mikhail Sergeev
@@ -11,11 +11,12 @@
  * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/start
  */
 
-namespace MSergeev\Core\Lib;
+namespace Ms\Core\Lib;
 
 
-use MSergeev\Core\Entity\Application;
-use MSergeev\Core\Lib\IO\Files;
+use Ms\Core\Entity\Application;
+use Ms\Core\Entity\ErrorCollection;
+use Ms\Core\Lib\IO\Files;
 
 class Modules
 {
@@ -39,6 +40,16 @@ class Modules
 	 * @var string
 	 */
 	private static $modulesRoot=null;
+
+	/**
+	 * @var null|ErrorCollection
+	 */
+	private static $errorCollection = null;
+
+	/**
+	 * @var null|array
+	 */
+	private static $arTempErrors = null;
 
 	/**
 	 * Инициализирует необходимые переменные
@@ -69,22 +80,23 @@ class Modules
 		//Проверяем на наличае бренда
 		if (strpos($moduleName,'.')===false)
 		{
-			//static::$errorCollection->add('В имени модуля отсутствует бренд','MODULE_NAME_EMPTY_BRAND');
+			static::addError('В имени модуля отсутствует бренд','MODULE_NAME_EMPTY_BRAND');
 			return false;
 		}
 
 		//Проверяем на использование только разрешенных символов и верный синтаксис
 		if (!preg_match(self::REGULAR_EXPRESSION, $moduleName))
 		{
-			//static::$errorCollection->add('Использованы недопустимые символы в имени модуля');
+			static::addError('Использованы недопустимые символы в имени модуля','WRONG_SYMBOLS_IN_MODULE_NAME');
+			//static::$errorCollection->add();
 			return false;
 		}
 
 		//Проверяем на допустимую длинну
 		if (strlen($moduleName)>self::MAX_LENGTH_MODULE_NAME)
 		{
-			//static::$errorCollection->add('Имя модуля слишком длинное. Допустимая длина '.self::MAX_LENGTH_MODULE_NAME.' символов');
-			//return false;
+			static::addError('Имя модуля слишком длинное. Допустимая длина '.self::MAX_LENGTH_MODULE_NAME.' символов','MODULE_NAME_TO_LONG');
+			return false;
 		}
 
 		return true;
@@ -123,11 +135,11 @@ class Modules
 	}
 
 	/**
-	 * Возвращает Namespace модуля вида [Brand]\Modules\[ModuleName]\
+	 * Возвращает Namespace модуля вида [Brand]\[ModuleName]\
 	 *
 	 * @api
 	 *
-	 * @param string $moduleName - полное имя модуля
+	 * @param string $moduleName - полное имя модуля [brand].[code]
 	 *
 	 * @return bool|string
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_get_module_namespace
@@ -140,16 +152,7 @@ class Modules
 		//Если имя модуля соответствует стандартам и нормально разобралось
 		if ($arModule = static::parseModuleName($moduleName))
 		{
-			//Если бренд ms, используем особое начало namespace
-			if ($arModule['BRAND']=='ms')
-			{
-				$namespace = 'MSergeev\\';
-			}
-			//Иначе берем бренд, как начало namespace
-			else
-			{
-				$namespace = Tools::setFirstCharToBig($arModule['BRAND']).'\\';
-			}
+			$namespace = Tools::setFirstCharToBig($arModule['BRAND']).'\\';
 			$module = $arModule['MODULE'];
 			//Если имя модуля разделено символом подчёркивания, то в namespace оно должно
 			//быть в верхнем CamelCase, где каждое слово пишется с большой буквы
@@ -166,7 +169,7 @@ class Modules
 			{
 				$module = Tools::setFirstCharToBig($module);
 			}
-			$namespace.='Modules\\'.$module.'\\';
+			$namespace.=$module.'\\';
 
 			return $namespace;
 		}
@@ -219,6 +222,7 @@ class Modules
 		}
 		if (!Loader::includeModule($moduleName))
 		{
+			static::addError('Не удалось подключить модуль "'.$moduleName.'"','NOT_INCLUDED_MODULE');
 			return false;
 		}
 
@@ -364,14 +368,15 @@ class Modules
 		}
 		$namespace = str_replace ('\\\\', '\\', $namespace);
 		$arName = explode ('\\', $namespace);
-		if (strtolower ($arName[1]) == 'modules' && isset($arName[2]))
-		{
-			return strtolower ($arName[0]).'.'
-			.strtolower (preg_replace ('/(?<=.)[A-Z]/', '_$0', $arName[2]));
-		} elseif (strtolower ($arName[1]) == 'core')
+		if (strtolower($arName[1])=='core')
 		{
 			return 'core';
-		} else
+		}
+		elseif (isset($arName[0]) && isset($arName[1]))
+		{
+			return strtolower($arName[0]).'.'.Tools::camelCaseToUnderscore($arName[1]);
+		}
+		else
 		{
 			return NULL;
 		}
@@ -465,5 +470,83 @@ class Modules
 				}
 			}
 		}
+	}
+
+	/**
+	 * Возвращает коллекцию ошибок, либо null
+	 *
+	 * @return ErrorCollection|null
+	 */
+	public static function getErrors ()
+	{
+		static::setErrorCollection();
+
+		return static::$errorCollection;
+	}
+
+	/**
+	 * Добавляет ошибку в коллекцию, либо во временный массив
+	 *
+	 * @param      $strMessage
+	 * @param null $strCode
+	 */
+	private static function addError ($strMessage, $strCode=null)
+	{
+		$bCollection = static::setErrorCollection();
+
+		if (!$bCollection)
+		{
+			if (is_null(static::$arTempErrors))
+			{
+				static::$arTempErrors = array();
+			}
+
+			if (is_null($strCode))
+			{
+				static::$arTempErrors[] = $strMessage;
+			}
+			else
+			{
+				static::$arTempErrors[$strCode] = $strMessage;
+			}
+		}
+		else
+		{
+			static::$errorCollection->setError($strMessage,$strCode);
+		}
+	}
+
+	/**
+	 * Производит создание коллекции ошибок, если это возможно, из временного массива ошибок
+	 *
+	 * @return bool
+	 */
+	private static function setErrorCollection ()
+	{
+		$bCollection = false;
+		//Если автозагрузка классов включена, можно переписать сохраненные ошибки в основную переменную
+		if (defined('MS_AUTOLOAD_CLASSES_ENABLED') && MS_AUTOLOAD_CLASSES_ENABLED === true)
+		{
+			$bCollection = true;
+			if (is_null(static::$errorCollection) || !(static::$errorCollection instanceof ErrorCollection))
+			{
+				static::$errorCollection = new ErrorCollection();
+			}
+
+			if (!is_null(static::$arTempErrors))
+			{
+				foreach (static::$arTempErrors as $code=>$mess)
+				{
+					if (is_numeric($code))
+					{
+						$code = null;
+					}
+					static::$errorCollection->setError($mess,$code);
+				}
+				static::$arTempErrors = null;
+			}
+		}
+
+		return $bCollection;
 	}
 }

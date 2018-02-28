@@ -1,22 +1,25 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\Fields\DateTimeField
+ * Ms\Core\Entity\Db\Fields\DateTimeField
  * Сущность поля базы данных, содержащего дату и время
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Entity\Db\Fields;
+namespace Ms\Core\Entity\Db\Fields;
 
-use MSergeev\Core\Entity\Type\Date;
+use Ms\Core\Entity\Type\Date;
 
 /**
  * Class DateTimeField
- * @package MSergeev\Core\Entity
+ *
+ * @package Ms\Core
+ * @subpackage Entity
  * @extends DateField
+ *
  * @use DateField
  * @use ScalarField
  * @use TimeField
@@ -77,9 +80,8 @@ class DateTimeField extends ScalarField
 	{
 		parent::__construct($name, $parameters);
 
-		//$this->dataType = 'timestamp';
 		$this->dataType = 'datetime';
-		$this->fieldType = 'MSergeev\Core\Entity\Type\Date';
+		$this->fieldType = 'Ms\Core\Entity\Type\Date';
 	}
 
 	/**

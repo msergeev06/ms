@@ -1,20 +1,20 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\SqlHelper
+ * Ms\Core\Entity\Db\SqlHelper
  * Помощник обработки SQL запросов
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity\Db
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  * @since 0.1.0
  */
 
-namespace MSergeev\Core\Entity\Db;
+namespace Ms\Core\Entity\Db;
 
 /**
  * Class SqlHelper
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity\Db
  *
  * @var string $tableName Имя таблицы

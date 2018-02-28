@@ -1,10 +1,10 @@
 <?php
 
-namespace MSergeev\Core\Lib\Text;
+namespace Ms\Core\Lib\Text;
 
-use MSergeev\Core\Entity\Application;
-use MSergeev\Core\Entity\Error;
-use MSergeev\Core\Entity\ErrorCollection;
+use Ms\Core\Entity\Application;
+use Ms\Core\Entity\Error;
+use Ms\Core\Entity\ErrorCollection;
 
 class Encoding
 {

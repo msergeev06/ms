@@ -1,16 +1,16 @@
 <?php
 /**
- * MSergeev
+ * Ms
  * @package core
  * @author Mikhail Sergeev
  * @copyright 2016 Mikhail Sergeev
  */
 
 
-use \MSergeev\Core\Exception;
-use \MSergeev\Core\Lib;
-use MSergeev\Core\Entity\Type\Date;
-use \MSergeev\Core\Entity\Application;
+use \Ms\Core\Exception;
+use \Ms\Core\Lib;
+use Ms\Core\Entity\Type\Date;
+use \Ms\Core\Entity\Application;
 
 /**
  * Returns HTML "input"

@@ -1,15 +1,17 @@
 <?php
 /**
- * MSergeev
- * @package core
+ * Ms\Core\Tables\UsersTable
+ *
+ * @package Ms\Core
+ * @subpackage Tables
  * @author Mikhail Sergeev
  * @copyright 2016 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Tables;
+namespace Ms\Core\Tables;
 
-use MSergeev\Core\Lib\DataManager;
-use MSergeev\Core\Entity\Db\Fields;
+use Ms\Core\Lib\DataManager;
+use Ms\Core\Entity\Db\Fields;
 
 class UsersTable extends DataManager
 {
@@ -27,7 +29,7 @@ class UsersTable extends DataManager
 		);
 	}
 
-	public static function getMap ()
+	protected static function getMap ()
 	{
 		return array(
 			new Fields\IntegerField('ID',array(

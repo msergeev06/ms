@@ -1,9 +1,9 @@
 <?php
 /**
- * MSergeev\Core\Lib\File
+ * Ms\Core\Lib\File
  * Работа с файлами
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
@@ -12,16 +12,17 @@
  * @since 0.2.0
  */
 
-namespace MSergeev\Core\Lib;
+namespace Ms\Core\Lib;
 
-use MSergeev\Core\Entity\Application;
-use MSergeev\Core\Entity\Db\Query;
-use MSergeev\Core\Exception;
-use MSergeev\Core\Tables;
+use Ms\Core\Entity\Application;
+use Ms\Core\Entity\Db\Query;
+use Ms\Core\Exception;
+use Ms\Core\Tables;
 
 /**
  * Class File
- * @package MSergeev\Core\Lib
+ * @package Ms\Core
+ * @subpackage Lib
  *
  * Events:
  * OnBeforeUploadNewFile (&$arFile, &$arAdd)

@@ -1,16 +1,16 @@
 <?php
 /**
- * MSergeev\Core\Entity\Type\Dictionary
+ * Ms\Core\Entity\Type\Dictionary
  * Класс для хранения различных значений в удобном формате
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity\Type
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2018 Mikhail Sergeev
  * @since 0.2.0
  */
 
-namespace MSergeev\Core\Entity\Type;
+namespace Ms\Core\Entity\Type;
 
 class Dictionary implements \ArrayAccess, \Iterator, \Countable
 {

@@ -1,23 +1,23 @@
 <?php
 /**
- * MSergeev\Core\Entity\Type\Date
+ * Ms\Core\Entity\Type\Date
  * Класс, описывающий тип переменной "Дата и время"
  * Используетя во всех операциях с датой и/или временем
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity\Type
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2017 Mikhail Sergeev
  * @since 0.2.0
  */
 
-namespace MSergeev\Core\Entity\Type;
+namespace Ms\Core\Entity\Type;
 
-use MSergeev\Core\Entity\Application;
-use MSergeev\Core\Exception;
-use MSergeev\Core\Lib\Loader;
-use MSergeev\Core\Lib\Loc;
-use MSergeev\Modules\Dates\Lib\WorkCalendar;
+use Ms\Core\Entity\Application;
+use Ms\Core\Exception;
+use Ms\Core\Lib\Loader;
+use Ms\Core\Lib\Loc;
+use Ms\Dates\Lib\WorkCalendar;
 
 class Date extends \DateTime
 {
@@ -723,6 +723,8 @@ class Date extends \DateTime
 	 *                      то дата берется из него
 	 * @param Date  $date - дата, из которой берутся недостающие параметры в массиве
 	 * @since 0.2.0
+	 *
+	 * @return Date $this
 	 */
 	public function setDateFromArray ($arDate, Date $date = NULL)
 	{
@@ -787,6 +789,8 @@ class Date extends \DateTime
 
 	/**
 	 * Устанавливает начало дня (время 00:00:00) для текущей метки времени
+	 *
+	 * @return Date $this
 	 * @since 0.2.0
 	 */
 	public function setStartDay ()
@@ -798,6 +802,8 @@ class Date extends \DateTime
 
 	/**
 	 * Устанавливает конец дня (время 23:59:59) для текущей метки времени
+	 *
+	 * @return Date $this
 	 * @since 0.2.0
 	 */
 	public function setEndDay ()
@@ -810,7 +816,7 @@ class Date extends \DateTime
 	/**
 	 * Меняет текущую метку времени на завтрашний день
 	 *
-	 * @return $this
+	 * @return Date $this
 	 * @since 0.2.0
 	 */
 	public function setNextDay ()
@@ -823,7 +829,7 @@ class Date extends \DateTime
 	/**
 	 * Меняет текущую метку времени на вчерашний день
 	 *
-	 * @return $this
+	 * @return Date $this
 	 * @since 0.2.0
 	 */
 	public function setPrevDay ()
@@ -836,7 +842,7 @@ class Date extends \DateTime
 	/**
 	 * Меняет текущую метку времени на следующий месяц
 	 *
-	 * @return $this
+	 * @return Date $this
 	 * @since 0.2.0
 	 */
 	public function setNextMonth()
@@ -849,7 +855,7 @@ class Date extends \DateTime
 	/**
 	 * Меняет текущую метку премени на вредыдущий месяц
 	 *
-	 * @return $this
+	 * @return Date $this
 	 * @since 0.2.0
 	 */
 	public function setPrevMonth()
@@ -862,7 +868,7 @@ class Date extends \DateTime
 	/**
 	 * Меняет текущую метку времени на следующий год
 	 *
-	 * @return $this
+	 * @return Date $this
 	 * @since 0.2.0
 	 */
 	public function setNextYear()
@@ -875,7 +881,7 @@ class Date extends \DateTime
 	/**
 	 * Меняет текущую метку времени на предыдущий год
 	 *
-	 * @return $this
+	 * @return Date $this
 	 * @since 0.2.0
 	 */
 	public function setPrevYear()
@@ -887,6 +893,8 @@ class Date extends \DateTime
 
 	/**
 	 * Меняет текущую метку времени, устанавливая первый день текущего месяца
+	 *
+	 * @return Date $this
 	 * @since 0.2.0
 	 */
 	public function setFirstDayOfMonth()
@@ -898,6 +906,8 @@ class Date extends \DateTime
 
 	/**
 	 * Меняет текущую метку времени, устанавливая последний день текущего месяца
+	 *
+	 * @return Date $this
 	 * @since 0.2.0
 	 */
 	public function setLastDayOfMonth()
@@ -909,6 +919,8 @@ class Date extends \DateTime
 
 	/**
 	 * Меняет текущую метку времени, устанавливая первый день текущего года
+	 *
+	 * @return Date $this
 	 * @since 0.2.0
 	 */
 	public function setFirstDayOfYear()
@@ -1300,7 +1312,7 @@ class Date extends \DateTime
 	/**
 	 * Возвращает true, если сегодняшний день выходной
 	 *
-	 * Если параметр отсутствует или равен true, а также если модуль dates установлен, проверка осуществляется с
+	 * Если параметр отсутствует или равен true, а также если модуль ms.dates установлен, проверка осуществляется с
 	 * использованием метода этого модуля. Это позволит считать выходными праздничные дни, а не только субботу и
 	 * воскресенье. Если передан параметр false, метод фактически смотрит суббота сегодня или воскресенье.
 	 *
@@ -1361,13 +1373,13 @@ class Date extends \DateTime
 	/** MAGIC */
 
 	/**
-	 * Возвращает строковое представление объекта в формате даты сайта
+	 * Возвращает строковое представление объекта в формате даты/времени сайта
 	 *
 	 * @return string
 	 * @since 0.2.0
 	 */
 	public function __toString ()
 	{
-		return $this->getDateSite ();
+		return $this->getDateTimeSite();
 	}
 }

@@ -1,17 +1,19 @@
 <?php
 /**
- * MSergeev
- * @package core
+ * Ms\Core\Tables\SectionsTable
+ *
+ * @package Ms\Core
+ * @subpackage Tables
  * @author Mikhail Sergeev
  * @copyright 2016 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Tables;
+namespace Ms\Core\Tables;
 
-use MSergeev\Core\Lib;
-use MSergeev\Core\Entity\Db\Fields;
-use MSergeev\Core\Entity\Db\SqlHelper;
-use MSergeev\Core\Entity\Db\Query;
+use Ms\Core\Lib;
+use Ms\Core\Entity\Db\Fields;
+use Ms\Core\Entity\Db\SqlHelper;
+use Ms\Core\Entity\Db\Query;
 
 class SectionsTable extends Lib\DataManager
 {
@@ -28,7 +30,7 @@ class SectionsTable extends Lib\DataManager
 			)
 		);
 	}
-	public static function getMap()
+	protected static function getMap()
 	{
 		return array(
 			new Fields\IntegerField('ID',array(

@@ -1,8 +1,8 @@
 <? include ($_SERVER['DOCUMENT_ROOT'].'/ms/core/prolog_before.php');
-use MSergeev\Core\Lib\Loader;
-use MSergeev\Core\Lib\Modules;
+use Ms\Core\Lib\Loader;
+use Ms\Core\Lib\Modules;
 
-$app = \MSergeev\Core\Entity\Application::getInstance();
+$app = \Ms\Core\Entity\Application::getInstance();
 $request = $app->getContext()->getRequest();
 header('Content-Type: application/json');
 
@@ -15,7 +15,7 @@ $value = $request->getPost('value');
 $arReturn['namespace'] = $namespace;
 $arReturn['function'] = $function;
 $arReturn['value'] = $value;
-$value = new \MSergeev\Core\Entity\Type\Date($value,'db');
+$value = new \Ms\Core\Entity\Type\Date($value,'db');
 $arReturn['valueObj'] = (string)$value;
 if (!$namespace || !$function)
 {

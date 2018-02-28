@@ -1,21 +1,21 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\Query\QueryCreate
+ * Ms\Core\Entity\Db\Query\QueryCreate
  * Сущность CREATE запроса к базе данных
  *
- * @package MSergeev\Core
- * @subpackage Entity
+ * @package Ms\Core
+ * @subpackage Entity\Db\Query
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2018 Mikhail Sergeev
  * @since 0.2.0
  */
 
-namespace MSergeev\Core\Entity\Db\Query;
+namespace Ms\Core\Entity\Db\Query;
 
-use MSergeev\Core\Entity\Db\Fields;
-use MSergeev\Core\Entity\Db\SqlHelper;
-use MSergeev\Core\Lib\DataManager;
-use MSergeev\Core\Exception;
+use Ms\Core\Entity\Db\Fields;
+use Ms\Core\Entity\Db\SqlHelper;
+use Ms\Core\Lib\DataManager;
+use Ms\Core\Exception;
 
 class QueryCreate extends QueryBase
 {

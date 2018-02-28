@@ -1,9 +1,9 @@
 <?php
 
-namespace MSergeev\Core\Exception;
+namespace Ms\Core\Exception;
 
-use MSergeev\Core\Entity\Application;
-use MSergeev\Core\Lib\IO\Files;
+use Ms\Core\Entity\Application;
+use Ms\Core\Lib\IO\Files;
 
 /**
  * Base class for fatal exceptions

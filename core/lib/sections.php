@@ -1,20 +1,20 @@
 <?php
 /**
- * MSergeev\Core\Lib\Sections
+ * Ms\Core\Lib\Sections
  * Обработка дерева каталогов
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  * @since 0.1.0
  */
 //www.getinfo.ru/article610.html
-namespace MSergeev\Core\Lib;
+namespace Ms\Core\Lib;
 
-use MSergeev\Core\Entity\Db\Query;
-use MSergeev\Core\Entity\Db\SqlHelper;
-use MSergeev\Core\Entity\Db\DBResult;
+use Ms\Core\Entity\Db\Query;
+use Ms\Core\Entity\Db\SqlHelper;
+use Ms\Core\Entity\Db\DBResult;
 
 abstract class Sections
 {

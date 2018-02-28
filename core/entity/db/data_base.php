@@ -1,6 +1,6 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\DataBase
+ * Ms\Core\Entity\Db\DataBase
  * Осуществляет подключение к базе данных и посылает запросы к базе
  *
  * @package MSergeev\Core
@@ -10,11 +10,11 @@
  * @since 0.1.0
  */
 
-namespace MSergeev\Core\Entity\Db;
+namespace Ms\Core\Entity\Db;
 
-use MSergeev\Core\Entity\Db\Query;
-use MSergeev\Core\Exception;
-use MSergeev\Core\Entity\Application;
+use Ms\Core\Entity\Db\Query;
+use Ms\Core\Exception;
+use Ms\Core\Entity\Application;
 
 class DataBase {
 

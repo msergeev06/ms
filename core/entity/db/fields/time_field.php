@@ -1,21 +1,22 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\Fields\TimeField
+ * Ms\Core\Entity\Db\Fields\TimeField
  * Сущность поля базы данных, содержащего время
  *
- * @package MSergeev\Core
- * @subpackage Entity
+ * @package Ms\Core
+ * @subpackage Entity\Db\Fields
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Entity\Db\Fields;
+namespace Ms\Core\Entity\Db\Fields;
 
-use MSergeev\Core\Entity\Type\Date;
+use Ms\Core\Entity\Type\Date;
 
 /**
  * Class TimeField
- * @package MSergeev\Core\Entity
+ * @package Ms\Core
+ * @subpackage Entity\Db\Fields
  * @extends ScalarField
  *
  * @var bool                $is_primary             Поле является PRIMARY
@@ -75,7 +76,7 @@ class TimeField extends ScalarField
 		parent::__construct($name, $parameters);
 
 		$this->dataType = 'time';
-		$this->fieldType = 'MSergeev\Core\Entity\Type\Date';
+		$this->fieldType = 'Ms\Core\Entity\Type\Date';
 	}
 
 	/**

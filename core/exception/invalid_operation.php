@@ -1,6 +1,6 @@
 <?php
 
-namespace MSergeev\Core\Exception;
+namespace Ms\Core\Exception;
 
 /**
  * Exception is thrown when a method call is invalid for current state of object.

@@ -1,18 +1,20 @@
 <?php
 /**
- * MSergeev\Core\Entity\Db\Fields\ScalarField
+ * Ms\Core\Entity\Db\Fields\ScalarField
  * Сущность поля базы данных, содержащее скалярные данные
  *
  * @package MSergeev\Core
+ * @subpackage Entity\Db\Fields
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
-namespace MSergeev\Core\Entity\Db\Fields;
+namespace Ms\Core\Entity\Db\Fields;
 
 /**
  * Class ScalarField
- * @package MSergeev\Core\Entity
+ * @package Ms\Core
+ * @subpackage Entity\Db\Fields
  * @extends Field
  *
  * @var bool                $is_primary             Поле является PRIMARY

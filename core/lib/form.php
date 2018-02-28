@@ -1,18 +1,18 @@
 <?php
 /**
- * MSergeev\Core\Lib\Form
+ * Ms\Core\Lib\Form
  * Функции обработки форм
  *
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2018 Mikhail Sergeev
  * @since 0.2.0
  */
 
-namespace MSergeev\Core\Lib;
+namespace Ms\Core\Lib;
 
-use MSergeev\Core\Entity\Type\Date;
+use Ms\Core\Entity\Type\Date;
 
 class Form
 {

@@ -703,12 +703,18 @@ class Application
 	 */
 	public function endBufferPage ()
 	{
-		if (defined("SHOW_SQL_WORK_TIME") && SHOW_SQL_WORK_TIME === true)
+		if (defined('SHOW_SQL_WORK_TIME') && SHOW_SQL_WORK_TIME === true)
 		{
 			$DB = $this->getConnection();
 			echo '<div style="border: 1px solid black; background-color: white; padding: 10px;">';
 			echo '<p>'.$DB->getCountQuery().' '.Lib\Tools::sayRusRight($DB->getCountQuery(),'запрос','запроса','запросов').' за '.$DB->getAllQueryTime().' сек.</p>';
+			$arLogs = $DB->getSqlLogs();
+			foreach($arLogs as $hash=>$sql)
+			{
+				echo '<p>',$hash,':<br><pre>',$sql,'</pre></p>';
+			}
 			echo "</div><br>";
+
 		}
 		ob_end_flush();
 	}

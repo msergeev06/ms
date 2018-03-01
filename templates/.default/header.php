@@ -1,5 +1,5 @@
 <?if(!defined('MS_PROLOG_INCLUDED')||MS_PROLOG_INCLUDED!==true)die('Access denied');
-$application = \MSergeev\Core\Entity\Application::getInstance();
+$application = \Ms\Core\Entity\Application::getInstance();
 //define("SHOW_SQL_WORK_TIME",true);
 $application->includePlugin('bootstrap-css-min');
 $application->includePlugin('bootstrap-js-min');

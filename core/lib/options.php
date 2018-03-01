@@ -150,8 +150,8 @@ class Options
 	{
 		$optionName = strtoupper($optionName);
 		if (
-			!isset(self::$arOptions[$optionName])
-			|| self::$arOptions[$optionName] != $optionValue
+			!isset(static::$arOptions[$optionName])
+			|| static::$arOptions[$optionName] != $optionValue
 		)
 		{
 			$arInsert = array(
@@ -170,7 +170,7 @@ class Options
 				$res = Tables\OptionsTable::update($result['ID'],$arInsert);
 				if ($res->getResult())
 				{
-					self::$arOptions[$optionName] = $optionValue;
+					static::$arOptions[$optionName] = $optionValue;
 					return true;
 				}
 				else
@@ -183,7 +183,7 @@ class Options
 				$res = Tables\OptionsTable::add($arInsert);
 				if ($res->getResult())
 				{
-					self::$arOptions[$optionName] = $optionValue;
+					static::$arOptions[$optionName] = $optionValue;
 					return true;
 				}
 				else
@@ -212,8 +212,8 @@ class Options
 	protected static function getOption ($optionName, $optionDefaultValue = null)
 	{
 		$optionName = strtoupper($optionName);
-		if (isset(self::$arOptions[$optionName])) {
-			return self::$arOptions[$optionName];
+		if (isset(static::$arOptions[$optionName])) {
+			return static::$arOptions[$optionName];
 		}
 		else {
 			$result = Tables\OptionsTable::getOne(
@@ -225,7 +225,7 @@ class Options
 			);
 			if ($result)
 			{
-				self::$arOptions[$optionName] = $result['VALUE'];
+				static::$arOptions[$optionName] = $result['VALUE'];
 				return $result['VALUE'];
 			}
 			elseif (!is_null($optionDefaultValue))

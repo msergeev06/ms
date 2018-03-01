@@ -707,11 +707,11 @@ class Application
 		{
 			$DB = $this->getConnection();
 			echo '<div style="border: 1px solid black; background-color: white; padding: 10px;">';
-			echo '<p>'.$DB->getCountQuery().' '.Lib\Tools::sayRusRight($DB->getCountQuery(),'запрос','запроса','запросов').' за '.$DB->getAllQueryTime().' сек.</p>';
+			echo '<p>'.$DB->getCountQuery().' '.Lib\Tools::sayRusRight($DB->getCountQuery(),'запрос','запроса','запросов').' за '.$DB->getAllQueryTime().' сек.</p><hr>';
 			$arLogs = $DB->getSqlLogs();
 			foreach($arLogs as $hash=>$sql)
 			{
-				echo '<p>',$hash,':<br><pre>',$sql,'</pre></p>';
+				echo '<p>',$hash,':<br><pre>',$sql['SQL'],'</pre></p><hr>';
 			}
 			echo "</div><br>";
 

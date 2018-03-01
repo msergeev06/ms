@@ -30,7 +30,7 @@ $application->setState('PB');
 $application->loadSettings();
 require_once(dirname(__FILE__).'/include.php');
 set_error_handler('\Ms\Core\Lib\ErrorHandler::handler');
-defined('MS_AUTOLOAD_CLASSES_ENABLED',true);
+define('MS_AUTOLOAD_CLASSES_ENABLED',true);
 \Ms\Core\Lib\Events::runEvents('core','OnPrologBefore');
 if ($arAutoLoadModules = $application->getSettings()->getAutoLoadModules())
 {

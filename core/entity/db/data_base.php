@@ -398,6 +398,11 @@ class DataBase {
 		return $comm;
 	}
 
+	public function getSqlLogs()
+	{
+		return $this->arLog;
+	}
+
 	/**
 	 * Возвращает созданный hash SQL запроса
 	 *

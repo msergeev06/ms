@@ -185,6 +185,23 @@ class Settings
 	}
 
 	/**
+	 * Возвращает используемый драйвер подключения к БД
+	 *
+	 * @return string
+	 */
+	public function getDbDriver()
+	{
+		if (isset($this->arSettings['database']['driver']))
+		{
+			return $this->arSettings['database']['driver'];
+		}
+		else
+		{
+			return 'mysqli';
+		}
+	}
+
+	/**
 	 * Возвращает протокол, по которому работает сайт (http или https)
 	 *
 	 * @access public

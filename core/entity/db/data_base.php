@@ -43,8 +43,13 @@ class DataBase {
 	protected $pass;
 
 	/**
+	 * @var string Используемый драйвер для подключения к БД
+	 */
+	protected $driver;
+
+	/**
 	 * Ссылка на подключение к базе данных, либо false
-	 * @var resource|bool
+	 * @var resource|\mysqli|bool
 	 */
 	protected $db_conn;
 
@@ -97,39 +102,13 @@ class DataBase {
 		$this->base = Application::getInstance()->getSettings()->getDbName();
 		$this->user = Application::getInstance()->getSettings()->getDbUser();
 		$this->pass = Application::getInstance()->getSettings()->getDbPass();
+		$this->driver = Application::getInstance()->getSettings()->getDbDriver();
 
-		try
-		{
-			$this->db_conn = @mysql_connect($this->host, $this->user, $this->pass);
-			if (!$this->db_conn)
-			{
-				throw new Exception\Db\ConnectionException('Could not connect',mysql_error());
-			}
-		}
-		catch (Exception\Db\ConnectionException $e)
-		{
-			die($e->showException());
-		}
-		try
-		{
-			$select_db = @mysql_select_db($this->base, $this->db_conn);
-			if(!$select_db)
-			{
-				if (!$this->restoreDB())
-				{
-					throw new Exception\Db\ConnectionException('Not isset DB '.$this->base,mysql_error());
-				}
-			}
-		}
-		catch (Exception\Db\ConnectionException $e)
-		{
-			die($e->showException());
-		}
+		//Подключаемся к базе данных, используя требуемый драйвер
+		$this->mysqlConnect();
 
-		if (Application::getInstance()->getSettings()->useUtf())
-		{
-			mysql_set_charset('utf8',$this->db_conn);
-		}
+		//Устанавливаем необходимые параметры подключения
+		$this->setConnectParams();
 	}
 
 	/**
@@ -148,6 +127,7 @@ class DataBase {
 			return false;
 		}
 
+		//Создаем файл backup в корне, чтобы система понимала, что идет процесс восстановления БД
 		$f1 = fopen($documentRoot.'/backup','w');
 		fwrite($f1,date('Y-m-d H:i:s'));
 		fclose($f1);
@@ -184,6 +164,7 @@ class DataBase {
 		{
 			$comm = $this->getBackupCommand($filePath);
 			exec($comm);
+			//после завершения восстановления, удаляем файл backup
 			unlink($documentRoot.'/backup');
 			return true;
 		}
@@ -191,6 +172,8 @@ class DataBase {
 		unlink($documentRoot.'/backup');
 		return false;
 	}
+
+
 
 	/**
 	 * Осуществляет запрос к базе данных, используя данные объекта Query
@@ -207,19 +190,24 @@ class DataBase {
 		$sql = $obQuery->getSql();
 		$queryHash = $this->getQueryHash($sql);
 		$this->setQueryStart($queryHash);
-		$db_res = mysql_query($sql, $this->db_conn);
+		//$db_res = mysql_query($sql, $this->db_conn);
+		$db_res = $this->getConnectionQuery($sql);
 		$this->setQueryStop($queryHash);
 
 		$res = new DBResult($db_res,$obQuery);
-		$res->setAffectedRows(mysql_affected_rows($this->db_conn));
+		//$res->setAffectedRows(mysql_affected_rows($this->db_conn));
+		$res->setAffectedRows($this->getConnectionAffectedRows());
 		if ($obQuery instanceof Query\QueryInsert)
 		{
-			$res->setInsertId(mysql_insert_id($this->db_conn));
+			//$res->setInsertId(mysql_insert_id($this->db_conn));
+			$res->setInsertId($this->getInsertId());
 		}
 		if (!$res->getResult())
 		{
-			$res->setResultErrorNumber(mysql_errno($this->db_conn));
-			$res->setResultErrorText(mysql_error($this->db_conn));
+			//$res->setResultErrorNumber(mysql_errno($this->db_conn));
+			$res->setResultErrorNumber($this->getConnectionErrorNo());
+			//$res->setResultErrorText(mysql_error($this->db_conn));
+			$res->setResultErrorText($this->getConnectionError());
 		}
 
 		return $res;
@@ -235,8 +223,10 @@ class DataBase {
 	 */
 	public function querySQL ($sql)
 	{
-		mysql_query($sql,$this->db_conn);
-		return mysql_affected_rows($this->db_conn);
+		//mysql_query($sql,$this->db_conn);
+		$this->getConnectionQuery($sql);
+		//return mysql_affected_rows($this->db_conn);
+		return $this->getConnectionAffectedRows();
 	}
 
 	/**
@@ -401,6 +391,253 @@ class DataBase {
 	public function getSqlLogs()
 	{
 		return $this->arLog;
+	}
+
+	/**
+	 * Подключается к базе данных, используя требуемый драйвер
+	 * @since 0.2.0
+	 */
+	private function mysqlConnect()
+	{
+		if ($this->driver == 'mysql')
+		{
+			try
+			{
+				$this->db_conn = @mysql_connect($this->host, $this->user, $this->pass);
+				if (!$this->db_conn)
+				{
+					throw new Exception\Db\ConnectionException('Could not connect',mysql_error());
+				}
+			}
+			catch (Exception\Db\ConnectionException $e)
+			{
+				die($e->showException());
+			}
+			try
+			{
+				$select_db = @mysql_select_db($this->base, $this->db_conn);
+				if(!$select_db)
+				{
+					if (!$this->restoreDB())
+					{
+						throw new Exception\Db\ConnectionException('Not isset DB '.$this->base,mysql_error());
+					}
+				}
+			}
+			catch (Exception\Db\ConnectionException $e)
+			{
+				die($e->showException());
+			}
+		}
+		else //если используется mysqli
+		{
+			try
+			{
+				$this->db_conn = @new \mysqli($this->host,$this->user,$this->pass,$this->base);
+				if (mysqli_connect_error())
+				{
+					//Если нет БД
+					if ((int)$this->db_conn->connect_errno == 1049)
+					{
+						//Если не получилось восстановить БД
+						if (!$this->restoreDB())
+						{
+							throw new Exception\Db\ConnectionException('Not isset DB '.$this->base,mysqli_connect_error());
+						}
+					}
+					//Если другая ошибка - выводим ошибку
+					else
+					{
+						throw new Exception\Db\ConnectionException('Could not connect ['.$this->db_conn->connect_errno.']',mysqli_connect_error());
+					}
+				}
+			}
+			catch (Exception\Db\ConnectionException $e)
+			{
+				die($e->showException());
+			}
+		}
+	}
+
+	/**
+	 * Устанавливает необходимые параметры подключения, используя требуемый драйвер
+	 * @since 0.2.0
+	 */
+	private function setConnectParams ()
+	{
+		if ($this->driver == 'mysql')
+		{
+			if (Application::getInstance()->getSettings()->useUtf())
+			{
+				mysql_set_charset('utf8',$this->db_conn);
+			}
+		}
+		else //mysqli
+		{
+			if (Application::getInstance()->getSettings()->useUtf())
+			{
+				try
+				{
+					if (!@$this->db_conn->set_charset('utf8'))
+					{
+						throw new Exception\Db\DbException('Error set charset',$this->db_conn->error);
+					}
+				}
+				catch (Exception\Db\DbException $e)
+				{
+					die($e->showException());
+				}
+			}
+		}
+	}
+
+	/**
+	 * Осуществляет запрос к БД, через требуемый драйвер
+	 *
+	 * @param string $sql Текст SQL запроса
+	 *
+	 * @return resource
+	 * @since 0.2.0
+	 */
+	private function getConnectionQuery($sql)
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_query($sql, $this->db_conn);
+		}
+		else //mysqli
+		{
+			return $this->db_conn->query($sql);
+		}
+	}
+
+	/**
+	 * Возвращает затронутые запросом ряды, используя требуемый драйвер
+	 *
+	 * @return int
+	 * @since 0.2.0
+	 */
+	private function getConnectionAffectedRows ()
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_affected_rows($this->db_conn);
+		}
+		else //mysqli
+		{
+			return $this->db_conn->affected_rows;
+		}
+	}
+
+	/**
+	 * Возвращает ID добавленной записи, используя требуемый драйвер
+	 *
+	 * @return int
+	 * @since 0.2.0
+	 */
+	private function getInsertId ()
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_insert_id($this->db_conn);
+		}
+		else //mysqli
+		{
+			return $this->db_conn->insert_id;
+		}
+	}
+
+	/**
+	 * Возвращает номер произошедшей в запросе ошибки, используя требуемый драйвер
+	 *
+	 * @return int
+	 * @since 0.2.0
+	 */
+	private function getConnectionErrorNo ()
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_errno($this->db_conn);
+		}
+		else //mysqli
+		{
+			return $this->db_conn->errno;
+		}
+	}
+
+	/**
+	 * Возвращает текст произошедшей в запросе ошибки, используя требуемый драйвер
+	 *
+	 * @return string
+	 */
+	private function getConnectionError()
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_error($this->db_conn);
+		}
+		else //mysqli
+		{
+			return $this->db_conn->error;
+		}
+	}
+
+	/**
+	 * Возвращает число столбцов, затронутых последним запросом, для требуемого драйвера
+	 *
+	 * @param resource $resource
+	 *
+	 * @return int
+	 * @since 0.2.0
+	 */
+	public function getConnectionNumFields ($resource)
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_num_fields($resource);
+		}
+		else
+		{
+			return $this->db_conn->field_count;
+		}
+	}
+
+	/**
+	 * Получает число рядов в результирующей выборке, для требуемого драйвера
+	 *
+	 * @param resource|\mysqli_result $resource
+	 *
+	 * @return int
+	 */
+	public function getConnectionNumRows ($resource)
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_num_rows($resource);
+		}
+		else
+		{
+			return $resource->num_rows;
+		}
+	}
+
+	/**
+	 * Извлекает результирующий ряд в виде ассоциативного массива, для требуемого драйвера
+	 *
+	 * @param resource|\mysqli_result $resource
+	 *
+	 * @return array
+	 */
+	public function getConnectionFetchArray ($resource)
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_fetch_assoc($resource);
+		}
+		else
+		{
+			return $resource->fetch_array();
+		}
 	}
 
 	/**

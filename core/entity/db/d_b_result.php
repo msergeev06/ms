@@ -113,6 +113,7 @@ class DBResult
 	 */
 	function __construct($res=null, Query\QueryBase $obQuery=null)
 	{
+		$DB = Application::getInstance()->getConnection();
 		$this->result = $res;
 		if (!is_null($obQuery))
 		{
@@ -129,8 +130,10 @@ class DBResult
 		if ($res)
 		{
 			if ($this->query_type == "select"){
-				$this->mysql_num_fields = mysql_num_fields($res);
-				$this->mysql_num_rows = mysql_num_rows($res);
+				//$this->mysql_num_fields = mysql_num_fields($res);
+				$this->mysql_num_fields = $DB->getConnectionNumFields($res);
+				//$this->mysql_num_rows = mysql_num_rows($res);
+				$this->mysql_num_rows = $DB->getConnectionNumRows($res);
 			}
 		}
 	}
@@ -194,9 +197,11 @@ class DBResult
 	 */
 	public function fetch ()
 	{
+		$DB = Application::getInstance()->getConnection();
 		if ($this->query_type == "select" || $this->query_type == 'sql')
 		{
-			$ar_res = mysql_fetch_array($this->result);
+			//$ar_res = mysql_fetch_array($this->result);
+			$ar_res = $DB->getConnectionFetchArray($this->result);
 			$this->last_res = $ar_res;
 			$arResult = $arLast = array();
 			if (is_array($ar_res))

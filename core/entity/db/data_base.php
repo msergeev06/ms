@@ -7,7 +7,6 @@
  * @subpackage Entity\Db
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2017 Mikhail Sergeev
- * @since 0.1.0
  */
 
 namespace Ms\Core\Entity\Db;
@@ -19,73 +18,63 @@ use Ms\Core\Entity\Application;
 class DataBase {
 
 	/**
-	 * Hostname Базы данных. Используется для подключения к DB
-	 * @var string
+	 * @var string Hostname Базы данных. Используется для подключения к DB
 	 */
 	protected $host;
 
 	/**
-	 * Имя базы данных. Используется для подключения к DB
-	 * @var string
+	 * @var string Имя базы данных. Используется для подключения к DB
 	 */
 	protected $base;
 
 	/**
-	 * Пользователь базы данных. Используется для подключения к DB
-	 * @var string
+	 * @var string Пользователь базы данных. Используется для подключения к DB
 	 */
 	protected $user;
 
 	/**
-	 * Пароль пользователя базы данных. Используется для подключения к DB
-	 * @var string
+	 * @var string Пароль пользователя базы данных. Используется для подключения к DB
 	 */
 	protected $pass;
 
 	/**
 	 * @var string Используемый драйвер для подключения к БД
+	 * @since 0.2.0
 	 */
 	protected $driver;
 
 	/**
-	 * Ссылка на подключение к базе данных, либо false
-	 * @var resource|\mysqli|bool
+	 * @var resource|\mysqli|bool Ссылка на подключение к базе данных, либо false
 	 */
 	protected $db_conn;
 
 	/**
-	 * Отладочная информация по всем запросам сессии
-	 * @var array
+	 * @var array Отладочная информация по всем запросам сессии
 	 */
 	protected $arLog = array();
 
 	/**
-	 * Количество запросов к базе данных
-	 * @var int
+	 * @var int Количество запросов к базе данных
 	 */
 	protected $db_queries=0;
 
 	/**
-	 * Время начала запроса
-	 * @var int
+	 * @var int Время начала последнего запроса
 	 */
 	protected $db_query_start=0;
 
 	/**
-	 * Время окончания запроса
-	 * @var int
+	 * @var int Время окончания последнего запроса
 	 */
 	protected $db_query_stop=0;
 
 	/**
-	 * Время выполнения последнего запроса
-	 * @var int
+	 * @var int Время выполнения последнего запроса
 	 */
 	protected $db_last_query_time=0;
 
 	/**
-	 * Время выполнения всех запросов
-	 * @var int
+	 * @var int Время выполнения всех запросов
 	 */
 	protected $db_all_query_time=0;
 
@@ -93,7 +82,6 @@ class DataBase {
 	 * Осуществляет подключение к базе данных и передает начальные параметры подключения
 	 *
 	 * @api
-	 * @since 0.1.0
 	 */
 	public function __construct ()
 	{
@@ -115,7 +103,6 @@ class DataBase {
 	 * Восстанавливает базу данных из последнего существующего backup
 	 *
 	 * @return bool
-	 * @since 0.1.0
 	 */
 	public function restoreDB ()
 	{
@@ -183,7 +170,6 @@ class DataBase {
 	 * @param Query\QueryBase $obQuery Объект, содержащий SQL запрос
 	 *
 	 * @return DBResult Результат MYSQL запроса
-	 * @since 0.1.0
 	 */
 	public function query (Query\QueryBase $obQuery)
 	{
@@ -216,10 +202,9 @@ class DataBase {
 	/**
 	 * Выполняет произвольный SQL запрос
 	 *
-	 * @param $sql
+	 * @param string $sql
 	 *
 	 * @return resource
-	 * @since 0.1.0
 	 */
 	public function querySQL ($sql)
 	{
@@ -233,7 +218,6 @@ class DataBase {
 	 * Возвращает время выполнения последнего SQL запроса
 	 *
 	 * @return float
-	 * @since 0.1.0
 	 */
 	public function getLastQueryTime ()
 	{
@@ -244,7 +228,6 @@ class DataBase {
 	 * Возвращает общее время всех SQL запросов
 	 *
 	 * @return float
-	 * @since 0.1.0
 	 */
 	public function getAllQueryTime ()
 	{
@@ -255,7 +238,6 @@ class DataBase {
 	 * Возвращает общее количество выполненных SQL запросов
 	 *
 	 * @return int
-	 * @since 0.1.0
 	 */
 	public function getCountQuery ()
 	{
@@ -268,7 +250,6 @@ class DataBase {
 	 * @param string $dbName
 	 *
 	 * @return string
-	 * @since 0.1.0
 	 */
 	public function getCreateDbCommand ($dbName)
 	{
@@ -287,7 +268,6 @@ class DataBase {
 	 * @param string $filePath
 	 *
 	 * @return string
-	 * @since 0.1.0
 	 */
 	public function getBackupCommand ($filePath)
 	{
@@ -316,7 +296,6 @@ class DataBase {
 	 * @param string $dbPass    Пароль пользователя базы данных, если не указан, будет взят текущий
 	 *
 	 * @return string
-	 * @since 0.1.0
 	 */
 	public function getDumpCommand ($path,$postfix=null,$module=null,$arTables=array(),$useGz=true,$pastDate=true,$noData=false,$dbName=null,$dbUser=null,$dbPass=null)
 	{
@@ -388,6 +367,12 @@ class DataBase {
 		return $comm;
 	}
 
+	/**
+	 * Возвращает массив всех SQL запросов текущей сессии
+	 *
+	 * @return array
+	 * @since 0.2.0
+	 */
 	public function getSqlLogs()
 	{
 		return $this->arLog;
@@ -395,6 +380,7 @@ class DataBase {
 
 	/**
 	 * Подключается к базе данных, используя требуемый драйвер
+	 *
 	 * @since 0.2.0
 	 */
 	private function mysqlConnect()
@@ -461,6 +447,7 @@ class DataBase {
 
 	/**
 	 * Устанавливает необходимые параметры подключения, используя требуемый драйвер
+	 *
 	 * @since 0.2.0
 	 */
 	private function setConnectParams ()
@@ -608,6 +595,7 @@ class DataBase {
 	 * @param resource|\mysqli_result $resource
 	 *
 	 * @return int
+	 * @since 0.2.0
 	 */
 	public function getConnectionNumRows ($resource)
 	{
@@ -627,6 +615,7 @@ class DataBase {
 	 * @param resource|\mysqli_result $resource
 	 *
 	 * @return array
+	 * @since 0.2.0
 	 */
 	public function getConnectionFetchArray ($resource)
 	{
@@ -681,7 +670,6 @@ class DataBase {
 	 * @param string $sql SQL запрос
 	 *
 	 * @return string
-	 * @since 0.1.0
 	 */
 	private function getQueryHash ($sql)
 	{
@@ -695,7 +683,6 @@ class DataBase {
 	 * Устанавливает начальное время SQL запроса
 	 *
 	 * @param string $hash HASH запроса
-	 * @since 0.1.0
 	 */
 	private function setQueryStart ($hash)
 	{
@@ -707,7 +694,6 @@ class DataBase {
 	 * Устанавливает конечное время SQL запроса, вычисляет время выполнения последнего запроса и время выполнения всех запросов
 	 *
 	 * @param string $hash HASH запроса
-	 * @since 0.1.0
 	 */
 	private function setQueryStop ($hash)
 	{

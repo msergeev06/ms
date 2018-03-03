@@ -10,6 +10,7 @@
  */
 
 namespace Ms\Core\Entity\Db\Fields;
+use Ms\Core\Entity\Application;
 
 /**
  * Class StringField
@@ -117,7 +118,9 @@ class StringField extends ScalarField
 	 */
 	public static function saveDataModification ($value, StringField $obj=null)
 	{
-		$value = mysql_real_escape_string($value);
+		$DB = Application::getInstance()->getConnection();
+		//$value = mysql_real_escape_string($value);
+		$value = $DB->getConnectionRealEscapeString($value);
 		$value = str_replace("%", "\%", $value);
 
 		return $value;

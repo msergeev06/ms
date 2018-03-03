@@ -13,6 +13,7 @@
 namespace Ms\Core\Lib;
 
 use Ms\Core\Entity\Application;
+use Ms\Core\Exception\ClassNotFoundException;
 use Ms\Core\Lib\IO\Files;
 
 class Installer
@@ -46,7 +47,17 @@ class Installer
 
 		foreach ($arTables as $fileTable)
 		{
-			$className = Modules::getTableClassByFileName($fileTable);
+			try {
+				$className = Modules::getTableClassByFileName($fileTable);
+				if (!Loader::classExists($strNamespace.$className) && !class_exists($strNamespace.$className))
+				{
+					throw new ClassNotFoundException($className);
+				}
+			}
+			catch (ClassNotFoundException $e)
+			{
+				die($e->showException());
+			}
 
 			/** @var DataManager $runClass */
 			$runClass = $strNamespace.$className;

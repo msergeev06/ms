@@ -641,6 +641,41 @@ class DataBase {
 	}
 
 	/**
+	 * Возвращает экранированную строку, используя требуемый драйвер
+	 *
+	 * @param string $string Исходная строка
+	 *
+	 * @return string
+	 * @throws Exception\Db\DbException
+	 * @since 0.2.0
+	 */
+	public function getConnectionRealEscapeString ($string)
+	{
+		if ($this->driver == 'mysql')
+		{
+			if (!$res = mysql_real_escape_string($string,$this->db_conn))
+			{
+				throw new Exception\Db\DbException('Error escape string',mysql_error());
+			}
+			return $res;
+		}
+		else //mysqli
+		{
+			try {
+				if (!$res = $this->db_conn->real_escape_string($string))
+				{
+					throw new Exception\Db\DbException('Error escape string',$this->db_conn->error);
+				}
+				return $res;
+			}
+			catch (Exception\Db\DbException $e)
+			{
+				die($e->showException());
+			}
+		}
+	}
+
+	/**
 	 * Возвращает созданный hash SQL запроса
 	 *
 	 * @param string $sql SQL запрос

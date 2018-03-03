@@ -138,6 +138,19 @@ class Loader
 	}
 
 	/**
+	 * Проверяет, существует ли указанный класс в автозагрузке
+	 *
+	 * @param string $className
+	 *
+	 * @return bool
+	 * @since 0.2.0
+	 */
+	public static function classExists($className)
+	{
+		return (isset(static::$arAutoLoadClasses[$className]));
+	}
+
+	/**
 	 * Возвращает номер версии модуля, если она задана, либо false
 	 *
 	 * @api

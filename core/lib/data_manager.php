@@ -16,6 +16,7 @@ namespace Ms\Core\Lib;
 use Ms\Core\Exception;
 use Ms\Core\Entity\Db\Fields;
 use Ms\Core\Entity\Db;
+use Ms\Core\Entity\Db\DBResult;
 
 abstract class DataManager
 {
@@ -157,6 +158,61 @@ abstract class DataManager
 	}
 
 	/**
+	 * Обработчик события перед добавлением новой записи в таблицу
+	 *
+	 * @param array $arAdd Массив полей таблицы
+	 * @since 0.2.0
+	 */
+	protected static function OnBeforeAdd ($arAdd) {}
+
+	/**
+	 * Обработчик события после попытки добавления новой записи в таблицу
+	 *
+	 * @param array    $arAdd Массив полей таблицы
+	 * @param DBResult $res   Результат выполнения запроса
+	 * @since 0.2.0
+	 */
+	protected static function OnAfterAdd ($arAdd, $res) {}
+
+	/**
+	 * Обработчик события перед обновлением записи в таблице
+	 *
+	 * @param mixed $primary  Значение PRIMARY поля таблицы
+	 * @param array $arUpdate Массив обновляемых полей записи
+	 * @since 0.2.0
+	 */
+	protected static function OnBeforeUpdate ($primary, $arUpdate) {}
+
+	/**
+	 * Обработчик события после попытки обновления записи в таблице
+	 *
+	 * @param mixed    $primary  Значение поля PRIMARY таблицы
+	 * @param array    $arUpdate Массив обновляемых полей таблицы
+	 * @param DBResult $res      Результат выполнения запроса
+	 * @since 0.2.0
+	 */
+	protected static function OnAfterUpdate ($primary, $arUpdate, $res) {}
+
+	/**
+	 * Обработчки события перед удалением записи из таблицы
+	 *
+	 * @param mixed $primary Значение PRIMARY поля таблицы
+	 * @param bool  $confirm Флаг подтверждения удаления связанных записей
+	 * @since 0.2.0
+	 */
+	protected static function OnBeforeDelete ($primary, $confirm) {}
+
+	/**
+	 * Обработчки события после попытки удаления записи из таблицы
+	 *
+	 * @param mixed    $primary Значение PRIMARY поля таблицы
+	 * @param bool     $confirm Флаг подтверждения удаления связанных записей
+	 * @param DBResult $res     Результат выполнения запроса
+	 * @since 0.2.0
+	 */
+	protected static function OnAfterDelete ($primary, $confirm, $res) {}
+
+	/**
 	 * Добавляет значения в таблицу
 	 *
 	 * @param array $arAdd      Массив содержащий значения таблицы
@@ -187,7 +243,15 @@ abstract class DataManager
 		}
 		else
 		{
-			return $query->exec();
+			//Обрабатываем событие перед добавлением записи
+			static::OnBeforeAdd($arAdd);
+
+			$res = $query->exec();
+
+			//Обрабатываем событие после попытки добавления записи
+			static::OnAfterAdd($arAdd,$res);
+
+			return $res;
 		}
 	}
 
@@ -216,12 +280,21 @@ abstract class DataManager
 		}
 
 		$query = new Db\Query\QueryUpdate($primary,$arUpdate,static::getClassName());
+
 		if ($bShowSql)
 		{
 			return $query->getSql();
 		}
 
-		return $query->exec();
+		//Обрабатываем событие перед обновлением записи
+		static::OnBeforeUpdate($primary,$arUpdate);
+
+		$res = $query->exec();
+
+		//Обрабатываем событие после попытки обновления записи
+		static::OnAfterUpdate($primary,$arUpdate,$res);
+
+		return $res;
 	}
 
 	/**
@@ -239,7 +312,15 @@ abstract class DataManager
 	{
 		$query = new Db\Query\QueryDelete($primary,$confirm,static::getClassName());
 
-		return $query->exec();
+		//Обрабатываем событие перед удалением записи из таблицы
+		static::OnBeforeDelete($primary,$confirm);
+
+		$res = $query->exec();
+
+		//Обрабатываем событие после попытки удаления записи из таблицы
+		static::OnAfterDelete($primary, $confirm, $res);
+
+		return $res;
 	}
 
 	/**

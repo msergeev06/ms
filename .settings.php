@@ -1,6 +1,6 @@
 <?php
 
-$documentRoot = (($_SERVER["DOCUMENT_ROOT"]=='')?'/var/www':$_SERVER["DOCUMENT_ROOT"]);
+$documentRoot = (($_SERVER["DOCUMENT_ROOT"]=='')?'/var/www/html':$_SERVER["DOCUMENT_ROOT"]);
 
 return array(
 	'Site' => array(

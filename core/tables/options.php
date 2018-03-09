@@ -37,4 +37,14 @@ class OptionsTable extends DataManager
 		);
 	}
 
+	public static function getValues ()
+	{
+		return array (
+			array (
+				'NAME' => 'MS_CORE_SORT_DEFAULT',
+				'VALUE' => 500
+			)
+		);
+	}
+
 }

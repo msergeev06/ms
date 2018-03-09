@@ -100,7 +100,7 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 	 * Advance the internal array pointer of an array
 	 * @link http://php.net/manual/en/function.next.php
 	 *
-	 * @return mixed|void
+	 * @return mixed
 	 * @since 0.2.0
 	 */
 	public function next()
@@ -135,7 +135,7 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 	 * Set the internal pointer of an array to its first element
 	 * @link http://php.net/manual/en/function.reset.php
 	 *
-	 * @return mixed|void
+	 * @return mixed
 	 * @since 0.2.0
 	 */
 	public function rewind()

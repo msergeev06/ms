@@ -260,7 +260,7 @@ class Events
 		}
 		else
 		{
-			return false;
+			return array ();
 		}
 	}
 
@@ -335,9 +335,6 @@ class Events
 
 	/**
 	 * Получает список зарегистрированных обработчиков события и запускает их
-	 *
-	 * @see Ms\Core\Lib\Events::getModuleEvents
-	 * @see Ms\Core\Lib\Events::executeModuleEvent
 	 *
 	 * @param string $fromModule    Идентификатор модуля который инициирует событие
 	 * @param string $eventID       Идентификатор события

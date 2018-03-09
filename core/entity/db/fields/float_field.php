@@ -111,7 +111,7 @@ class FloatField extends ScalarField
 	 * @return float|mixed|string
 	 * @since 0.1.0
 	 */
-	public static function saveDataModification ($value, FloatField $obj=null)
+	public static function saveDataModification ($value, $obj=null)
 	{
 		if (!is_null($obj))
 		{
@@ -136,7 +136,7 @@ class FloatField extends ScalarField
 	 * @return array|float|mixed
 	 * @since 0.1.0
 	 */
-	public static function fetchDataModification ($value, FloatField $obj=null)
+	public static function fetchDataModification ($value, $obj=null)
 	{
 		if (!is_null($obj))
 		{
@@ -153,22 +153,13 @@ class FloatField extends ScalarField
 	/**
 	 * Возвращает значение поля в SQL формате
 	 *
-	 * @param        $value
-	 * @param string $type
+	 * @param float $value
 	 *
 	 * @return string
 	 * @since 0.2.0
 	 */
-	public function getSqlValue ($value, $type='sql')
+	public function getSqlValue ($value)
 	{
-		switch (strtolower($type))
-		{
-			case 'insert':
-			case 'update':
-			case 'primary':
-				return $value;
-			default:
-				return $value;
-		}
+		return (string) $value;
 	}
 }

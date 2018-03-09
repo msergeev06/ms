@@ -18,7 +18,7 @@ use Ms\Core\Exception;
  * @package Ms\Core
  * @subpackage Entity
  */
-class Component
+abstract class Component
 {
 	/**
 	 * Namespace компонента
@@ -95,7 +95,6 @@ class Component
 	 * @param string $component Namespace и название компонента, в виде namespace:componentName
 	 * @param string $template  Используемый шаблон компонента
 	 * @param array  $arParams  Массив значений параметров компонента
-	 * @access public
 	 */
 	public function __construct ($component, $template='.default', $arParams=array())
 	{
@@ -132,7 +131,6 @@ class Component
 	 * исходя из переданного массива значений
 	 *
 	 * @param string $path Путь к файлу параметров компонента
-	 * @access private
 	 */
 	private function loadParameters ($path)
 	{
@@ -158,21 +156,8 @@ class Component
 	/**
 	 * Основная функция запуска компонента. Должна быть обязательно переопределена.
 	 * Если функция не переопределена, вызывается исключение
-	 *
-	 * @throws Exception\NotImplementedException
-	 * @access public
 	 */
-	public function run ()
-	{
-		try
-		{
-			throw new Exception\NotImplementedException('Component::run');
-		}
-		catch (Exception\NotImplementedException $e)
-		{
-			die($e->showException());
-		}
-	}
+	abstract public function run ();
 
 	/**
 	 * Возвращает путь к текущему шаблону компонента.

@@ -64,7 +64,7 @@ class QueryBase
 	 *
 	 * @param bool $debug
 	 *
-	 * @return DBResult
+	 * @return DBResult|string
 	 * @since 0.2.0
 	 */
 	public function exec ($debug=false)

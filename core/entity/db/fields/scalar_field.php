@@ -352,7 +352,7 @@ class ScalarField extends Field
 	 * @return string
 	 * @since 0.2.0
 	 */
-	public function getSqlValue ($value, $type='sql')
+	public function getSqlValue ($value/*, $type='sql'*/)
 	{
 		return "'".$value."'";
 	}
@@ -366,7 +366,7 @@ class ScalarField extends Field
 	 * @return mixed|string
 	 * @since 0.1.0
 	 */
-	public static function saveDataModification ($value, ScalarField $obj=null)
+	public static function saveDataModification ($value, $obj=null)
 	{
 		if (!is_null($obj))
 		{
@@ -396,7 +396,7 @@ class ScalarField extends Field
 	 * @return array|mixed
 	 * @since 0.1.0
 	 */
-	public static function fetchDataModification ($value, ScalarField $obj=null)
+	public static function fetchDataModification ($value, $obj=null)
 	{
 		if (!is_null($obj))
 		{
@@ -414,23 +414,6 @@ class ScalarField extends Field
 			}
 		}
 
-		return $value;
-	}
-
-	/**
-	 * Осуществляет валидацию данных
-	 * @deprecated
-	 *
-	 * @api
-	 *
-	 * @param mixed $value Данные для валидации
-	 * @param ScalarField $obj
-	 *
-	 * @return mixed
-	 * @since 0.1.0
-	 */
-	public static function validate ($value, ScalarField $obj=null)
-	{
 		return $value;
 	}
 

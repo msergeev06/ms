@@ -84,13 +84,13 @@ class TimeField extends ScalarField
 	 *
 	 * @api
 	 *
-	 * @param                   $value
+	 * @param Date              $value
 	 * @param TimeField|null    $obj
 	 *
 	 * @return bool|mixed|string
 	 * @since 0.1.0
 	 */
-	public static function saveDataModification (Date $value, TimeField $obj=null)
+	public static function saveDataModification ($value, $obj=null)
 	{
 		if (!is_null($value))
 		{
@@ -108,13 +108,13 @@ class TimeField extends ScalarField
 	 *
 	 * @api
 	 *
-	 * @param                   $value
+	 * @param Date              $value
 	 * @param TimeField|null    $obj
 	 *
 	 * @return array|mixed
 	 * @since 0.1.0
 	 */
-	public static function fetchDataModification ($value, TimeField $obj=null)
+	public static function fetchDataModification ($value, $obj=null)
 	{
 		if (!is_null($value))
 		{
@@ -123,19 +123,6 @@ class TimeField extends ScalarField
 			$value = parent::fetchDataModification ($value, $obj);
 		}
 
-		return $value;
-	}
-
-	/**
-	 * Оставлено для совместимости
-	 * @deprecated
-	 *
-	 * @param mixed $value
-	 *
-	 * @return mixed
-	 */
-	public static function validate ($value)
-	{
 		return $value;
 	}
 }

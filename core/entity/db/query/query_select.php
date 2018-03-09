@@ -721,6 +721,7 @@ class QuerySelect extends QueryBase
 	 * @param bool $bFirstFilter
 	 *
 	 * @return string
+	 * @throws Exception\ArgumentNullException
 	 * @since 0.2.0
 	 */
 	private function prepareArFilter($arFilter,$bFirstFilter = false)
@@ -1297,7 +1298,7 @@ class QuerySelect extends QueryBase
 						}
 						else
 						{
-							new Exception\ArgumentNullException('$arMap['.$baseField.']');
+							throw new Exception\ArgumentNullException('$arMap['.$baseField.']');
 						}
 					}
 					catch(Exception\ArgumentNullException $e)

@@ -219,7 +219,7 @@ class SectionsTable extends Lib\DataManager
 	 * Добавляет индекс в таблицу
 	 * Функция запускается автоматически после создания таблицы.
 	 *
-	 * @return bool|void
+	 * @return bool
 	 */
 	public static function OnAfterCreateTable()
 	{

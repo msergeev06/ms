@@ -97,7 +97,8 @@ class Settings
 		}
 		else
 		{
-			$settings = ''.$settings;
+			//TODO: проверить работу без следующей строчки
+//			$settings = ''.$settings;
 			if (count($settings)==1)
 			{
 				if (isset($this->arSettings[strtolower($settings[0])]))

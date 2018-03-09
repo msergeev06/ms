@@ -10,7 +10,9 @@
  */
 
 namespace Ms\Core\Entity\Db\Fields;
+
 use Ms\Core\Entity\Application;
+use Ms\Core\Exception;
 
 /**
  * Class StringField
@@ -114,9 +116,10 @@ class StringField extends ScalarField
 	 * @param StringField|null  $obj
 	 *
 	 * @return mixed|string
+	 * @throws Exception\Db\DbException
 	 * @since 0.1.0
 	 */
-	public static function saveDataModification ($value, StringField $obj=null)
+	public static function saveDataModification ($value, $obj=null)
 	{
 		$DB = Application::getInstance()->getConnection();
 		//$value = mysql_real_escape_string($value);

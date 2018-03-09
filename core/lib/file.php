@@ -92,8 +92,8 @@ class File
 	/**
 	 * Добавляет новое изображение
 	 *
-	 * @param array $moduleName - имя модуля, добавляющего изображение
-	 * @param array $arFile - параметры файла
+	 * @param string $moduleName - имя модуля, добавляющего изображение
+	 * @param array  $arFile - параметры файла
 	 *
 	 * @return bool|int
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/file/method_add_new_img

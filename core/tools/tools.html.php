@@ -593,6 +593,16 @@ function SelectBox($strBoxName, $arValues, $strDetText = "", $strSelectedVal = "
 	return $strReturnBox."</select>";
 }
 
+/**
+ * @param        $strBoxName
+ * @param string $strSelectedVal
+ * @param string $strYes
+ * @param string $strNo
+ * @param string $field1
+ *
+ * @return string
+ * @throws Exception\ArgumentTypeException
+ */
 function SelectBoxBool ($strBoxName, $strSelectedVal = "", $strYes='', $strNo='', $field1="class=\"typeselect\"")
 {
 	Lib\Loc::includeLocFile(__FILE__,'ms_core_');

@@ -36,13 +36,6 @@ class Context
 	protected $server;
 
 	/**
-	 * Объект окружения
-	 * @var Environment
-	 * @access protected
-	 */
-	//protected $env;
-
-	/**
 	 * Массив параметров
 	 * @var array
 	 * @access protected
@@ -72,10 +65,6 @@ class Context
 	{
 		$this->request = $request;
 		$this->server = $server;
-/*		if (isset($params['env']))
-		{
-			$this->env = new Environment($params['env']);
-		}*/
 	}
 
 	/**
@@ -100,14 +89,4 @@ class Context
 		return $this->server;
 	}
 
-	/**
-	 * Возвращает объект окружения
-	 *
-	 * @access public
-	 * @return Environment
-	 */
-/*	public function getEnv ()
-	{
-		return $this->env;
-	}*/
 }

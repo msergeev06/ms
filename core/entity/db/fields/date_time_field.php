@@ -89,13 +89,13 @@ class DateTimeField extends ScalarField
 	 *
 	 * @api
 	 *
-	 * @param $value
+	 * @param Date $value
 	 * @param DateTimeField|null $obj
 	 *
-	 * @return bool|mixed|string|void
+	 * @return bool|mixed|string
 	 * @since 0.1.0
 	 */
-	public static function saveDataModification (Date $value, DateTimeField $obj=null)
+	public static function saveDataModification ($value, $obj=null)
 	{
 		if (!is_null($value))
 		{
@@ -114,7 +114,7 @@ class DateTimeField extends ScalarField
 	 * @return Date|null
 	 * @since 0.1.0
 	 */
-	public static function fetchDataModification ($value, DateTimeField $obj=null)
+	public static function fetchDataModification ($value, $obj=null)
 	{
 		if (!is_null($value))
 		{
@@ -123,20 +123,6 @@ class DateTimeField extends ScalarField
 				$value = $date;
 		}
 
-		return $value;
-	}
-
-	/**
-	 * Оставлена для совместимости
-	 * @deprecated
-	 *
-	 * @param mixed $value
-	 *
-	 * @return mixed
-	 * @since 0.2.0
-	 */
-	public static function validate($value)
-	{
 		return $value;
 	}
 }

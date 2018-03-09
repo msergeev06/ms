@@ -28,9 +28,10 @@ class ErrorCollection extends Type\Dictionary
 	 */
 	public function __construct(array $values = null)
 	{
+		parent::__construct();
 		if($values)
 		{
-			$this->add($values);
+			$this->addErrors($values);
 		}
 	}
 
@@ -41,7 +42,7 @@ class ErrorCollection extends Type\Dictionary
 	 * @access public
 	 * @return void
 	 */
-	public function add(array $errors)
+	public function addErrors(array $errors)
 	{
 		foreach($errors as $error)
 		{

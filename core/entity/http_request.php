@@ -310,6 +310,7 @@ class HttpRequest extends Request
 	 *
 	 * @ignore
 	 * @access public
+	 * @throws
 	 * @return string
 	 */
 	public function getRequestedPage()
@@ -323,7 +324,7 @@ class HttpRequest extends Request
 			else
 			{
 				$parsedUri = new Web\Uri("http://".$this->server->getHttpHost().$uri);
-				$this->requestedPage = static::normalize(static::decode($parsedUri->getPath()));
+				$this->requestedPage = Lib\IO\Path::normalize(static::decode($parsedUri->getPath()));
 			}
 		}
 		return $this->requestedPage;

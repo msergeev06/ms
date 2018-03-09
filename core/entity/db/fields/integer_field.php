@@ -44,9 +44,9 @@ namespace Ms\Core\Entity\Db\Fields;
  * @method ScalarField isAutocomplete()             Возвращает флаг того, используется ли для поля auto increment
  * @method ScalarField getColumnName()              Возвращает название поля в базе данных
  * @method ScalarField getRun()                     Возвращает массив исполняемых функций
- * @method ScalarField setColumnName($column_name)  Задает название поля в базе данных
+ * @method ScalarField setColumnName()  Задает название поля в базе данных
  * @method ScalarField getDefaultValue()            Возвращает значение поля по-умолчанию
- * @static ScalarField validate($value, $obj)       Осуществляет валидацию данных
+ * @static ScalarField validate(value, obj)       Осуществляет валидацию данных
  *
  * @method Field    getName()                   Возвращает название поля в API
  * @method Field    getTitle()                  Возвращает описание поля
@@ -54,8 +54,8 @@ namespace Ms\Core\Entity\Db\Fields;
  * @method Field    getFieldType()              Возвращает тип поля в API
  * @method Field    getParentField()            Возвращает объект родительского поля
  * @method Field    getLink()                   Возвращает строку - связь поля с другим полем
- * @method Field    serialize($value)           Сериализует массив
- * @method Field    unserialize($value)         Десериализирует массив
+ * @method Field    serialize()           Сериализует массив
+ * @method Field    unserialize()         Десериализирует массив
  * @method Field    isSerialized()              Возвращает флаг, обозначающий факт того, является ли значение данного
  *                                              поля сериализованным массивом
  * @method Field    getFetchDataModification()  Возвращает название функции для обработки значений полученных из
@@ -115,7 +115,7 @@ class IntegerField extends ScalarField
 	 * @return mixed
 	 * @since 0.1.0
 	 */
-	public static function saveDataModification ($value, IntegerField $obj=null)
+	public static function saveDataModification ($value, $obj=null)
 	{
 		if (!is_null($value))
 		{
@@ -137,7 +137,7 @@ class IntegerField extends ScalarField
 	 * @return array|int|mixed
 	 * @since 0.1.0
 	 */
-	public static function fetchDataModification ($value, IntegerField $obj=null)
+	public static function fetchDataModification ($value, $obj=null)
 	{
 		if (!is_null($value))
 		{
@@ -151,22 +151,13 @@ class IntegerField extends ScalarField
 	/**
 	 * Возвращает значение поля в SQL формате
 	 *
-	 * @param        $value
-	 * @param string $type
+	 * @param int    $value
 	 *
 	 * @return string
 	 * @since 0.2.0
 	 */
-	public function getSqlValue ($value, $type='sql')
+	public function getSqlValue ($value)
 	{
-		switch (strtolower($type))
-		{
-			case 'insert':
-			case 'update':
-			case 'primary':
-				return $value;
-			default:
-				return $value;
-		}
+		return (string) $value;
 	}
 }

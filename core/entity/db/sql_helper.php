@@ -63,60 +63,6 @@ class SqlHelper
 
 
 	/**
-	 * Возвращает объект класса SqlHelperDate, для получения доступа к его функциям
-	 *
-	 * @api
-	 *
-	 * @return SqlHelperDate
-	 * @since 0.1.0
-	 */
-/*	public function helperDate ()
-	{
-		if (is_null($this->sqlHelperDate))
-		{
-			$this->sqlHelperDate = new SqlHelperDate($this->tableName);
-		}
-
-		return $this->sqlHelperDate;
-	}*/
-
-	/**
-	 * Возвращает объект класса SqlHelperMath, для получения доступа к его функциям
-	 *
-	 * @api
-	 *
-	 * @return SqlHelperMath
-	 * @since 0.1.0
-	 */
-/*	public function helperMath ()
-	{
-		if (is_null($this->sqlHelperMath))
-		{
-			$this->sqlHelperMath = new SqlHelperMath($this->tableName);
-		}
-
-		return $this->sqlHelperMath;
-	}*/
-
-	/**
-	 * Возвращает объект класса SqlHelperStr, для получения доступа к его функциям
-	 *
-	 * @api
-	 *
-	 * @return SqlHelperStr
-	 * @since 0.1.0
-	 */
-/*	public function helperStr()
-	{
-		if (is_null($this->sqlHelperStr))
-		{
-			$this->sqlHelperStr = new SqlHelperStr($this->tableName);
-		}
-
-		return $this->sqlHelperStr;
-	}*/
-
-	/**
 	 * Возвращает оборнутое кавычками значение str
 	 *
 	 * @api

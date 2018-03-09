@@ -89,6 +89,7 @@ abstract class Request extends Type\ParameterDictionary
 	 * Возвращает путь к запрошенной странице
 	 *
 	 * @access public
+	 * @throws
 	 * @return mixed|null|string
 	 */
 	public function getRequestedPage()

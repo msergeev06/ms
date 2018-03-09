@@ -665,26 +665,6 @@ class Application
 
 
 
-	//Буферизация вывода
-
-	/**
-	 * @deprecated
-	 */
-	public function endBuffer()
-	{
-		$this->endBufferPage();
-	}
-	/**
-	 * @deprecated
-	 * @params $name
-	 * @deprecated
-	 */
-	public function startBuffer ($name='page')
-	{
-		$this->startBufferPage();
-	}
-
-
 
 
 	/**
@@ -892,6 +872,8 @@ class Application
 	 * Добавляет JS файл к загружаемым на странице скриптам
 	 *
 	 * @param string $fullPath Путь к файлу JS от корня
+	 *
+	 * @return bool
 	 */
 	public function addJS ($fullPath)
 	{
@@ -906,7 +888,10 @@ class Application
 					'<script type="text/javascript" src="'.$path.'"></script>'."\n"
 				);
 			}
+			return TRUE;
 		}
+
+		return FALSE;
 	}
 
 	/**

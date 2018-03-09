@@ -22,6 +22,8 @@ class ErrorHandler
 	 * @param null $errFile
 	 * @param null $errLine
 	 * @param null $errContext
+	 *
+	 * @return bool
 	 */
 	public static function handler ($errNo, $errStr, $errFile=null, $errLine=null, $errContext=null)
 	{
@@ -65,5 +67,7 @@ class ErrorHandler
 			}
 		}
 		echo '</p>';
+
+		return true;
 	}
 }

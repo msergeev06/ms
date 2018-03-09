@@ -87,10 +87,10 @@ class DateField extends ScalarField
 	 * @param Date|null $value
 	 * @param DateField|null $obj
 	 *
-	 * @return bool|mixed|string|void
+	 * @return bool|mixed|string
 	 * @since 0.1.0
 	 */
-	public static function saveDataModification ($value, DateField $obj=null)
+	public static function saveDataModification ($value, $obj=null)
 	{
 		if (!is_null($value) && $value=='')
 		{
@@ -103,7 +103,7 @@ class DateField extends ScalarField
 			{
 				if (!($value instanceof Date))
 				{
-					throw new ArgumentTypeException((string)$value,'MSergeev\Core\Entity\Type\Date');
+					throw new ArgumentTypeException((string)$value,'Ms\Core\Entity\Type\Date');
 				}
 				else
 				{
@@ -130,7 +130,7 @@ class DateField extends ScalarField
 	 * @return array|bool|mixed|string
 	 * @since 0.1.0
 	 */
-	public static function fetchDataModification ($value, DateField $obj=null)
+	public static function fetchDataModification ($value, $obj=null)
 	{
 		if (!is_null($value))
 		{
@@ -147,20 +147,6 @@ class DateField extends ScalarField
 				$value = $date;
 			}
 		}
-		return $value;
-	}
-
-	/**
-	 * Оставлена для совместимости
-	 * @deprecated
-	 *
-	 * @param mixed $value
-	 *
-	 * @return mixed
-	 * @since 0.2.0
-	 */
-	public static function validate ($value)
-	{
 		return $value;
 	}
 }

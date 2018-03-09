@@ -26,5 +26,6 @@ class QueryDrop extends QueryBase
 	{
 		/** @var DataManager $tableClass */
 		$this->setTableName($tableClass->getTableName());
+		parent::__construct();
 	}
 }

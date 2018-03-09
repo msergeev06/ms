@@ -18,6 +18,12 @@ class Path
 
 	protected static $directoryIndex = null;
 
+	/**
+	 * @param $path
+	 *
+	 * @return null|string|string[]
+	 * @throws InvalidPathException
+	 */
 	public static function normalize($path)
 	{
 		if (!is_string($path) || ($path == ""))

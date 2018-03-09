@@ -86,7 +86,7 @@ class QueryUpdate extends QueryBase
 	/**
 	 * Собирает SQL запрос из параметров
 	 *
-	 * @return string|void
+	 * @return string
 	 * @since 0.2.0
 	 */
 	protected function buildQuery()

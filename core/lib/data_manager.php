@@ -218,7 +218,8 @@ abstract class DataManager
 	 * @param array $arAdd      Массив содержащий значения таблицы
 	 * @param bool  $bShowSql   Необходимость отобразить sql запрос вместо запроса
 	 *
-	 * @return Db\DBResult Результат mysql запроса
+	 * @return Db\DBResult|string Результат mysql запроса, либо сам текст запроса
+	 * @throws
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_add
 	 */
 	final public static function add ($arAdd, $bShowSql=false)
@@ -262,7 +263,8 @@ abstract class DataManager
 	 * @param array $arUpdate Массив значений таблицы в поле 'VALUES'
 	 * @param bool  $bShowSql Флаг, показать SQL запрос вместо выполнения
 	 *
-	 * @return Db\DBResult Результат mysql запроса
+	 * @return Db\DBResult|string Результат mysql запроса, либо текст запроса
+	 * @throws
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_update
 	 */
 	final public static function update ($primary, $arUpdate, $bShowSql=false)
@@ -392,6 +394,7 @@ abstract class DataManager
 	 * @api
 	 *
 	 * @return bool|Db\DBResult Результат mysql запроса, либо false
+	 * @throws
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_insert_default_rows
 	 */
 	final public static function insertDefaultRows ()
@@ -531,6 +534,7 @@ abstract class DataManager
 	 * @param bool  $showSql  Показать SQL запрос, вместо выборки (для отладки)
 	 *
 	 * @return array|bool Массив значений таблицы, массив с SQL запросом, либо в случае неудачи false
+	 * @throws
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_list
 	 */
 	final public static function getList ($arParams=array(),$showSql=false)

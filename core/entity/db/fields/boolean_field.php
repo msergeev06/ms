@@ -191,7 +191,8 @@ class BooleanField extends ScalarField {
 	/**
 	 * Возвращает значение приобразованное в формат SQL запроса
 	 *
-	 * @param mixed $value - значение
+	 * @param mixed $value значение
+	 * @param string $type тип
 	 *
 	 * @return string
 	 * @since 0.2.0
@@ -219,7 +220,7 @@ class BooleanField extends ScalarField {
 	 * @return mixed|string
 	 * @since 0.1.0
 	 */
-	public static function saveDataModification ($value, BooleanField $obj=null)
+	public static function saveDataModification ($value, $obj=null)
 	{
 		if (!is_null($obj))
 		{
@@ -249,7 +250,7 @@ class BooleanField extends ScalarField {
 	 * @return array|mixed
 	 * @since 0.1.0
 	 */
-	public static function fetchDataModification ($value, BooleanField $obj=null)
+	public static function fetchDataModification ($value, $obj=null)
 	{
 		if (!is_null($obj))
 		{

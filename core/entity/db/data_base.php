@@ -483,7 +483,7 @@ class DataBase {
 	 *
 	 * @param string $sql Текст SQL запроса
 	 *
-	 * @return resource
+	 * @return resource|\mysqli_result
 	 * @since 0.2.0
 	 */
 	private function getConnectionQuery($sql)

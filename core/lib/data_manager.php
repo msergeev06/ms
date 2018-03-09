@@ -584,4 +584,37 @@ abstract class DataManager
 
 		return static::getList($params[0]);
 	}
+
+
+
+	/**
+	 * Заглушка, чтобы не использовали этот метод
+	 */
+	final private static function OnBeforeInsert ()
+	{
+		try
+		{
+			throw new Exception\NotSupportedException('Method OnBeforeInsert not supported. Use OnBeforeAdd');
+		}
+		catch (Exception\NotSupportedException $e)
+		{
+			die($e->showException());
+		}
+	}
+
+	/**
+	 * Заглушка, чтобы не использовали этот метод
+	 */
+	final private static function OnAfterInsert ()
+	{
+		try
+		{
+			throw new Exception\NotSupportedException('Method OnAfterInsert not supported. Use OnAfterAdd');
+		}
+		catch (Exception\NotSupportedException $e)
+		{
+			die($e->showException());
+		}
+	}
+
 }

@@ -441,6 +441,40 @@ abstract class DataManager
 	}
 
 	/**
+	 * Удаляет таблицу из БД. Возвращает TRUE, если табилца успешно удалена, иначе FALSE
+	 *
+	 * @return bool
+	 */
+	final public static function dropTable ()
+	{
+		$query = new Db\Query\QueryDrop(static::getClassName());
+
+		$res = Events::runEvents('core','OnBeforeDropTable',array (static::getClassName()));
+		if ($res === false)
+		{
+			return false;
+		}
+
+		if (!static::OnBeforeDropTable())
+		{
+			return false;
+		}
+		$res = $query->exec();
+
+		return ($res->getResult()) ? TRUE : FALSE;
+	}
+
+	/**
+	 * Метод вызываемый перед удалением таблицы
+	 *
+	 * @return bool
+	 */
+	public static function OnBeforeDropTable ()
+	{
+		return true;
+	}
+
+	/**
 	 * Функция проверяет описанные связи таблицы, используя запросы к DB
 	 *
 	 * @api

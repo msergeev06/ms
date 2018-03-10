@@ -116,4 +116,52 @@ class Installer
 		}
 	}
 
+	/**
+	 * Удаляет таблицы указанного модуля
+	 *
+	 * @param string $strModuleName Имя модуля
+	 *
+	 * @return bool
+	 */
+	public static function dropModuleTables ($strModuleName)
+	{
+		$strModuleName = strtolower($strModuleName);
+		if (!$strNamespace = Modules::getModuleNamespaceTables($strModuleName))
+		{
+			return false;
+		}
+		if (!Loader::includeModule($strModuleName))
+		{
+			return false;
+		}
+
+		if (!$arTables = Modules::getModuleTableFiles($strModuleName)){
+			return false;
+		}
+
+		foreach ($arTables as $fileTable)
+		{
+			try {
+				$className = Modules::getTableClassByFileName($fileTable);
+				if (!Loader::classExists($strNamespace.$className) && !class_exists($strNamespace.$className))
+				{
+					throw new ClassNotFoundException($className);
+				}
+			}
+			catch (ClassNotFoundException $e)
+			{
+				die($e->showException());
+			}
+
+			/** @var DataManager $runClass */
+			$runClass = $strNamespace.$className;
+			$bDelete = $runClass::dropTable();
+			if ($bDelete !== true)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
 }

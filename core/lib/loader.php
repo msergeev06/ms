@@ -70,16 +70,11 @@ class Loader
 							//Если существует файл версии модуля, обрабатываем
 							if (file_exists(static::$modulesRoot.'/'.$file.'/version.php'))
 							{
-								static::$arModules[$file]['INSTALLED_VERSION'] = include(static::$modulesRoot.$file.'/version.php');
+								static::$arModules[$file]['INSTALLED_VERSION'] = include(static::$modulesRoot.'/'.$file.'/version.php');
 								if (isset(static::$arModules[$file]['INSTALLED_VERSION']['VERSION_DATE']))
 								{
 									static::$arModules[$file]['INSTALLED_VERSION']['VERSION_DATE'] = new Date(static::$arModules[$file]['INSTALLED_VERSION']['VERSION_DATE'],'db');
 								}
-							}
-							//Если существует файл с описанием модуля, обрабатываем
-							if (file_exists(static::$modulesRoot.'/'.$file.'/'.$file.'.php'))
-							{
-								static::$arModules[$file]['INFO'] = include(static::$modulesRoot.'/'.$file.'/'.$file.'.php');
 							}
 						}
 					}

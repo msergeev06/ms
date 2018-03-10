@@ -112,7 +112,7 @@ class Loc
 	 */
 	public static function getModuleMessage ($module,$name,$arReplace=array(),$prefix='ms_')
 	{
-		if (!$module == 'core')
+		if ($module != 'core')
 		{
 			if ($arModule = Modules::parseModuleName($module))
 			{

@@ -17,6 +17,7 @@ require($coreRoot.'/exception/class_not_found.php');
 //require($coreRoot.'/entity/error.php');
 //require($coreRoot.'/entity/error_collection.php');
 require($coreRoot.'/lib/modules.php');
+require($coreRoot.'/entity/type/date.php');
 require($coreRoot.'/lib/loader.php');
 \Ms\Core\Lib\Loader::init();
 \Ms\Core\Lib\Loader::addAutoLoadClasses(
@@ -102,7 +103,7 @@ require($coreRoot.'/lib/loader.php');
 		/** Entity\Type all*/
 		$coreNamespace.'\Entity\Type\Dictionary'                  => $coreRoot.'/entity/type/dictionary.php',
 		$coreNamespace.'\Entity\Type\ParameterDictionary'         => $coreRoot.'/entity/type/parameter_dictionary.php',
-		$coreNamespace.'\Entity\Type\Date'                        => $coreRoot.'/entity/type/date.php',
+//		$coreNamespace.'\Entity\Type\Date'                        => $coreRoot.'/entity/type/date.php',
 		/** Form */
 		$coreNamespace.'\Entity\Form\Field'               => $coreRoot.'/entity/form/field.php',
 		$coreNamespace.'\Entity\Form\Hidden'              => $coreRoot.'/entity/form/hidden.php',

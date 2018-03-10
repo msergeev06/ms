@@ -30,7 +30,7 @@ return array(
 	'Debug' => array(
 		'DebugMode' => true,
 		'DirLogs' => $documentRoot.'/logs',
-		'SystemLogFile' => $documentRoot.'/logs/sys-log-'.date('Ymd').'.log',
+		'SystemLogFile' => $documentRoot.'/logs/sys-log-'.date('Y-m-d').'.log',
 		'ExpireLogFiles' => 10
 	),
 	'Time' => array(

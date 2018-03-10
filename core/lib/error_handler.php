@@ -12,6 +12,9 @@
 
 namespace Ms\Core\Lib;
 
+use Ms\Core\Entity\Application;
+use Ms\Core\Lib\IO\Files;
+
 class ErrorHandler
 {
 	/**
@@ -28,12 +31,12 @@ class ErrorHandler
 	public static function handler ($errNo, $errStr, $errFile=null, $errLine=null, $errContext=null)
 	{
 
-		if (!(error_reporting() & $errNo)) {
+/*		if (!(error_reporting() & $errNo)) {
 
 			// Этот код ошибки не включен в error_reporting,
 			// так что пусть обрабатываются стандартным обработчиком ошибок PHP
 			return false;
-		}
+		}*/
 
 		echo '<p><strong>';
 		//echo $errNo;
@@ -69,5 +72,33 @@ class ErrorHandler
 		echo '</p>';
 
 		return true;
+	}
+
+	public static function exceptionHandler (\Throwable $e)
+	{
+		$filename = $_SERVER['DOCUMENT_ROOT'].'/logs/sys-errors-'.date('Y-m-d').'.log';
+		if ($f1 = @fopen($filename,'a'))
+		{
+			$tmp=explode(' ', microtime());
+			fwrite($f1, date("H:i:s ").$tmp[0]."\n");
+			fwrite($f1, 'Error['.$e->getCode().']: '.$e->getMessage()."\n");
+			fwrite($f1, "Stack trace:\n");
+			fwrite($f1, $e->getTraceAsString()."\n");
+			fwrite($f1, $e->getFile().": ".$e->getLine());
+			fwrite($f1, "\n------------------\n");
+			fclose ($f1);
+			@chmod($filename, 0644);
+		}
+
+		if (Application::getInstance()->getSettings()->isDebugMode())
+		{
+			$html = "<pre><b>Error[{$e->getCode()}]:</b> {$e->getMessage()}\n";
+			$html .= "<b>Stack trace:</b>\n{$e->getTraceAsString()}\n";
+			$html .= "<b>{$e->getFile()}: {$e->getLine()}</b></pre>";
+
+			die($html);
+		}
+
+		die();
 	}
 }

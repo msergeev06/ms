@@ -30,6 +30,7 @@ $application->setState('PB');
 $application->loadSettings();
 require_once(dirname(__FILE__).'/include.php');
 set_error_handler('\Ms\Core\Lib\ErrorHandler::handler');
+set_exception_handler('\Ms\Core\Lib\ErrorHandler::exceptionHandler');
 define('MS_AUTOLOAD_CLASSES_ENABLED',true);
 \Ms\Core\Lib\Options::init();
 \Ms\Core\Lib\Events::runEvents('core','OnPrologBefore');

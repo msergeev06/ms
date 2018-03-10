@@ -12,6 +12,7 @@
 
 namespace Ms\Core\Entity\Db\Query;
 
+use Ms\Core\Entity\Db\SqlHelper;
 use Ms\Core\Lib\DataManager;
 
 class QueryDrop extends QueryBase
@@ -19,13 +20,17 @@ class QueryDrop extends QueryBase
 	/**
 	 * Конструктор
 	 *
-	 * @param null|string $tableClass
+	 * @param string $tableClass Имя класса таблицы
 	 * @since 0.2.0
 	 */
 	public function __construct ($tableClass)
 	{
+		$this->setType('drop');
 		/** @var DataManager $tableClass */
-		$this->setTableName($tableClass->getTableName());
-		parent::__construct();
+		$helper = new SqlHelper($tableClass::getTableName());
+
+		$sql = "DROP TABLE IF EXISTS ".$helper->wrapTableQuotes();
+
+		$this->setSql($sql);
 	}
 }

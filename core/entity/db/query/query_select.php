@@ -696,6 +696,7 @@ class QuerySelect extends QueryBase
 	 * Собирает WHERE часть SQL запроса
 	 *
 	 * @return string
+	 * @throws
 	 * @since 0.2.0
 	 */
 	private function createSqlWhere()
@@ -785,7 +786,7 @@ class QuerySelect extends QueryBase
 				{
 					if (!isset($arMap[$field]))
 					{
-						msDebug($arMask);
+						//msDebugNoAdmin($arMask);
 						throw new Exception\ArgumentOutOfRangeException($field);
 					}
 				}
@@ -812,7 +813,7 @@ class QuerySelect extends QueryBase
 				{
 					$sql .= " ".$helper->wrapFieldQuotes($value);
 				}
-				//Если значпение не равно NULL
+				//Если значение не равно NULL
 				elseif (!is_null($value))
 				{
 					//Если значение является массивом

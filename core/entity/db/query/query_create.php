@@ -26,6 +26,7 @@ class QueryCreate extends QueryBase
 	 * Создает SQL запрос типа "create"
 	 *
 	 * @param string $tableClass Класс таблицы
+	 * @throws
 	 * @since 0.2.0
 	 */
 	public function __construct ($tableClass)

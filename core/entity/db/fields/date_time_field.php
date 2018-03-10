@@ -125,4 +125,18 @@ class DateTimeField extends ScalarField
 
 		return $value;
 	}
+
+	public function getSqlValue ($value)
+	{
+		if ($value instanceof Date)
+		{
+			return "'".$value->getDateTimeDB()."'";
+		}
+		else
+		{
+			return "'".$value."'";
+		}
+	}
+
+
 }

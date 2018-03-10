@@ -125,4 +125,16 @@ class TimeField extends ScalarField
 
 		return $value;
 	}
+
+	public function getSqlValue ($value)
+	{
+		if ($value instanceof Date)
+		{
+			return "'".$value->getTimeSite()."'";
+		}
+		else
+		{
+			return "'".$value."'";
+		}
+	}
 }

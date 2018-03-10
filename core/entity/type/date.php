@@ -86,7 +86,7 @@ class Date extends \DateTime
 	 * @param \DateTimeZone|null $timezone Временная зона
 	 * @since 0.2.0
 	 */
-	public function __construct ($date = NULL, $format = NULL, \DateTimeZone $timezone = NULL)
+	public function __construct ($date = NULL, $format = 'db', \DateTimeZone $timezone = NULL)
 	{
 		$settings = Application::getInstance()->getSettings();
 		//Определяем временнУю зону и верно ли она задана
@@ -101,7 +101,7 @@ class Date extends \DateTime
 			return $this;
 		}
 		//Если формат не задан, считаем что это формат БД
-		if (is_null($format))
+		if (!isset($format))
 		{
 			$format = 'db';
 		}
@@ -786,6 +786,47 @@ class Date extends \DateTime
 
 		return $this;
 	}
+
+	/**
+	 * Устанавливает дату по параметрам
+	 *
+	 * @param int $year
+	 * @param int $month
+	 * @param int $day
+	 *
+	 * @return Date $this
+	 */
+	public function setDate ($year, $month, $day)
+	{
+		parent::setDate($year, $month, $day);
+
+		return $this;
+	}
+
+	/**
+	 * Устанавливает время по параметрам
+	 *
+	 * @param int $hour
+	 * @param int $minute
+	 * @param int $second
+	 * @param int $microseconds
+	 *
+	 * @return Date $this
+	 */
+	public function setTime ($hour, $minute, $second = 0, $microseconds = 0)
+	{
+		parent::setTime($hour, $minute, $second, $microseconds);
+
+		return $this;
+	}
+
+	public function modify ($modify)
+	{
+		parent::modify($modify);
+
+		return $this;
+	}
+
 
 	/**
 	 * Устанавливает начало дня (время 00:00:00) для текущей метки времени

@@ -84,7 +84,14 @@ class Loc
 	 */
 	public static function getMessage ($name,$arReplace=array())
 	{
-		$message = static::$arMessage[strtoupper($name)];
+		if (isset(static::$arMessage[strtoupper($name)]))
+		{
+			$message = static::$arMessage[strtoupper($name)];
+		}
+		else
+		{
+			$message = '['.strtoupper($name).']';
+		}
 		if (!empty($arReplace))
 		{
 			foreach ($arReplace as $field=>$value)

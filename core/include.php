@@ -52,6 +52,7 @@ require($coreRoot.'/lib/loader.php');
 		$coreNamespace.'\Lib\Form'        => $coreRoot.'/lib/form.php',
 		$coreNamespace.'\Lib\Installer'   => $coreRoot.'/lib/installer.php',
 		$coreNamespace.'\Lib\Loc'         => $coreRoot.'/lib/loc.php',
+		$coreNamespace.'\Lib\Logs'        => $coreRoot.'/lib/logs.php',
 		$coreNamespace.'\Lib\Options'     => $coreRoot.'/lib/options.php',
 		$coreNamespace.'\Lib\Sections'    => $coreRoot.'/lib/sections.php',
 		$coreNamespace.'\Lib\ShellTools'  => $coreRoot.'/lib/shell_tools.php',

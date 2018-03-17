@@ -44,4 +44,8 @@ if ($arAutoLoadModules = $application->getSettings()->getAutoLoadModules())
 		}
 	}
 }
+if (file_exists($application->getSettings()->getMsRoot().'/assembly.php'))
+{
+	include ($application->getSettings()->getMsRoot().'/assembly.php');
+}
 \Ms\Core\Lib\Events::runEvents('core','OnProlog');

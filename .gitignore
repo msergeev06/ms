@@ -12,3 +12,4 @@
 !/templates/.default/
 /logs/*
 *.log
+/assembly.php

@@ -122,9 +122,26 @@ class StringField extends ScalarField
 	public static function saveDataModification ($value, $obj=null)
 	{
 		$DB = Application::getInstance()->getConnection();
+		$value = parent::saveDataModification($value,$obj);
 		//$value = mysql_real_escape_string($value);
 		$value = $DB->getConnectionRealEscapeString($value);
 		$value = str_replace("%", "\%", $value);
+
+		return $value;
+	}
+
+	/**
+	 * Обрабатывает значение поля после получения из базы данных
+	 *
+	 * @param string           $value
+	 * @param StringField|null $obj
+	 *
+	 * @return array|mixed
+	 * @since 0.1.0
+	 */
+	public static function fetchDataModification ($value, $obj = NULL)
+	{
+		$value = parent::fetchDataModification($value, $obj);
 
 		return $value;
 	}

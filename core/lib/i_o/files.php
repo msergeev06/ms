@@ -155,4 +155,56 @@ class Files
 
 		return false;
 	}
+
+	/**
+	 * Возвращает массив, содержащий дерево подкаталогов и файлов, начиная с указанного каталога
+	 *
+	 * @param string $destination Начальный каталог
+	 * @param string $sort        Сортировка
+	 *
+	 * @return array
+	 * @since 0.2.0
+	 */
+	public static function getFilesTree($destination, $sort = 'name')
+	{
+		if (substr($destination, -1) == '/' || substr($destination, -1) == '\\')
+		{
+			$destination = substr($destination, 0, strlen($destination) - 1);
+		}
+
+		$res = array();
+
+		if (!is_dir($destination))
+			return $res;
+
+		if ($dir = @opendir($destination))
+		{
+			while (($file = readdir($dir)) !== false)
+			{
+				if (is_dir($destination . "/" . $file) && ($file != '.') && ($file != '..'))
+				{
+					$tmp = static::getFilesTree($destination . "/" . $file);
+					if (is_array($tmp))
+					{
+						foreach ($tmp as $elem)
+						{
+							$res[] = $elem;
+						}
+					}
+				}
+				elseif (is_file($destination . "/" . $file))
+				{
+					$res[] = ($destination . "/" . $file);
+				}
+			}
+			closedir($dir);
+		}
+
+		if ($sort == 'name')
+		{
+			sort($res, SORT_STRING);
+		}
+
+		return $res;
+	}
 }

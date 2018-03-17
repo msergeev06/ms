@@ -335,7 +335,7 @@ class DBResult
 	 *
 	 * @api
 	 *
-	 * @return resource Результат mysql запроса
+	 * @return resource|bool Результат mysql запроса
 	 * @since 0.1.0
 	 */
 	public function getResult ()

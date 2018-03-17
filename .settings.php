@@ -21,16 +21,16 @@ return array(
 	'Files' => array(
 		'ChmodFile' => 0666,
 		'ChmodDir' => 0777,
-		'CacheDir' => $documentRoot.'/ms/cached'
+		'CacheDir' => $documentRoot.'/cache'
 	),
 	'Backup' => array(
-		'DirBackupDb' => $documentRoot.'/ms/backup_db',
+		'DirBackupDb' => $documentRoot.'/backup_db',
 		'ExpireBackupFiles' => 5,
 	),
 	'Debug' => array(
 		'DebugMode' => true,
 		'DirLogs' => $documentRoot.'/logs',
-		'SystemLogFile' => $documentRoot.'/logs/sys-log-'.date('Y-m-d').'.log',
+		'SystemLogFile' => $documentRoot.'/logs/sys_'.date('Ymd').'.log',
 		'ExpireLogFiles' => 10
 	),
 	'Time' => array(

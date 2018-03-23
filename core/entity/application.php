@@ -294,7 +294,7 @@ class Application
 
 		if ($_SERVER['DOCUMENT_ROOT']=='')
 		{
-			$this->documentRoot = '/var/www';
+			$this->documentRoot = dirname(__FILE__).'/../../../';
 		}
 		else
 		{
@@ -303,9 +303,9 @@ class Application
 
 		$arSettings = $this->readSettings();
 
-		if (isset($arSettings['Site']['DocumentRoot']))
+		if (isset($arSettings['site']['documentroot']))
 		{
-			$this->documentRoot = $arSettings['Site']['DocumentRoot'];
+			$this->documentRoot = $arSettings['site']['documentroot'];
 		}
 
 		return $this->documentRoot;

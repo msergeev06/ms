@@ -12,6 +12,7 @@
 namespace Ms\Core\Lib;
 
 use Ms\Core\Entity\Application;
+use Ms\Core\Entity\ErrorCollection;
 use Ms\Core\Lib\IO\Files;
 use Ms\Core\Entity\Type\Date;
 
@@ -34,6 +35,132 @@ class Logs
 		}
 
 		return $dir;
+	}
+
+	/**
+	 * Создает запись типа Debug в лог файлах, а также добавляет описание ошибки в коллекцию, если она указана
+	 *
+	 * Создает запись одновременно в общем файле логов и в специальном лог-файле
+	 *
+	 * @param string               $strMessage          Сообщение. Может содержать маркеры вида #MARKER#
+	 *                                                  для замещения из массива arReplace
+	 * @param array                $arReplace           Массив замен для сообщения. Также может содержать
+	 *                                                  специализированные поля:
+	 *                                                  ERROR_CODE - используется совместно с коллекцией ошибок, задавая
+	 *                                                  код произошедшей ошибки/сообщения
+	 *                                                  EXCEPTION - должно содержать объект исключения. Добавляет
+	 *                                                  специфичные для исключения данные
+	 * @param ErrorCollection|NULL &$errorCollection    Коллекция ошибок, передается по ссылке и в нее добавляется новыя
+	 *                                                  ошибка с тем же сообщением, что идет в лог файл
+	 */
+	public static function setDebug ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null)
+	{
+		static::setSpecial('debug',$strMessage,$arReplace,$errorCollection);
+	}
+
+	/**
+	 * Создает запись типа Info в лог файлах, а также добавляет описание ошибки в коллекцию, если она указана
+	 *
+	 * Создает запись одновременно в общем файле логов и в специальном лог-файле
+	 *
+	 * @param string               $strMessage          Сообщение. Может содержать маркеры вида #MARKER#
+	 *                                                  для замещения из массива arReplace
+	 * @param array                $arReplace           Массив замен для сообщения. Также может содержать
+	 *                                                  специализированные поля:
+	 *                                                  ERROR_CODE - используется совместно с коллекцией ошибок, задавая
+	 *                                                  код произошедшей ошибки/сообщения
+	 *                                                  EXCEPTION - должно содержать объект исключения. Добавляет
+	 *                                                  специфичные для исключения данные
+	 * @param ErrorCollection|NULL &$errorCollection    Коллекция ошибок, передается по ссылке и в нее добавляется новыя
+	 *                                                  ошибка с тем же сообщением, что идет в лог файл
+	 */
+	public static function setInfo ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null)
+	{
+		static::setSpecial('info',$strMessage,$arReplace,$errorCollection);
+	}
+
+	/**
+	 * Создает запись типа Notice в лог файлах, а также добавляет описание ошибки в коллекцию, если она указана
+	 *
+	 * Создает запись одновременно в общем файле логов и в специальном лог-файле
+	 *
+	 * @param string               $strMessage          Сообщение. Может содержать маркеры вида #MARKER#
+	 *                                                  для замещения из массива arReplace
+	 * @param array                $arReplace           Массив замен для сообщения. Также может содержать
+	 *                                                  специализированные поля:
+	 *                                                  ERROR_CODE - используется совместно с коллекцией ошибок, задавая
+	 *                                                  код произошедшей ошибки/сообщения
+	 *                                                  EXCEPTION - должно содержать объект исключения. Добавляет
+	 *                                                  специфичные для исключения данные
+	 * @param ErrorCollection|NULL &$errorCollection    Коллекция ошибок, передается по ссылке и в нее добавляется новыя
+	 *                                                  ошибка с тем же сообщением, что идет в лог файл
+	 */
+	public static function setNotice ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null)
+	{
+		static::setSpecial('notice',$strMessage,$arReplace,$errorCollection);
+	}
+
+	/**
+	 * Создает запись типа Warning в лог файлах, а также добавляет описание ошибки в коллекцию, если она указана
+	 *
+	 * Создает запись одновременно в общем файле логов и в специальном лог-файле
+	 *
+	 * @param string               $strMessage          Сообщение. Может содержать маркеры вида #MARKER#
+	 *                                                  для замещения из массива arReplace
+	 * @param array                $arReplace           Массив замен для сообщения. Также может содержать
+	 *                                                  специализированные поля:
+	 *                                                  ERROR_CODE - используется совместно с коллекцией ошибок, задавая
+	 *                                                  код произошедшей ошибки/сообщения
+	 *                                                  EXCEPTION - должно содержать объект исключения. Добавляет
+	 *                                                  специфичные для исключения данные
+	 * @param ErrorCollection|NULL &$errorCollection    Коллекция ошибок, передается по ссылке и в нее добавляется новыя
+	 *                                                  ошибка с тем же сообщением, что идет в лог файл
+	 */
+	public static function setWarning ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null)
+	{
+		static::setSpecial('warning',$strMessage,$arReplace,$errorCollection);
+	}
+
+	/**
+	 * Создает запись типа Error в лог файлах, а также добавляет описание ошибки в коллекцию, если она указана
+	 *
+	 * Создает запись одновременно в общем файле логов и в специальном лог-файле
+	 *
+	 * @param string               $strMessage          Сообщение. Может содержать маркеры вида #MARKER#
+	 *                                                  для замещения из массива arReplace
+	 * @param array                $arReplace           Массив замен для сообщения. Также может содержать
+	 *                                                  специализированные поля:
+	 *                                                  ERROR_CODE - используется совместно с коллекцией ошибок, задавая
+	 *                                                  код произошедшей ошибки/сообщения
+	 *                                                  EXCEPTION - должно содержать объект исключения. Добавляет
+	 *                                                  специфичные для исключения данные
+	 * @param ErrorCollection|NULL &$errorCollection    Коллекция ошибок, передается по ссылке и в нее добавляется новыя
+	 *                                                  ошибка с тем же сообщением, что идет в лог файл
+	 */
+	public static function setError ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null)
+	{
+		static::setSpecial('error',$strMessage,$arReplace,$errorCollection);
+	}
+
+	/**
+	 * Создает запись типа Critical в лог файлах, а также добавляет описание ошибки в коллекцию, если она указана
+	 *
+	 * Создает запись одновременно в общем файле логов и в специальном лог-файле
+	 *
+	 * @param string               $strMessage          Сообщение. Может содержать маркеры вида #MARKER#
+	 *                                                  для замещения из массива arReplace
+	 * @param array                $arReplace           Массив замен для сообщения. Также может содержать
+	 *                                                  специализированные поля:
+	 *                                                  ERROR_CODE - используется совместно с коллекцией ошибок, задавая
+	 *                                                  код произошедшей ошибки/сообщения
+	 *                                                  EXCEPTION - должно содержать объект исключения. Добавляет
+	 *                                                  специфичные для исключения данные
+	 * @param ErrorCollection|NULL &$errorCollection    Коллекция ошибок, передается по ссылке и в нее добавляется новыя
+	 *                                                  ошибка с тем же сообщением, что идет в лог файл
+	 */
+	public static function setCritical ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null)
+	{
+		static::setSpecial('critical',$strMessage,$arReplace,$errorCollection);
 	}
 
 	/**
@@ -61,9 +188,55 @@ class Logs
 			{
 				$data .= $now->format('Y-m-d').' ';
 			}
-			$data .= $now->format('H:i:s').' '.$tmp[0]."\t".$strMessage."\n-----------------------------\n";
+			$data .= $now->format('H:i:s')."\t".$tmp[0]."\t".$strMessage."\n------------------------------\n";
 			fwrite ($f1, $data);
 			fclose($f1);
 		}
+	}
+
+	private static function setSpecial ($type,$strMessage,$arReplace=array (),ErrorCollection &$errCollect=null)
+	{
+		/** @var \Throwable $exception */
+		$exception = null;
+		if (isset($arReplace['EXCEPTION']))
+		{
+			$exception = $arReplace['EXCEPTION'];
+			unset($arReplace['EXCEPTION']);
+		}
+		$errorCode = null;
+		if (isset($arReplace['ERROR_CODE']))
+		{
+			$errorCode = $arReplace['ERROR_CODE'];
+			unset($arReplace['ERROR_CODE']);
+		}
+		if (!empty($arReplace))
+		{
+			foreach ($arReplace as $code=>$replace)
+			{
+				$strMessage = str_replace('#'.$code.'#',$replace,$strMessage);
+			}
+		}
+		if (!is_null($errCollect))
+		{
+			$errCollect->setError($strMessage,$errorCode);
+		}
+		if (!is_null($exception))
+		{
+			$strMessage.="\n".$exception->getMessage().' ('.$exception->getFile().': '.$exception->getLine().")\n"
+				.$exception->getTraceAsString();
+		}
+		$tmp = strtoupper($type);
+		if (!is_null($errorCode))
+		{
+			$tmp .= '['.$errorCode.']';
+		}
+		$tmp .= ":\t".$strMessage;
+		$strMessage = $tmp;
+		//Пишем лог в общий файл логов
+		static::write2Log($strMessage);
+		//Пишем лог в файл info-логов
+		$date = new Date();
+		$sDate = $date->format('Y-m');
+		static::write2Log($strMessage, $type.'_'.$sDate,true);
 	}
 }

@@ -803,6 +803,36 @@ class Date extends \DateTime
 		return $this;
 	}
 
+	public function setDay($day)
+	{
+		$month = (int)$this->format('m');
+		$year = (int)$this->format('Y');
+		$day = (int)$day;
+		parent::setDate($year,$month,$day);
+
+		return $this;
+	}
+
+	public function setMonth($month)
+	{
+		$day = (int)$this->format('d');
+		$year = (int)$this->format('Y');
+		$month = (int)$month;
+		parent::setDate($year,$month,$day);
+
+		return $this;
+	}
+
+	public function setYear ($year)
+	{
+		$month = (int)$this->format('m');
+		$day = (int)$this->format('d');
+		$year = (int)$year;
+		parent::setDate($year,$month,$day);
+
+		return $this;
+	}
+
 	/**
 	 * Устанавливает время по параметрам
 	 *
@@ -815,10 +845,12 @@ class Date extends \DateTime
 	 */
 	public function setTime ($hour, $minute, $second = 0, $microseconds = 0)
 	{
-		parent::setTime($hour, $minute, $second, $microseconds);
+		parent::setTime($hour, $minute, $second);
 
 		return $this;
 	}
+
+
 
 	public function modify ($modify)
 	{

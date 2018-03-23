@@ -141,6 +141,7 @@ require($coreRoot.'/lib/loader.php');
 
 spl_autoload_register('\Ms\Core\Lib\Loader::autoLoadClasses');
 
+include_once($coreRoot.'/tools/tools.main.php');
 include_once($coreRoot.'/tools/tools.html.php');
 
 $app->initializeExtendedKernel(

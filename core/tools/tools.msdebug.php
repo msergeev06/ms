@@ -818,6 +818,7 @@ function msEchoVar ($str)
 {
 	//global $USER;
 	//if ($USER->getID() != 1) return;
+	if (!is_string($str)) return;
 	$backtrace = debug_backtrace ();
 	echo '<div style="border: 1px solid black; background-color: white; padding: 10px;">';
 	echo "<b>".$backtrace[0]['file'].' '.$backtrace[0]['line'].':</b><br>';

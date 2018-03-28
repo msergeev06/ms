@@ -307,7 +307,16 @@ class Users
 
 	protected static function createMd5Pass ($login, $pass)
 	{
-		$str = 'msergeev|'.$login.'|'.$pass;
-		return md5(md5(trim($str)));
+		if (function_exists('password_hash'))
+		{
+			$passHash = password_hash($pass,PASSWORD_BCRYPT);
+		}
+		else
+		{
+			$str = 'msergeev|'.$login.'|'.$pass;
+			$passHash = md5(md5(trim($str)));
+		}
+
+		return $passHash;
 	}
 }

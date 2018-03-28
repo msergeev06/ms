@@ -131,6 +131,11 @@ class Loc
 		return self::getMessage($prefix.$module.'_'.$name,$arReplace);
 	}
 
+	public static function getCoreMessage($name,$arReplace=array ())
+	{
+		return self::getMessage('ms_core_'.$name,$arReplace);
+	}
+
 	/**
 	 * Возвращает массив, содержащий все локализованные тексты указанного модуля
 	 *

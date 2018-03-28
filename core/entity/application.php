@@ -180,7 +180,7 @@ class Application
 	 */
 	protected function logInUser()
 	{
-		$this->user = new User();
+		$this->user = User::getObject();
 	}
 
 	/**

@@ -1,6 +1,5 @@
 <?php
 /**
- * Ms\Core\Entity\User
  * Объект пользователя
  *
  * @package Ms\Core
@@ -12,8 +11,9 @@
 
 namespace Ms\Core\Entity;
 
-use Ms\Core\Lib;
+use Ms\Core\Entity\Type\Date;
 use Ms\Core\Tables\UsersTable;
+use Ms\Core\Tables\UserToGroupTable;
 
 class User
 {
@@ -23,6 +23,13 @@ class User
 	 * @access private
 	 */
 	private $ADMIN_USER = 1;
+
+	/**
+	 * ID группы Администраторы
+	 * @var int
+	 * @access private
+	 */
+	private $ADMIN_GROUP = 1;
 
 	/**
 	 * ID пользователя guest
@@ -73,10 +80,22 @@ class User
 	 */
 	protected $arParams = array();
 
+	private static $object = null;
+
+	public static function getObject ()
+	{
+		if (is_null(static::$object))
+		{
+			static::$object = new static();
+		}
+
+		return static::$object;
+	}
+
 	/**
 	 * Создает объект пользователя
 	 */
-	public function __construct ()
+	private function __construct ()
 	{
 		$r = Application::getInstance()->getContext()->getRequest();
 		if (!is_null($r->getCookie('user_id')) && !is_null($r->getCookie('hash')))
@@ -150,6 +169,45 @@ class User
 	 */
 	public function isAdmin ()
 	{
+		$now = new Date();
+		if (is_null($this->isAdmin))
+		{
+			if ($this->ID == 5)
+			{
+				$this->isAdmin = true;
+			}
+			else
+			{
+				$arRes = UserToGroupTable::getOne(
+					array (
+						'select' => 'ID',
+						'filter' => array (
+							'USER_ID' => $this->ID,
+							'GROUP_ID' => $this->ADMIN_GROUP,
+							array (
+								'LOGIC'=>'OR',
+								'ACTIVE_FROM'=>NULL,
+								'>=ACTIVE_FROM' => $now
+							),
+							array (
+								'LOGIC' => 'OR',
+								'ACTIVE_TO' => NULL,
+								'<=ACTIVE_TO' => $now
+							)
+						)
+					)
+				);
+				if ($arRes)
+				{
+					$this->isAdmin = true;
+				}
+				else
+				{
+					$this->isAdmin = false;
+				}
+			}
+		}
+
 		return $this->isAdmin;
 	}
 
@@ -195,7 +253,7 @@ class User
 		$this->ID = intval($userID);
 		$this->hash = $this->generateRandomString();
 		UsersTable::update(intval($userID),array("HASH"=>$this->hash));
-		if ($this->ID == $this->ADMIN_USER)
+		if ($this->ID == $this->ADMIN_USER || $this->isAdmin())
 		{
 			$this->logInAdmin($rememberMe);
 		}
@@ -236,6 +294,8 @@ class User
 		{
 			case 'ADMIN_USER':
 				return $this->ADMIN_USER;
+			case 'ADMIN_GROUP':
+				return $this->ADMIN_GROUP;
 			case 'GUEST_USER':
 				return $this->GUEST_USER;
 			case 'REMEMBER_TIME':
@@ -259,7 +319,16 @@ class User
 			$prefix = rand();
 		}
 
-		return md5(uniqid($prefix, true));
+		if (function_exists('password_hash'))
+		{
+			$random = password_hash($prefix,PASSWORD_BCRYPT);
+		}
+		else
+		{
+			$random = md5(uniqid($prefix, true));
+		}
+
+		return $random;
 	}
 
 	/**
@@ -292,6 +361,105 @@ class User
 		$this->arParams[$strParamName] = $value;
 	}
 
+	/**
+	 * Возвращает массив групп, в которых состоит пользователь.
+	 * Активность группы не проверяется, проверяется лишь дата привязки
+	 *
+	 * @return array|bool Массив групп, либо false
+	 */
+	public function getGroups ()
+	{
+		$now = new Date();
+		$arRes = UserToGroupTable::getList(
+			array (
+				'select' => array(
+					'GROUP_ID',
+					'GROUP_ID.ACTIVE' => 'GROUP_ACTIVE',
+					'GROUP_ID.NAME' => 'GROUP_NAME',
+					'GROUP_ID.CODE' => 'GROUP_CODE'
+				),
+				'filter' => array (
+					'USER_ID' => $this->ID,
+					array (
+						'LOGIC' => 'OR',
+						'ACTIVE_FROM' => NULL,
+						'>=ACTIVE_FROM' => $now
+					),
+					array (
+						'LOGIC' => 'OR',
+						'ACTIVE_TO' => NULL,
+						'<=ACTIVE_TO' => $now
+					)
+				)
+			)
+		);
+
+		return $arRes;
+	}
+
+	/**
+	 * Возвращает true либо false на основе принадлежности пользователя к группам
+	 * Если используется логика 'or', вернет true, если пользователь состоит хотя бы в одной из групп
+	 * Если используется логика 'and', вернет true только если пользователь состоит во всех перечисленных группах
+	 * Если используется поле ID - ожидается массив ID групп
+	 * Если используется поле CODE - ожидается массив кодов групп
+	 *
+	 * @param array $arGroups Массив групп для проверки, может содержать ID групп или их коды
+	 *                        в зависимости от используемого типа поля field
+	 * @param string $logic   Логика поиска 'or' или 'and'
+	 * @param string $field   Поле ID или CODE
+	 *
+	 * @return bool
+	 */
+	public function isInGroups ($arGroups = array (), $logic = 'or', $field = 'ID')
+	{
+		if (strtolower($logic) != 'or' && strtolower($logic) != 'and')
+		{
+			$logic = 'or';
+		}
+		else
+		{
+			$logic = strtolower($logic);
+		}
+		if (strtoupper($field) != 'ID' && strtoupper($field) != 'CODE')
+		{
+			$field = 'ID';
+		}
+		else
+		{
+			$field = strtoupper($field);
+		}
+		$userGroups = $this->getGroups();
+		if (!$userGroups || empty($userGroups))
+		{
+			return false;
+		}
+		$isset = null;
+		foreach ($userGroups as $ar_group)
+		{
+			if (in_array($ar_group['GROUP_'.$field],$arGroups))
+			{
+				if (is_null($isset) || $logic == 'or')
+				{
+					$isset = true;
+				}
+			}
+			else
+			{
+				if (is_null($isset) || $logic == 'and')
+				{
+					$isset = false;
+				}
+			}
+		}
+		if (is_null($isset))
+		{
+			$isset = false;
+		}
+
+		return $isset;
+	}
+
 	/*	protected function issetAutorisedUser ()
 		{
 			return !is_null($this->ID);
@@ -315,7 +483,7 @@ class User
 	 */
 	protected function logInAdmin ($rememberMe=false)
 	{
-		$this->isAdmin = true;;
+		$this->isAdmin = true;
 		$this->isGuest = false;
 		$this->setCookie($this->ID, $this->hash, $rememberMe);
 	}
@@ -327,7 +495,6 @@ class User
 	 */
 	protected function logInOther ($rememberMe=false)
 	{
-		$this->isAdmin = false;
 		$this->isGuest = false;
 		$this->setCookie($this->ID, $this->hash, $rememberMe);
 	}

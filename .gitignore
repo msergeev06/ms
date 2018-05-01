@@ -1,7 +1,9 @@
 /index.php
 /components/*
-!/components/ms/
+!/components/ms
 !/components/components
+/components/ms/*
+!/components/ms/core*
 /cache/*
 !/cache/cache
 /modules/*

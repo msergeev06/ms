@@ -131,6 +131,13 @@ class Loc
 		return self::getMessage($prefix.$module.'_'.$name,$arReplace);
 	}
 
+	public static function getCompMess ($fullComponentName,$name,$arReplace=array())
+	{
+		$prefix = str_replace(':','_',$fullComponentName).'_';
+
+		return self::getMessage($prefix.$name,$arReplace);
+	}
+
 	public static function getCoreMessage($name,$arReplace=array ())
 	{
 		return self::getMessage('ms_core_'.$name,$arReplace);

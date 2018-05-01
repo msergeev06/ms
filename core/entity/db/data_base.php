@@ -632,7 +632,7 @@ class DataBase {
 	/**
 	 * Возвращает экранированную строку, используя требуемый драйвер
 	 *
-	 * @param string $string Исходная строка
+	 * @param null|string $string Исходная строка
 	 *
 	 * @return string
 	 * @throws Exception\Db\DbException
@@ -640,6 +640,10 @@ class DataBase {
 	 */
 	public function getConnectionRealEscapeString ($string)
 	{
+		if (is_null($string) || $string == '')
+		{
+			return $string;
+		}
 		if ($this->driver == 'mysql')
 		{
 			if (!$res = mysql_real_escape_string($string,$this->db_conn))

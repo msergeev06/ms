@@ -1,6 +1,13 @@
 <?php
+/**
+ * Файл русской локализации ядра
+ *
+ * @package Ms\Core
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
+ * @copyright 2018 Mikhail Sergeev
+ */
 
 return array(
-	'ms_core_core_yes' => 'Да',
-	'ms_core_core_no' => 'Нет'
+	'core_yes' => 'Да',
+	'core_no' => 'Нет'
 );

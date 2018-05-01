@@ -51,7 +51,8 @@ class SystemException extends \Exception
 
 		if (Application::getInstance()->getSettings()->isDebugMode())
 		{
-			$html = '<pre><b><i>'.$this->getClassName().':</i></b> "'.$this->getMessage().'"'."\n";
+			$tmp=explode(' ', microtime());
+			$html = '<pre>'.date('Y-m-d H:i:s ').$tmp[0].'<br><b><i>'.$this->getClassName().':</i></b> "'.$this->getMessage().'"'."\n";
 			$html .= "<b>Stack trace:</b>\n".$this->getTraceAsString()."\n";
 			$html .= "<b>".$this->getFile()." ".$this->getLine()."</b>";
 			$html .= "</pre>";

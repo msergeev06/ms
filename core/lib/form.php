@@ -118,4 +118,34 @@ class Form
 			return Loc::getCoreMessage('error_date_between',array ('START'=>$min->getDateSite(),'END'=>$max->getDateSite()));
 		}
 	}
+
+	/**
+	 * Проверяет значение поля формы input type="date"
+	 *
+	 * @param Date $value
+	 * @param Date $min
+	 * @param Date $max
+	 *
+	 * @return bool|string
+	 */
+	public static function checkInputMonth (Date $value, Date $min=null, Date $max=null)
+	{
+		if (is_null($min))
+		{
+			$min = new Date('0000-01-01 00:00:00','db_datetime');
+		}
+		if (is_null($max))
+		{
+			$max = new Date('9999-12-31 23:59:59','db_datetime');
+		}
+
+		if ($value >= $min && $value <= $max)
+		{
+			return true;
+		}
+		else
+		{
+			return Loc::getCoreMessage('error_date_between',array ('START'=>$min->getDateSite(),'END'=>$max->getDateSite()));
+		}
+	}
 }

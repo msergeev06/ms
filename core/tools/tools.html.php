@@ -370,7 +370,7 @@ function InputDateTimeLocal($strName, Date $datetime, Date $min=null, Date $max=
  *
  * @return string
  */
-function InputMonth($strName, Date $month, Date $min=null, $max=null, $field1="", $strId="")
+function InputMonth($strName, Date $month, Date $min=null, Date $max=null, $field1="", $strId="")
 {
 	if (!is_null($min))
 	{
@@ -394,7 +394,7 @@ function InputMonth($strName, Date $month, Date $min=null, $max=null, $field1=""
 		{
 			$field1.=' ';
 		}
-		$field1.='max="2038-01"';
+		$field1.='max="9999-12"';
 	}
 
 	return InputType ('month', $strName, $month->getDate('Y-m'), '', false, '', $field1, $strId);

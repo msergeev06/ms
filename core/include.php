@@ -108,6 +108,8 @@ require($coreRoot.'/lib/loader.php');
 		/** Form */
 		$coreNamespace.'\Entity\Form\Field'               => $coreRoot.'/entity/form/field.php',
 		$coreNamespace.'\Entity\Form\Hidden'              => $coreRoot.'/entity/form/hidden.php',
+		$coreNamespace.'\Entity\Form\InputCheckbox'       => $coreRoot.'/entity/form/input_checkbox.php',
+		$coreNamespace.'\Entity\Form\InputCheckboxBool'   => $coreRoot.'/entity/form/input_checkbox_bool.php',
 		$coreNamespace.'\Entity\Form\InputColor'          => $coreRoot.'/entity/form/input_color.php',
 		$coreNamespace.'\Entity\Form\InputDate'           => $coreRoot.'/entity/form/input_date.php',
 		$coreNamespace.'\Entity\Form\InputDateTime'       => $coreRoot.'/entity/form/input_date_time.php',
@@ -117,6 +119,7 @@ require($coreRoot.'/lib/loader.php');
 		$coreNamespace.'\Entity\Form\InputMonth'          => $coreRoot.'/entity/form/input_month.php',
 		$coreNamespace.'\Entity\Form\InputNumber'         => $coreRoot.'/entity/form/input_number.php',
 		$coreNamespace.'\Entity\Form\InputPassword'       => $coreRoot.'/entity/form/input_password.php',
+		$coreNamespace.'\Entity\Form\InputRadio'          => $coreRoot.'/entity/form/input_radio.php',
 		$coreNamespace.'\Entity\Form\InputRange'          => $coreRoot.'/entity/form/input_range.php',
 		$coreNamespace.'\Entity\Form\InputSearch'         => $coreRoot.'/entity/form/input_search.php',
 		$coreNamespace.'\Entity\Form\InputTel'            => $coreRoot.'/entity/form/input_tel.php',

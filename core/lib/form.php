@@ -1,7 +1,6 @@
 <?php
 /**
- * Ms\Core\Lib\Form
- * Функции обработки форм
+ * Методы обработки форм
  *
  * @package Ms\Core
  * @subpackage Lib
@@ -13,6 +12,8 @@
 namespace Ms\Core\Lib;
 
 use Ms\Core\Entity\Type\Date;
+
+Loc::includeLocFile(__FILE__);
 
 class Form
 {
@@ -37,7 +38,7 @@ class Form
 	{
 		if ( preg_match( "/[\<|\>]/", $value) )
 		{
-			return "Использованы недопустимые символы";
+			return Loc::getCoreMessage('error_wrong_symbols');
 		}
 		else
 		{
@@ -63,21 +64,21 @@ class Form
 		{
 			if (((float)$value % (float)$step))
 			{
-				return "Число должно быть кратно ".$step;
+				return Loc::getCoreMessage('error_step',array ('STEP'=>$step));
 			}
 		}
 		if ($min !== false)
 		{
 			if ((float)$value<(float)$min)
 			{
-				return "Число должно быть больше или равно ".$min;
+				return Loc::getCoreMessage('error_bigger_or_equal',array ('MIN'=>$min));
 			}
 		}
 		if ($max !== false)
 		{
 			if ((float)$value>(float)$max)
 			{
-				return "Число должно быть меньше или равно ".$max;
+				return Loc::getCoreMessage('error_low_or_equal',array ('MAX'=>$max));
 			}
 		}
 
@@ -97,23 +98,54 @@ class Form
 	{
 		if (is_null($min))
 		{
-			$min = new Date('1970-01-01 00:00:00','db_datetime');
+			$min = new Date('0000-01-01 00:00:00','db_datetime');
 		}
 		if (is_null($max))
 		{
-			$max = new Date('2038-01-18 23:00:00','db_datetime');
+			$max = new Date('9999-12-31 23:59:59','db_datetime');
 		}
-		$valueTime = $value->getTimestamp();
-		$minTime = $min->getTimestamp();
-		$maxTime = $max->getTimestamp();
+//		$valueTime = $value->getTimestamp();
+//		$minTime = $min->getTimestamp();
+//		$maxTime = $max->getTimestamp();
 
-		if ($valueTime >= $minTime && $valueTime <= $maxTime)
+//		if ($valueTime >= $minTime && $valueTime <= $maxTime)
+		if ($value >= $min && $value <= $max)
 		{
 			return true;
 		}
 		else
 		{
-			return 'Дата должна быть между '.$min->getDateSite().' и '.$max->getDateSite();
+			return Loc::getCoreMessage('error_date_between',array ('START'=>$min->getDateSite(),'END'=>$max->getDateSite()));
+		}
+	}
+
+	/**
+	 * Проверяет значение поля формы input type="date"
+	 *
+	 * @param Date $value
+	 * @param Date $min
+	 * @param Date $max
+	 *
+	 * @return bool|string
+	 */
+	public static function checkInputMonth (Date $value, Date $min=null, Date $max=null)
+	{
+		if (is_null($min))
+		{
+			$min = new Date('0000-01-01 00:00:00','db_datetime');
+		}
+		if (is_null($max))
+		{
+			$max = new Date('9999-12-31 23:59:59','db_datetime');
+		}
+
+		if ($value >= $min && $value <= $max)
+		{
+			return true;
+		}
+		else
+		{
+			return Loc::getCoreMessage('error_date_between',array ('START'=>$min->getDateSite(),'END'=>$max->getDateSite()));
 		}
 	}
 }

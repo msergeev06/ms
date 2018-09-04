@@ -22,6 +22,7 @@ class Tools
 	private static $replace = array("<",    ">",    "\"",     "'",      "&");
 	private static $searchEx =  array("&amp;",     "&lt;",     "&gt;",     "&quot;",     "&#34",     "&#x22",     "&#39",     "&#x27",     "<",    ">",    "\"");
 	private static $replaceEx = array("&amp;amp;", "&amp;lt;", "&amp;gt;", "&amp;quot;", "&amp;#34", "&amp;#x22", "&amp;#39", "&amp;#x27", "&lt;", "&gt;", "&quot;");
+	private static $isWindowsOs = null;
 
 	/**
 	 * Функция генерирует код из полученной текстовой строки
@@ -1035,5 +1036,29 @@ class Tools
 		$strCamelCase = preg_replace('/(?<=\\w)(?=[A-Z])/','_$1', $strCamelCase);
 
 		return strtolower($strCamelCase);
+	}
+
+	/**
+	 * Возвращает TRUE, если текущая ОС является Windows, FALSE в противном случае
+	 *
+	 * @return bool
+	 */
+	public static function isWindowsOs ()
+	{
+		if (is_null(static::$isWindowsOs))
+		{
+			if(strncasecmp(PHP_OS, "WIN", 3) == 0)
+			{
+				//windows
+				static::$isWindowsOs = true;
+			}
+			else
+			{
+				//unix
+				static::$isWindowsOs = false;
+			}
+		}
+
+		return static::$isWindowsOs;
 	}
 }

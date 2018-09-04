@@ -8,7 +8,9 @@ use Ms\Core\Exception\Io\InvalidPathException;
 class Path
 {
 	const DIRECTORY_SEPARATOR = '/';
+	const DIRECTORY_SEPARATOR_PATTERN = '\/';
 	const DIRECTORY_SEPARATOR_ALT = '\\';
+	const DIRECTORY_SEPARATOR_ALT_PATTERN = '\\\\';
 	const PATH_SEPARATOR = PATH_SEPARATOR;
 
 	const INVALID_FILENAME_CHARS = "\\/:*?\"'<>|~#&;";
@@ -17,6 +19,34 @@ class Path
 	protected static $logicalEncoding = "";
 
 	protected static $directoryIndex = null;
+
+	public static function getSeparator ()
+	{
+		if(Lib\Tools::isWindowsOs())
+		{
+			//windows
+			return self::DIRECTORY_SEPARATOR_ALT;
+		}
+		else
+		{
+			//unix
+			return self::DIRECTORY_SEPARATOR;
+		}
+	}
+
+	public static function getSeparatorPattern ()
+	{
+		if(Lib\Tools::isWindowsOs())
+		{
+			//windows
+			return self::DIRECTORY_SEPARATOR_ALT_PATTERN;
+		}
+		else
+		{
+			//unix
+			return self::DIRECTORY_SEPARATOR_PATTERN;
+		}
+	}
 
 	/**
 	 * @param $path
@@ -33,7 +63,7 @@ class Path
 		static $pattern = null, $tailPattern;
 		if (!$pattern)
 		{
-			if(strncasecmp(PHP_OS, "WIN", 3) == 0)
+			if (Lib\Tools::isWindowsOs())
 			{
 				//windows
 				$pattern = "'[\\\\/]+'";

@@ -165,15 +165,21 @@ abstract class Component
 	 * 2. В шаблоне сайта по-умолчанию
 	 * 3. В шаблонах компонента
 	 *
+	 * @param string $sTemplateName Имя шаблона
+	 *
 	 * @return bool|string Путь до шаблона компонента, либо false
 	 */
-	public function getTemplatePath ()
+	public function getTemplatePath ($sTemplateName=null)
 	{
+		if (is_null($sTemplateName))
+		{
+			$sTemplateName = 'template';
+		}
 		// /ms/templates/[templateSite]/components/[namespace]/[componentName]/[templateComponent]/
 		$path = $this->templatesRoot.'/'.$this->siteTemplate.'/components/'
 			.$this->namespace.'/'.$this->componentName.'/'
 			.$this->componentTemplate;
-		if (file_exists($path))
+		if (file_exists($path.'/'.$sTemplateName.'.php'))
 		{
 			return $path;
 		}
@@ -182,7 +188,7 @@ abstract class Component
 		$path = $this->templatesRoot.'/.default/components/'
 			.$this->namespace.'/'.$this->componentName.'/'
 			.$this->componentTemplate;
-		if (file_exists($path))
+		if (file_exists($path.'/'.$sTemplateName.'.php'))
 		{
 			return $path;
 		}
@@ -190,7 +196,7 @@ abstract class Component
 		// /ms/components/[namespace]/[componentName]/templates/[templateComponent]/
 		$path = $this->componentsRoot.'/'.$this->namespace.'/'.$this->componentName
 			.'/templates/'.$this->componentTemplate;
-		if (file_exists($path))
+		if (file_exists($path.'/'.$sTemplateName.'.php'))
 		{
 			return $path;
 		}
@@ -201,15 +207,17 @@ abstract class Component
 	/**
 	 * Пытается подключить шаблон компонента. Если шаблон не найден, выводит сообщение об ошибке
 	 *
+	 * @param string $sTemplateName Имя шаблона (необязательный)
+	 *
 	 * @access public
 	 * @return mixed|null
 	 */
-	public function includeTemplate()
+	public function includeTemplate($sTemplateName=null)
 	{
-		$path = $this->getTemplatePath();
+		$path = $this->getTemplatePath($sTemplateName);
 		if ($path !== false)
 		{
-			return $this->includeTemplateFiles($path);
+			return $this->includeTemplateFiles($path,$sTemplateName);
 		}
 
 		echo '<span style="color: red">Ошибка подключения шаблона "'
@@ -226,13 +234,23 @@ abstract class Component
 	 * 4. Файл JavaScript script.js
 	 * 5. Файл шаблона template.php
 	 *
-	 * @param string $path Папка шаблона компонента
+	 * @param string $path          Папка шаблона компонента
+	 * @param string $sTemplateName Имя шаблона
 	 *
 	 * @access private
 	 * @return mixed|null
 	 */
-	private function includeTemplateFiles ($path)
+	private function includeTemplateFiles ($path, $sTemplateName=null)
 	{
+		if (is_null($sTemplateName))
+		{
+			$sTemplateName = 'template';
+		}
+		else
+		{
+			$sTemplateName = str_replace('-','_',$sTemplateName);
+		}
+
 		//Если в шаблоне есть дополнительные параметры, загружаем их
 		if (file_exists($path.'/.parameters.php'))
 		{
@@ -257,10 +275,10 @@ abstract class Component
 			Application::getInstance()->addJS($path.'/script.js');
 		}
 
-		//Подключаем шаблон
-		if (file_exists($path.'/template.php'))
+		//Подключаем нужный шаблон
+		if (file_exists($path.'/'.$sTemplateName.'.php'))
 		{
-			$return = include($path.'/template.php');
+			$return = include($path.'/'.$sTemplateName.'.php');
 			return $return;
 		}
 

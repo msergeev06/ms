@@ -12,6 +12,8 @@
 
 namespace Ms\Core\Entity;
 
+use Ms\Core\Lib\Tools;
+
 class ComponentParameter
 {
 	/*
@@ -139,16 +141,19 @@ class ComponentParameter
 	 */
 	public function __construct ($code, array $arParams, $value=null)
 	{
+		//Код свойства
 		$this->code = $code;
 		if (isset($arParams['NAME']))
 		{
 			$this->name = $arParams['NAME'];
 		}
+		//Тип свойства
 		if (isset($arParams['TYPE']))
 		{
 			$this->type = strtoupper($arParams['TYPE']);
 			if ($this->type=='LIST')
 			{
+				//Возможные значения свойства, для списков
 				if (isset($arParams['VALUES']))
 				{
 					$this->values = $arParams['VALUES'];
@@ -156,6 +161,7 @@ class ComponentParameter
 			}
 			elseif ($this->type=='FILE')
 			{
+				//Дополнительные параметры для файлов
 				if (isset($arParams['FD_TARGET']))
 				{
 					$this->fdTarget = $arParams['FD_TARGET'];
@@ -170,15 +176,18 @@ class ComponentParameter
 				}
 			}
 		}
+		//Флаг множественного свойства
 		if (isset($arParams['MULTIPLE']))
 		{
 			$this->multiple = $arParams['MULTIPLE'];
 		}
+		//Значение по-умолчанию, для незаданного свойства
 		if (isset($arParams['DEFAULT']))
 		{
 			$this->default = $arParams['DEFAULT'];
 		}
 
+		//В качестве значения свойства берется либо переданное, либо по-умолчанию
 		if (!is_null($value))
 		{
 			$this->value = $value;
@@ -186,6 +195,12 @@ class ComponentParameter
 		elseif(!is_null($this->default))
 		{
 			$this->value = $this->default;
+		}
+
+		//Если тип свойства bool, преобразуем его в правильную форму
+		if ($this->type == 'BOOL')
+		{
+			$this->value = Tools::validateBoolVal($this->value);
 		}
 	}
 

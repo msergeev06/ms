@@ -18,11 +18,18 @@ else
 }
 $_SERVER['REQUEST_URI'] = $uri;
 */
+include ($_SERVER['DOCUMENT_ROOT'].'/ms/core/prolog_before.php');
 
 if(file_exists($_SERVER['DOCUMENT_ROOT']."/urlrewrite.php"))
 {
 	$arUrlRewrite = include($_SERVER['DOCUMENT_ROOT']."/urlrewrite.php");
 }
+$arConduction = \Ms\Core\Lib\Urlrewrite::getConditionArray();
+if (!empty($arConduction))
+{
+	$arUrlRewrite = array_merge($arConduction, $arUrlRewrite);
+}
+\Ms\Core\Lib\Urlrewrite::sortConditionArray($arUrlRewrite);
 if (!empty($arUrlRewrite))
 {
 	foreach ($arUrlRewrite as $arRule)
@@ -32,21 +39,37 @@ if (!empty($arUrlRewrite))
 //			___write2Log('OK');
 			if (strlen($arRule["RULE"]) > 0)
 			{
-				$url = preg_replace($arRule["CONDITION"], (strlen($arRule["PATH"]) > 0 ? $arRule["PATH"]."?" : "").$arRule["RULE"], $_SERVER["REQUEST_URI"]);
+				$replace = ((strlen($arRule["PATH"]) > 0) ? $arRule["PATH"]."?" : "").$arRule["RULE"];
+				if (strpos($replace,'?')!==false)
+				{
+					$_SERVER["REQUEST_URI"] = str_replace('?','&',$_SERVER["REQUEST_URI"]);
+				}
+				$url = preg_replace(
+					$arRule["CONDITION"],
+					$replace,
+					$_SERVER["REQUEST_URI"]
+				);
 			}
 			else
 			{
 				$url = $arRule["PATH"];
 			}
-
 			if(($pos=strpos($url, "?"))!==false)
 			{
 				$params = substr($url, $pos+1);
 				parse_str($params, $vars);
 
-				$_GET += $vars;
-				$_REQUEST += $vars;
-				$GLOBALS += $vars;
+				if (!empty($vars))
+				{
+					foreach ($vars as $k=>$v)
+					{
+						$_GET[$k] = $v;
+						$_REQUEST[$k] = $v;
+						$GLOBALS[$k] = $v;
+					}
+
+				}
+
 				$_SERVER["QUERY_STRING"] = $QUERY_STRING = $params;
 				$url = substr($url, 0, $pos);
 			}

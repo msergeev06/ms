@@ -13,6 +13,8 @@
 /templates/*
 !/templates/.default/
 /logs/*
+/images/*
+!/images/images
 *.log
 /assembly.php
 /admin

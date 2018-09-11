@@ -58,6 +58,7 @@ require($coreRoot.'/lib/loader.php');
 		$coreNamespace.'\Lib\ShellTools'  => $coreRoot.'/lib/shell_tools.php',
 		$coreNamespace.'\Lib\TableHelper' => $coreRoot.'/lib/table_helper.php',
 		$coreNamespace.'\Lib\Tools'       => $coreRoot.'/lib/tools.php',
+		$coreNamespace.'\Lib\Urlrewrite'  => $coreRoot.'/lib/urlrewrite.php',
 		$coreNamespace.'\Lib\Users'       => $coreRoot.'/lib/users.php',
 		/** Lib\IO */
 		$coreNamespace.'\Lib\IO\Files'    => $coreRoot.'/lib/i_o/files.php',
@@ -137,6 +138,7 @@ require($coreRoot.'/lib/loader.php');
 		$coreNamespace.'\Tables\FileTable'            => $coreRoot.'/tables/file.php',
 		$coreNamespace.'\Tables\OptionsTable'         => $coreRoot.'/tables/options.php',
 		$coreNamespace.'\Tables\SectionsTable'        => $coreRoot.'/tables/sections.php',
+		$coreNamespace.'\Tables\UrlrewriteTable'      => $coreRoot.'/tables/urlrewrite.php',
 		$coreNamespace.'\Tables\UserGroupsTable'      => $coreRoot.'/tables/user_groups.php',
 		$coreNamespace.'\Tables\UserToGroupTable'     => $coreRoot.'/tables/user_to_group.php',
 		$coreNamespace.'\Tables\UsersTable'           => $coreRoot.'/tables/users.php',

@@ -305,6 +305,98 @@ class Users
 		}
 	}
 
+	/**
+	 * Возвращает значение параметра пользователя, если оно задано, либо возвращает значение по-умолчанию, если оно задано
+	 *
+	 * @param string $sOptionName   Имя необходимого параметра
+	 * @param int    $iUserID       ID пользователя, если null - текущий пользователь
+	 * @param mixed  $mDefaultValue Значение по-умолчанию, возвращается, если другое значение не было найдено
+	 *
+	 * @return null|mixed
+	 */
+	public static function getUserOption($sOptionName, $iUserID=null, $mDefaultValue=null)
+	{
+		if (is_null($iUserID))
+		{
+			$iUserID = Application::getInstance()->getUser()->getID();
+		}
+		$arRes = Tables\UserOptionsTable::getOne(
+			array (
+				'select' => array ('VALUE'),
+				'filter' => array('USER_ID'=>$iUserID,'NAME'=>strtoupper($sOptionName))
+			)
+		);
+		if ($arRes && isset($arRes['VALUE']))
+		{
+			return $arRes['VALUE'];
+		}
+		elseif (!$arRes && !is_null($mDefaultValue))
+		{
+			return $mDefaultValue;
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	/**
+	 * Добавляет или обновляет значение параметра пользователя, возвращая ID записи, либо false
+	 *
+	 * @param string $sOptionName Имя необходимого параметра (приводится к верхнему регистру)
+	 * @param mixed  $mValue      Новое значение параметра
+	 * @param int    $iUserID     ID пользователя, если null - текущий пользователь
+	 *
+	 * @return bool|int
+	 */
+	public static function setUserOption ($sOptionName, $mValue, $iUserID=null)
+	{
+		if (is_null($iUserID))
+		{
+			$iUserID = Application::getInstance()->getUser()->getID();
+		}
+		$arRes = Tables\UserOptionsTable::getOne(array(
+			'filter' => array ('USER_ID'=>(int)$iUserID,'NAME'=>strtoupper($sOptionName))
+		));
+		if ($arRes && $arRes['VALUE']!=$mValue)
+		{
+			$resUpdate = Tables\UserOptionsTable::update(
+				$arRes['ID'],
+				array('VALUE'=>$mValue)
+			);
+			if ($resUpdate->getResult())
+			{
+				return $arRes['ID'];
+			}
+			else
+			{
+				return false;
+			}
+		}
+		elseif ($arRes && $arRes['VALUE']==$mValue)
+		{
+			return $arRes['ID'];
+		}
+		elseif (!$arRes)
+		{
+			$resAdd = Tables\UserOptionsTable::add(array (
+				'USER_ID' => (int)$iUserID,
+				'NAME' => strtoupper($sOptionName),
+				'VALUE' => $mValue
+			));
+			if ($resAdd->getResult())
+			{
+				return $resAdd->getInsertId();
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		return false;
+	}
+
 	protected static function createMd5Pass ($login, $pass)
 	{
 		if (function_exists('password_hash'))

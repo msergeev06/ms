@@ -12,6 +12,7 @@
 namespace Ms\Core\Entity;
 
 use Ms\Core\Entity\Type\Date;
+use Ms\Core\Lib\Users;
 use Ms\Core\Tables\UsersTable;
 use Ms\Core\Tables\UserToGroupTable;
 
@@ -570,6 +571,36 @@ class User
 		{
 			return false;
 		}
+	}
+
+	/**
+	 * Возвращает значение уазанного параметра пользователя
+	 *
+	 * @param string $sOptionName   Имя нужного параметра
+	 * @param mixed  $mDefaultValue Значение по-умолчанию
+	 *
+	 * @uses Users::getUserOption()
+	 *
+	 * @return mixed|null
+	 */
+	public function getOption ($sOptionName, $mDefaultValue)
+	{
+		return Users::getUserOption($sOptionName,$this->getID(),$mDefaultValue);
+	}
+
+	/**
+	 * Устанавливает новое значение параметра пользователя
+	 *
+	 * @param string $sOptionName Имя параметра
+	 * @param mixed  $mValue      Новое значение параметра
+	 *
+	 * @uses Users::setUserOption()
+	 *
+	 * @return bool|int
+	 */
+	public function setOption ($sOptionName, $mValue)
+	{
+		return Users::setUserOption($sOptionName,$mValue,$this->getID());
 	}
 
 	/**

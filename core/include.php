@@ -140,6 +140,7 @@ require($coreRoot.'/lib/loader.php');
 		$coreNamespace.'\Tables\SectionsTable'        => $coreRoot.'/tables/sections.php',
 		$coreNamespace.'\Tables\UrlrewriteTable'      => $coreRoot.'/tables/urlrewrite.php',
 		$coreNamespace.'\Tables\UserGroupsTable'      => $coreRoot.'/tables/user_groups.php',
+		$coreNamespace.'\Tables\UserOptionsTable'     => $coreRoot.'/tables/user_options.php',
 		$coreNamespace.'\Tables\UserToGroupTable'     => $coreRoot.'/tables/user_to_group.php',
 		$coreNamespace.'\Tables\UsersTable'           => $coreRoot.'/tables/users.php',
 		$coreNamespace.'\Tables\UsersPropertiesTable' => $coreRoot.'/tables/users_properties.php'

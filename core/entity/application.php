@@ -23,6 +23,7 @@ use Ms\Core\Lib;
  */
 class Application
 {
+	//<editor-fold defaultstate="collapse" desc="Init variables">
 	/**
 	 * Объект приложений
 	 * @var Application
@@ -112,6 +113,15 @@ class Application
 	private $arIncludedCSS = array();
 
 	/**
+	 * @var Breadcrumbs
+	 */
+	private $breadcrumbs = null;
+
+	private $appParams = array();
+	//</editor-fold>
+
+	//<editor-fold defaultstate="collapse" desc="Construct">
+	/**
 	 * Конструктор объекта приложений
 	 * @access protected
 	 */
@@ -127,11 +137,15 @@ class Application
 	public static function getInstance()
 	{
 		if (!isset(static::$instance))
+		{
 			static::$instance = new static();
+		}
 
 		return static::$instance;
 	}
+	//</editor-fold>
 
+	//<editor-fold defaultstate="collapse" desc="Инициализация">
 	/**
 	 * Инициализирует основные параметры объекта приложений
 	 *
@@ -142,6 +156,7 @@ class Application
 		if ($this->isBasicKernelInitialized)
 			return;
 		$this->isBasicKernelInitialized = true;
+		$this->breadcrumbs = Breadcrumbs::getInstance();
 
 		//$this->initializeExceptionHandler();
 		//$this->initializeCache();
@@ -174,13 +189,19 @@ class Application
 	}
 
 	/**
-	 * Создает объект пользователя
+	 * Инициализирует расширенные параметры
 	 *
-	 * @access protected
+	 * @param array $params Массив параметров
+	 * @access public
 	 */
-	protected function logInUser()
+	public function initializeExtendedKernel(array $params)
 	{
-		$this->user = User::getObject();
+		if ($this->isExtendedKernelInitialized)
+			return;
+		$this->isExtendedKernelInitialized = true;
+
+		$this->initializeContext($params);
+
 	}
 
 	/**
@@ -200,6 +221,46 @@ class Application
 	}
 
 	/**
+	 * Создает объект контекста и объект сервера
+	 *
+	 * @access protected
+	 * @param array $params
+	 */
+	protected function initializeContext(array $params)
+	{
+		$context = new Context($this);
+
+		$server = new Server($params["server"]);
+
+		$request = new HttpRequest(
+			$server,
+			$params["get"],
+			$params["post"],
+			$params["files"],
+			$params["cookie"]
+		);
+
+		//$response = new HttpResponse($context);
+
+		$context->initialize($request, $server, array('env' => $params["env"]));
+
+		$this->setContext($context);
+	}
+
+	//</editor-fold>
+
+	//<editor-fold defaultstate="collapse" desc="Пользоатели">
+	/**
+	 * Создает объект пользователя
+	 *
+	 * @access protected
+	 */
+	protected function logInUser()
+	{
+		$this->user = User::getObject();
+	}
+
+	/**
 	 * Возвращает объект пользователя, если инициализирован, либо false
 	 *
 	 * @access public
@@ -213,21 +274,50 @@ class Application
 		return false;
 	}
 
+	//</editor-fold>
+
+	//<editor-fold defaultstate="collapse" desc="Параметры приложения">
 	/**
-	 * Инициализирует расширенные параметры
+	 * Добавляет параметр приложения
 	 *
-	 * @param array $params Массив параметров
-	 * @access public
+	 * @param string $sParamName Имя параметра
+	 * @param mixed $mValue Значение параметра
 	 */
-	public function initializeExtendedKernel(array $params)
+	public function addAppParam ($sParamName, $mValue)
 	{
-		if ($this->isExtendedKernelInitialized)
-			return;
-		$this->isExtendedKernelInitialized = true;
-
-		$this->initializeContext($params);
-
+		$this->appParams[strtolower($sParamName)] = $mValue;
 	}
+
+	/**
+	 * Возвращает значение установленного ранее параметра приложения, либо null
+	 *
+	 * @param string $sParamName Имя параметра
+	 *
+	 * @return mixed|null
+	 */
+	public function getAppParam ($sParamName)
+	{
+		if (isset($this->appParams[strtolower($sParamName)]))
+		{
+			return $this->appParams[strtolower($sParamName)];
+		}
+
+		return null;
+	}
+
+	/**
+	 * Сбрасывает установленный ранее параметр приложения
+	 *
+	 * @param string $sParamName Имя параметра
+	 */
+	public function unsetAppParam ($sParamName)
+	{
+		if (isset($this->appParams[strtolower($sParamName)]))
+		{
+			unset($this->appParams[strtolower($sParamName)]);
+		}
+	}
+	//</editor-fold>
 
 	/**
 	 * Устанавливает данные о загрузке страницы
@@ -332,6 +422,16 @@ class Application
 	public function getSettings ()
 	{
 		return $this->settings;
+	}
+
+	/**
+	 * Возвращает объект хлебных крошек
+	 *
+	 * @return Breadcrumbs
+	 */
+	public function getBreadcrumbs ()
+	{
+		return $this->breadcrumbs;
 	}
 
 	/**
@@ -599,33 +699,6 @@ class Application
 	}
 
 	/**
-	 * Создает объект контекста и объект сервера
-	 *
-	 * @access protected
-	 * @param array $params
-	 */
-	protected function initializeContext(array $params)
-	{
-		$context = new Context($this);
-
-		$server = new Server($params["server"]);
-
-		$request = new HttpRequest(
-			$server,
-			$params["get"],
-			$params["post"],
-			$params["files"],
-			$params["cookie"]
-		);
-
-		//$response = new HttpResponse($context);
-
-		$context->initialize($request, $server, array('env' => $params["env"]));
-
-		$this->setContext($context);
-	}
-
-	/**
 	 * Устанавливает объект контекст
 	 *
 	 * @param Context $context Объект контекста
@@ -667,6 +740,7 @@ class Application
 
 
 
+	//<editor-fold defaultstate="collapse" desc="Работа с буфером вывода">
 	/**
 	 * Стартует буферизацию страницы
 	 */
@@ -696,6 +770,11 @@ class Application
 			echo "</div><br>";
 
 		}
+		Lib\Events::runEvents(
+			'core',
+			'OnEndBufferPage',
+			array('BUFFER'=>&$this->arBuffer)
+		);
 		ob_end_flush();
 	}
 
@@ -832,6 +911,32 @@ class Application
 	}
 
 	/**
+	 * Сохраняет буфер в указанный шаблон вывода и удаляет его
+	 *
+	 * @param string $view Название шаблона
+	 */
+	public function cleanBufferContent ($view)
+	{
+		try
+		{
+			$stack = array_pop($this->arStack);
+			if ($stack == $view)
+			{
+				$buffer = ob_get_clean();
+				$this->arBuffer[$view] = $buffer;
+			}
+			else
+			{
+				throw new InvalidOperationException('Wrong name of view content');
+			}
+		}
+		catch (InvalidOperationException $e)
+		{
+			die($e->showException());
+		}
+	}
+
+	/**
 	 * Возвращает метку вместо которой будет установлен title страницы
 	 *
 	 * @param string $title [optional] Title страницы
@@ -932,4 +1037,5 @@ class Application
 	{
 		$this->showBufferContent('down_js');
 	}
+	//</editor-fold>
 }

@@ -227,6 +227,25 @@ abstract class Component
 	}
 
 	/**
+	 * Возвращает путь к файлу для подключения шаблона компонента хлебных крошек
+	 *
+	 * @param string $sTemplateName Имя шаблона (необязательный)
+	 *
+	 * @return null|string
+	 */
+	public function getIncludeTemplatePath ($sTemplateName=null)
+	{
+		$path = $this->getTemplatePath($sTemplateName);
+		$fileName = (is_null($sTemplateName))?'template':$sTemplateName;
+		if ($path !== false)
+		{
+			return $path.'/'.$fileName.'.php';
+		}
+
+		return null;
+	}
+
+	/**
 	 * Метод подключает шаблон компонента при этом подключаются (если существуют) следующие файлы:
 	 * 1. Файл параметров шаблона компонента (параметры добавляются к уже существующим параметрам компонента)
 	 * 2. Файл изменения логики работы компонента.

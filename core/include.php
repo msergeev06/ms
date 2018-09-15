@@ -68,6 +68,7 @@ require($coreRoot.'/lib/loader.php');
 		$coreNamespace.'\Lib\Text\Encoding'       => $coreRoot.'/lib/text/encoding.php',
 		$coreNamespace.'\Lib\Text\UtfSafeString'  => $coreRoot.'/lib/text/utf_safe_string.php',
 		/** Entity */
+		$coreNamespace.'\Entity\Breadcrumbs'          => $coreRoot.'/entity/breadcrumbs.php',
 		$coreNamespace.'\Entity\Component'            => $coreRoot.'/entity/component.php',
 		$coreNamespace.'\Entity\ComponentParameter'   => $coreRoot.'/entity/component_parameter.php',
 		$coreNamespace.'\Entity\Context'              => $coreRoot.'/entity/context.php',

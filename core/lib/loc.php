@@ -40,9 +40,16 @@ class Loc
 	{
 		if (!isset(static::$arIncludedFiles[$filename]))
 		{
+			$fileNameStart = $filename;
+//			msDebugNoAdmin($filename);
 			static::$arIncludedFiles[$filename]=true;
 			$filename = static::prepareLocFile($filename,$prefix);
-			//msDebugNoAdmin($filename);
+			if ($filename == $fileNameStart)
+			{
+				msEchoVar('ERROR: '.$filename.' == '.$fileNameStart);
+				return false;
+			}
+//			msDebugNoAdmin($filename);
 			if (!$filename || !file_exists($filename))
 			{
 				return false;
@@ -212,11 +219,17 @@ class Loc
 		}
 		elseif (strpos($filename,'components'))
 		{
+			$returnValue = null;
 			if (preg_match('/components\/([a-z0-9]+)\/([a-z0-9_.]+)\/templates\/([a-z0-9_.]{2,})\//',$filename,$m))
 			{
 				$prefix = strtolower($m[1]).'_'.strtolower($m[2]).'_';
+				$returnValue = preg_replace('/components\/([a-z0-9]+)\/([a-z0-9_.]+)\/templates\/([a-z0-9_.]{2,})\//', 'components/$1/$2/templates/$3/loc/'.$lang.'/', $filename);
 			}
-			$returnValue = preg_replace('/components\/([a-z0-9]+)\/([a-z0-9_.]+)\/templates\/([a-z0-9_.]{2,})\//', 'components/$1/$2/templates/$3/loc/'.$lang.'/', $filename);
+			elseif (preg_match('/components\/([a-z0-9]+)\/([a-z0-9_.]+)\//',$filename,$m))
+			{
+				$prefix = strtolower($m[1]).'_'.strtolower($m[2]).'_';
+				$returnValue = preg_replace('/components\/([a-z0-9]+)\/([a-z0-9_.]+)\//', 'components/$1/$2/loc/'.$lang.'/', $filename);
+			}
 			if (!is_null($returnValue))
 			{
 				$newFilename = $returnValue;

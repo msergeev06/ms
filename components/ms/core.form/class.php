@@ -54,27 +54,45 @@ class FormComponent extends Component
 		$form_action = $this->getData('form_action');
 		if (!is_null($form_action) && intval($form_action)==1)
 		{
-			$namespace = $arParams['FORM_HANDLER'][0];
-			$function = $arParams['FORM_HANDLER'][1];
-			if (Loader::includeModule(Modules::getModuleFromNamespace ($namespace)))
-			{
-				$arResult['FORM_RESULT'] = $namespace::$function($arResult['FIELDS_VALUES']);
-			}
-
-			if ($arResult['FORM_RESULT'] !== false)
-			{
-				if ($arParams['SHOW_FORM_IF_OK']===true)
-				{
-					$this->includeTemplate();
-				}
-				elseif ($arParams['REDIRECT_IF_OK']!=='')
-				{
-					Application::getInstance()->setRefresh($arParams['REDIRECT_IF_OK']);
-				}
+			if (
+				is_null($arParams['FORM_HANDLER'])
+				||$arParams['FORM_HANDLER']==''
+				||(is_array($arParams['FORM_HANDLER'])&&empty($arParams['FORM_HANDLER']))
+			) {
+				//Если FORM_HANDLER не задан, значит обрабатывать форму будут в другом месте
 			}
 			else
 			{
-				$arResult['FORM_ERRORS'] = $namespace::getErrorList();
+				if (is_array($arParams['FORM_HANDLER']))
+				{
+					$namespace = $arParams['FORM_HANDLER'][0];
+					$function = $arParams['FORM_HANDLER'][1];
+					$formHandler = $namespace.'::'.$function;
+				}
+				else
+				{
+					$formHandler = $arParams['FORM_HANDLER'];
+				}
+				if (Loader::includeModule(Modules::getModuleFromNamespace ($namespace)))
+				{
+					$arResult['FORM_RESULT'] = $formHandler($arResult['FIELDS_VALUES']);
+				}
+
+				if ($arResult['FORM_RESULT'] !== false)
+				{
+					if ($arParams['SHOW_FORM_IF_OK']===true)
+					{
+						$this->includeTemplate();
+					}
+					elseif ($arParams['REDIRECT_IF_OK']!=='')
+					{
+						Application::getInstance()->setRefresh($arParams['REDIRECT_IF_OK']);
+					}
+				}
+				else
+				{
+					$arResult['FORM_ERRORS'] = $namespace::getErrorList();
+				}
 			}
 		}
 		else

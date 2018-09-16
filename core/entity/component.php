@@ -151,7 +151,10 @@ abstract class Component
 				$this->arParams[$code] = $this->arComponentParams[$code]->getValue();
 			}
 		}
+		$this->checkArParams();
 	}
+
+	protected function checkArParams () {}
 
 	/**
 	 * Основная функция запуска компонента. Должна быть обязательно переопределена.

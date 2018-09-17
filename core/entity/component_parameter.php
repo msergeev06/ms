@@ -202,6 +202,48 @@ class ComponentParameter
 		{
 			$this->value = Tools::validateBoolVal($this->value);
 		}
+
+		//Если строковое значение вида ={$var}
+		if ($this->type == 'STRING')
+		{
+			$this->parseValueVariables();
+		}
+	}
+
+	private function parseValueVariables ()
+	{
+		$tmpValue = $this->value;
+		//Если значение вида ={$var}
+		if (preg_match('/^\=\{(.+)\}/',$this->value,$m))
+		{
+			$var = $m[1];
+			$pattern = '/^(\$.+)\[[\\\'\\"\\`]+(.+)[\\\'\\"\\`]+\]/';
+			//Если значение является значение массива $array["key"]
+			if (preg_match($pattern,$var,$m))
+			{
+				$array = $m[1];
+				$key = $m[2];
+				switch ($array)
+				{
+					case '$_REQUEST':
+						$result = (isset($_REQUEST[$key]))?$_REQUEST[$key]:null;
+						break;
+					case '$_POST':
+						$result = (isset($_POST[$key]))?$_POST[$key]:null;
+						break;
+					case '$_GET':
+						$result = (isset($_GET[$key]))?$_GET[$key]:null;
+						break;
+					/*case '$GLOBALS':
+						$result = (isset($GLOBALS[$key]))?$GLOBALS[$key]:null;
+						break;*/
+					default:
+						$result = $tmpValue;
+						break;
+				}
+				$this->value = $result;
+			}
+		}
 	}
 
 	/**

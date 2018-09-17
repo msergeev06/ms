@@ -71,7 +71,8 @@ class FormComponent extends Component
 				}
 				else
 				{
-					$formHandler = $arParams['FORM_HANDLER'];
+					$formHandler = (string)$arParams['FORM_HANDLER'];
+					list($namespace,$function) = explode('::',$formHandler);
 				}
 				if (Loader::includeModule(Modules::getModuleFromNamespace ($namespace)))
 				{

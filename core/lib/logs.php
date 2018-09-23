@@ -216,6 +216,28 @@ class Logs
 				$strMessage = str_replace('#'.$code.'#',$replace,$strMessage);
 			}
 		}
+		//Вызываем события добавления сообщения в логи
+		switch (strtoupper($type))
+		{
+			case 'DEBUG':
+				Events::runEvents('core','OnAddDebugMessageToLog',array ($strMessage));
+				break;
+			case 'INFO':
+				Events::runEvents('core','OnAddInfoMessageToLog',array ($strMessage));
+				break;
+			case 'NOTICE':
+				Events::runEvents('core','OnAddNoticeMessageToLog',array ($strMessage));
+				break;
+			case 'WARNING':
+				Events::runEvents('core','OnAddWarningMessageToLog',array ($strMessage));
+				break;
+			case 'CRITICAL':
+				Events::runEvents('core','OnAddCriticalMessageToLog',array ($strMessage));
+				break;
+			default://ERROR
+				Events::runEvents('core','OnAddErrorMessageToLog',array ($strMessage));
+				break;
+		}
 		if (!is_null($errCollect))
 		{
 			$errCollect->setError($strMessage,$errorCode);

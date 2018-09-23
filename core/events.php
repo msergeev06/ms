@@ -122,4 +122,76 @@ $arReturn['OnPrologAfter'] = array(
 	)
 );
 
+$arReturn['OnAddDebugMessageToLog'] = array (
+	'DESCRIPTION' => 'Вызывается при добавлении отладочного сообщения в логи',
+	'PARAMETERS' => array (
+		array (
+			'NAME' => 'Добавляемое сообщение',
+			'TYPE' => 'string',
+			'MODIFIED' => false,
+			'DESCRIPTION' => 'В сообщении все #шаблоны# уже заменены на значения'
+		)
+	)
+);
+
+$arReturn['OnAddInfoMessageToLog'] = array (
+	'DESCRIPTION' => 'Вызывается при добавлении информационного сообщения в логи',
+	'PARAMETERS' => array (
+		array (
+			'NAME' => 'Добавляемое сообщение',
+			'TYPE' => 'string',
+			'MODIFIED' => false,
+			'DESCRIPTION' => 'В сообщении все #шаблоны# уже заменены на значения'
+		)
+	)
+);
+
+$arReturn['OnAddNoticeMessageToLog'] = array (
+	'DESCRIPTION' => 'Вызывается при добавлении уведомительного сообщения в логи',
+	'PARAMETERS' => array (
+		array (
+			'NAME' => 'Добавляемое сообщение',
+			'TYPE' => 'string',
+			'MODIFIED' => false,
+			'DESCRIPTION' => 'В сообщении все #шаблоны# уже заменены на значения'
+		)
+	)
+);
+
+$arReturn['OnAddWarningMessageToLog'] = array (
+	'DESCRIPTION' => 'Вызывается при добавлении предупреждающего сообщения в логи',
+	'PARAMETERS' => array (
+		array (
+			'NAME' => 'Добавляемое сообщение',
+			'TYPE' => 'string',
+			'MODIFIED' => false,
+			'DESCRIPTION' => 'В сообщении все #шаблоны# уже заменены на значения'
+		)
+	)
+);
+
+$arReturn['OnAddCriticalMessageToLog'] = array (
+	'DESCRIPTION' => 'Вызывается при добавлении критического сообщения в логи',
+	'PARAMETERS' => array (
+		array (
+			'NAME' => 'Добавляемое сообщение',
+			'TYPE' => 'string',
+			'MODIFIED' => false,
+			'DESCRIPTION' => 'В сообщении все #шаблоны# уже заменены на значения'
+		)
+	)
+);
+
+$arReturn['OnAddErrorMessageToLog'] = array (
+	'DESCRIPTION' => 'Вызывается при добавлении сообщения об ошибке в логи',
+	'PARAMETERS' => array (
+		array (
+			'NAME' => 'Добавляемое сообщение',
+			'TYPE' => 'string',
+			'MODIFIED' => false,
+			'DESCRIPTION' => 'В сообщении все #шаблоны# уже заменены на значения'
+		)
+	)
+);
+
 return $arReturn;

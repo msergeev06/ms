@@ -796,6 +796,7 @@ class Application
 		}
 
 		$buffer = preg_replace('/[#]{1}[A-Z0-9_]+[#]{1}/','',$buffer);
+		$buffer = preg_replace('/[%]{1}([A-Z0-9_]+)[%]{1}/','#$1#',$buffer);
 
 		return $buffer;
 	}

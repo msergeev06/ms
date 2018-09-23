@@ -814,14 +814,16 @@ function msVarDump ($str)
 	echo "</div><br>";
 }
 
-function msEchoVar ($str)
+function msEchoVar ($str, $name=null)
 {
 	//global $USER;
 	//if ($USER->getID() != 1) return;
 	if (!is_string($str)) return;
+	$str = preg_replace('/[#]{1}([A-Z0-9_]+)[#]{1}/','%$1%',$str);
 	$backtrace = debug_backtrace ();
 	echo '<div style="border: 1px solid black; background-color: white; padding: 10px;">';
 	echo "<b>".$backtrace[0]['file'].' '.$backtrace[0]['line'].':</b><br>';
+	if (!is_null($name)) echo '<span><strong>'.$name.':</strong></span><br>';
 	echo "<pre>"; echo $str; echo "</pre>";
 	echo "</div><br>";
 }

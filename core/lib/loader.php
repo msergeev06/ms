@@ -87,11 +87,12 @@ class Loader
 	/**
 	 * Подключает файл, содержащий требуемый класс, если он был добавлен
 	 *
-	 * @param string $className
+	 * @param string $className Имя класса с пространством имен
+	 * @param bool   $bInclude  Если TRUE выполняет includeModule для модуля класса
 	 *
 	 * @throw Exception\ClassNotFoundException Если класс не был добавлен в автозагрузку
 	 */
-	public static function autoLoadClasses ($className)
+	public static function autoLoadClasses ($className, $bInclude=true)
 	{
 		try
 		{
@@ -101,12 +102,112 @@ class Loader
 			}
 			else
 			{
-				throw new Exception\ClassNotFoundException($className);
+				if ($bInclude)
+				{
+					$moduleName = static::getModuleNameByClassNamespace($className);
+					if ($moduleName != 'core')
+					{
+						if (static::includeModule($moduleName))
+						{
+							self::autoLoadClasses($className,false);
+							return;
+						}
+					}
+				}
+				if ($filename = static::getFilePathByClassNamespace($className))
+				{
+					static::$arAutoLoadClasses[$className] = $filename;
+					include_once ($filename);
+				}
+				else
+				{
+					throw new Exception\ClassNotFoundException($className);
+				}
 			}
 		}
 		catch (Exception\ClassNotFoundException $e)
 		{
 			die($e->showException());
+		}
+	}
+
+	/**
+	 * Возвращает имя модуля по Пространству имен класса
+	 *
+	 * @param string $sClassNamespace Пространство имен класса
+	 *
+	 * @return bool|string
+	 */
+	public static function getModuleNameByClassNamespace ($sClassNamespace)
+	{
+		//Удаляем возможный первый символ \ перед namespace
+		if ($sClassNamespace[0] == '\\')
+		{
+			$sClassNamespace = substr ($sClassNamespace, 1, strlen ($sClassNamespace));
+		}
+		$sClassNamespace = str_replace ('\\\\', '\\', $sClassNamespace);
+		$arName = explode ('\\', $sClassNamespace);
+		if (strtolower($arName[1])=='core')
+		{
+			return 'core';
+		}
+		elseif (isset($arName[0]) && isset($arName[1]))
+		{
+			return strtolower($arName[0]).'.'.Tools::camelCaseToUnderscore($arName[1]);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Возвращает имя файла класса по его Пространству имен
+	 *
+	 * @param string $sClassNamespace Пространство имен класса
+	 *
+	 * @return bool|string
+	 */
+	public static function getFilePathByClassNamespace ($sClassNamespace)
+	{
+		$filename = Application::getInstance()->getDocumentRoot().'/ms';
+		//Удаляем возможный первый символ \ перед namespace
+		if ($sClassNamespace[0] == '\\')
+		{
+			$sClassNamespace = substr ($sClassNamespace, 1, strlen ($sClassNamespace));
+		}
+		$sClassNamespace = str_replace ('\\\\', '\\', $sClassNamespace);
+		$arName = explode ('\\', $sClassNamespace);
+		if (strtolower($arName[1])=='core')
+		{
+			$filename .= '/core';
+		}
+		elseif (isset($arName[0]) && isset($arName[1]))
+		{
+			$filename .= '/modules/'.strtolower($arName[0]).'.'.Tools::camelCaseToUnderscore($arName[1]);
+		}
+		else
+		{
+			return false;
+		}
+		unset($arName[0]);
+		unset($arName[1]);
+		foreach ($arName as $name)
+		{
+			$name = Tools::camelCaseToUnderscore($name);
+			$name = str_replace('_table','',$name);
+			$filename .= '/'.$name;
+		}
+
+		$filename .= '.php';
+
+		if (file_exists($filename))
+		{
+			return $filename;
+		}
+		else
+		{
+			return false;
 		}
 	}
 
@@ -255,6 +356,8 @@ class Loader
 	 */
 	public static function includeModule ($nameModule=null)
 	{
+		$bInclude = true;
+
 		//Если имя модуля задано, модуль установлен и не был загружен ранее
 		if (!is_null($nameModule) && isset(static::$arModules[$nameModule]) && !isset(static::$arIncludedModules[$nameModule]))
 		{
@@ -271,7 +374,7 @@ class Loader
 					{
 						if (!static::includeAddModules($nameModule,$arIncludeModules['required'],true))
 						{
-							return false;
+							$bInclude = false;
 						}
 					}
 
@@ -281,6 +384,12 @@ class Loader
 						static::includeAddModules($nameModule,$arIncludeModules['additional']);
 					}
 				}
+			}
+
+			//Если возникли проблемы с подключением обязательных модулей, прерываем подключение модуля
+			if ($bInclude===false)
+			{
+				return false;
 			}
 
 			//Подключаем основной файл пакета
@@ -307,21 +416,30 @@ class Loader
 			}
 			//ставим флаг загрузки модуля
 			static::$arIncludedModules[$nameModule] = true;
-
-			return true;
 		}
-		elseif (isset(static::$arIncludedModules[$nameModule]))
+		elseif (isset(static::$arIncludedModules[$nameModule]) || strtolower($nameModule)=='core')
 		{
-			return true;
-		}
-		elseif (strtolower($nameModule)=='core')
-		{
-			return true;
+			$bInclude = true;
 		}
 		else
 		{
-			return false;
+			$bInclude = false;
 		}
+
+		if (!$bInclude)
+		{
+			Logs::setError(
+				Errors::getErrorTextByCode(
+					Errors::ERROR_MODULE_INCLUDE,
+					array('CLASS_NAME'=>$nameModule)
+				),
+				array (),
+				$errorCollection,
+				Errors::ERROR_MODULE_INCLUDE
+			);
+		}
+
+		return $bInclude;
 	}
 
 	/**

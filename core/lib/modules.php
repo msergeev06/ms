@@ -80,22 +80,68 @@ class Modules
 		//Проверяем на наличае бренда
 		if (strpos($moduleName,'.')===false)
 		{
-			static::addError('В имени модуля отсутствует бренд','MODULE_NAME_EMPTY_BRAND');
+			if (defined('MS_AUTOLOAD_CLASSES_ENABLED') && MS_AUTOLOAD_CLASSES_ENABLED === true)
+			{
+				Logs::setError(
+					Errors::getErrorTextByCode(Errors::ERROR_MODULE_NAME_EMPTY_BRAND),
+					array (),
+					self::$errorCollection,
+					Errors::ERROR_MODULE_NAME_EMPTY_BRAND
+				);
+			}
+			else
+			{
+				static::addError(
+					Errors::getErrorTextByCode(Errors::ERROR_MODULE_NAME_EMPTY_BRAND),
+					Errors::ERROR_MODULE_NAME_EMPTY_BRAND
+				);
+			}
 			return false;
 		}
 
 		//Проверяем на использование только разрешенных символов и верный синтаксис
 		if (!preg_match(self::REGULAR_EXPRESSION, $moduleName))
 		{
-			static::addError('Использованы недопустимые символы в имени модуля','WRONG_SYMBOLS_IN_MODULE_NAME');
-			//static::$errorCollection->add();
+			if (defined('MS_AUTOLOAD_CLASSES_ENABLED') && MS_AUTOLOAD_CLASSES_ENABLED === true)
+			{
+				Logs::setError(
+					Errors::getErrorTextByCode(
+						Errors::ERROR_MODULE_WRONG_SYMBOLS_IN_MODULE_NAME),
+					array (),
+					self::$errorCollection,
+					Errors::ERROR_MODULE_WRONG_SYMBOLS_IN_MODULE_NAME
+				);
+			}
+			else
+			{
+				static::addError(
+					Errors::getErrorTextByCode(Errors::ERROR_MODULE_WRONG_SYMBOLS_IN_MODULE_NAME),
+					Errors::ERROR_MODULE_WRONG_SYMBOLS_IN_MODULE_NAME
+				);
+			}
 			return false;
 		}
 
 		//Проверяем на допустимую длинну
 		if (strlen($moduleName)>self::MAX_LENGTH_MODULE_NAME)
 		{
-			static::addError('Имя модуля слишком длинное. Допустимая длина '.self::MAX_LENGTH_MODULE_NAME.' символов','MODULE_NAME_TO_LONG');
+			if (defined('MS_AUTOLOAD_CLASSES_ENABLED') && MS_AUTOLOAD_CLASSES_ENABLED === true)
+			{
+				Logs::setError(
+					Errors::getErrorTextByCode(
+						Errors::ERROR_MODULE_NAME_TO_LONG),
+					array ('MAX_LENGTH'=>self::MAX_LENGTH_MODULE_NAME),
+					self::$errorCollection,
+					Errors::ERROR_MODULE_NAME_TO_LONG
+				);
+			}
+			else
+			{
+				static::addError(
+					Errors::getErrorTextByCode(Errors::ERROR_MODULE_WRONG_SYMBOLS_IN_MODULE_NAME),
+					Errors::ERROR_MODULE_WRONG_SYMBOLS_IN_MODULE_NAME
+				);
+			}
 			return false;
 		}
 
@@ -222,7 +268,23 @@ class Modules
 		}
 		if (!Loader::includeModule($moduleName))
 		{
-			static::addError('Не удалось подключить модуль "'.$moduleName.'"','NOT_INCLUDED_MODULE');
+			if (defined('MS_AUTOLOAD_CLASSES_ENABLED') && MS_AUTOLOAD_CLASSES_ENABLED === true)
+			{
+				Logs::setError(
+					Errors::getErrorTextByCode(
+						Errors::ERROR_MODULE_INCLUDE),
+					array ('MODULE_NAME'=>$moduleName),
+					self::$errorCollection,
+					Errors::ERROR_MODULE_INCLUDE
+				);
+			}
+			else
+			{
+				static::addError(
+					Errors::getErrorTextByCode(Errors::ERROR_MODULE_INCLUDE),
+					Errors::ERROR_MODULE_INCLUDE
+				);
+			}
 			return false;
 		}
 
@@ -487,10 +549,10 @@ class Modules
 	/**
 	 * Добавляет ошибку в коллекцию, либо во временный массив
 	 *
-	 * @param      $strMessage
-	 * @param null $strCode
+	 * @param string   $strMessage
+	 * @param null|int $iCode
 	 */
-	private static function addError ($strMessage, $strCode=null)
+	private static function addError ($strMessage, $iCode=null)
 	{
 		$bCollection = static::setErrorCollection();
 
@@ -501,18 +563,18 @@ class Modules
 				static::$arTempErrors = array();
 			}
 
-			if (is_null($strCode))
+			if (is_null($iCode))
 			{
 				static::$arTempErrors[] = $strMessage;
 			}
 			else
 			{
-				static::$arTempErrors[$strCode] = $strMessage;
+				static::$arTempErrors[$iCode] = $strMessage;
 			}
 		}
 		else
 		{
-			static::$errorCollection->setError($strMessage,$strCode);
+			static::$errorCollection->setError($strMessage,$iCode);
 		}
 	}
 

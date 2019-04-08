@@ -164,4 +164,20 @@ class Installer
 
 		return true;
 	}
+
+	/**
+	 * Копирует файл/файлы в указанный файл/папку
+	 *
+	 * @param string $fromPath Копируемая директория или файл
+	 * @param string $toPath Директория или файл назначения
+	 * @param bool   $bRewrite Перезаписывать существующие файлы (по умолчанию TRUE, перезаписывать)
+	 * @param bool   $bRecursive Рекурсивное копирование (по умолчанию TRUE, рекурсивное копирование)
+	 * @param bool   $bDeleteAfterCopy Удалить исходные файлы после копирования (по умолчанию FALSE, не удалять)
+	 *
+	 * @return bool При удачном копировании возвращает TRUE, иначе FALSE
+	 */
+	public static function copyFiles ($fromPath, $toPath, $bRewrite=TRUE, $bRecursive=TRUE, $bDeleteAfterCopy=FALSE)
+	{
+		return Files::copyDirFiles($fromPath, $toPath, $bRewrite, $bRecursive, $bDeleteAfterCopy);
+	}
 }

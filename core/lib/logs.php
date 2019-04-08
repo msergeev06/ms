@@ -52,10 +52,12 @@ class Logs
 	 *                                                  специфичные для исключения данные
 	 * @param ErrorCollection|NULL &$errorCollection    Коллекция ошибок, передается по ссылке и в нее добавляется новыя
 	 *                                                  ошибка с тем же сообщением, что идет в лог файл
+	 * @param null|int             $iErrorNumber        Номер ошибки
+	 * @param null|\Throwable      $exception           Исключение
 	 */
-	public static function setDebug ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null)
+	public static function setDebug ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
-		static::setSpecial('debug',$strMessage,$arReplace,$errorCollection);
+		static::setSpecial('debug',$strMessage,$arReplace,$errorCollection, $iErrorNumber, $exception);
 	}
 
 	/**
@@ -73,10 +75,12 @@ class Logs
 	 *                                                  специфичные для исключения данные
 	 * @param ErrorCollection|NULL &$errorCollection    Коллекция ошибок, передается по ссылке и в нее добавляется новыя
 	 *                                                  ошибка с тем же сообщением, что идет в лог файл
+	 * @param null|int             $iErrorNumber        Номер ошибки
+	 * @param null|\Throwable      $exception           Исключение
 	 */
-	public static function setInfo ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null)
+	public static function setInfo ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
-		static::setSpecial('info',$strMessage,$arReplace,$errorCollection);
+		static::setSpecial('info',$strMessage,$arReplace,$errorCollection, $iErrorNumber, $exception);
 	}
 
 	/**
@@ -94,10 +98,12 @@ class Logs
 	 *                                                  специфичные для исключения данные
 	 * @param ErrorCollection|NULL &$errorCollection    Коллекция ошибок, передается по ссылке и в нее добавляется новыя
 	 *                                                  ошибка с тем же сообщением, что идет в лог файл
+	 * @param null|int             $iErrorNumber        Номер ошибки
+	 * @param null|\Throwable      $exception           Исключение
 	 */
-	public static function setNotice ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null)
+	public static function setNotice ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
-		static::setSpecial('notice',$strMessage,$arReplace,$errorCollection);
+		static::setSpecial('notice',$strMessage,$arReplace,$errorCollection, $iErrorNumber, $exception);
 	}
 
 	/**
@@ -115,10 +121,12 @@ class Logs
 	 *                                                  специфичные для исключения данные
 	 * @param ErrorCollection|NULL &$errorCollection    Коллекция ошибок, передается по ссылке и в нее добавляется новыя
 	 *                                                  ошибка с тем же сообщением, что идет в лог файл
+	 * @param null|int             $iErrorNumber        Номер ошибки
+	 * @param null|\Throwable      $exception           Исключение
 	 */
-	public static function setWarning ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null)
+	public static function setWarning ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
-		static::setSpecial('warning',$strMessage,$arReplace,$errorCollection);
+		static::setSpecial('warning',$strMessage,$arReplace,$errorCollection, $iErrorNumber, $exception);
 	}
 
 	/**
@@ -136,10 +144,12 @@ class Logs
 	 *                                                  специфичные для исключения данные
 	 * @param ErrorCollection|NULL &$errorCollection    Коллекция ошибок, передается по ссылке и в нее добавляется новыя
 	 *                                                  ошибка с тем же сообщением, что идет в лог файл
+	 * @param null|int             $iErrorNumber        Номер ошибки
+	 * @param null|\Throwable      $exception           Исключение
 	 */
-	public static function setError ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null)
+	public static function setError ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
-		static::setSpecial('error',$strMessage,$arReplace,$errorCollection);
+		static::setSpecial('error',$strMessage,$arReplace,$errorCollection, $iErrorNumber, $exception);
 	}
 
 	/**
@@ -157,10 +167,12 @@ class Logs
 	 *                                                  специфичные для исключения данные
 	 * @param ErrorCollection|NULL &$errorCollection    Коллекция ошибок, передается по ссылке и в нее добавляется новыя
 	 *                                                  ошибка с тем же сообщением, что идет в лог файл
+	 * @param null|int             $iErrorNumber        Номер ошибки
+	 * @param null|\Throwable      $exception           Исключение
 	 */
-	public static function setCritical ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null)
+	public static function setCritical ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
-		static::setSpecial('critical',$strMessage,$arReplace,$errorCollection);
+		static::setSpecial('critical',$strMessage,$arReplace,$errorCollection, $iErrorNumber, $exception);
 	}
 
 	/**
@@ -194,19 +206,22 @@ class Logs
 		}
 	}
 
-	private static function setSpecial ($type,$strMessage,$arReplace=array (),ErrorCollection &$errCollect=null)
+	private static function setSpecial ($type,$strMessage,$arReplace=array (),ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
-		/** @var \Throwable $exception */
-		$exception = null;
 		if (isset($arReplace['EXCEPTION']))
 		{
-			$exception = $arReplace['EXCEPTION'];
+			if (is_null($exception))
+			{
+				$exception = $arReplace['EXCEPTION'];
+			}
 			unset($arReplace['EXCEPTION']);
 		}
-		$errorCode = null;
 		if (isset($arReplace['ERROR_CODE']))
 		{
-			$errorCode = $arReplace['ERROR_CODE'];
+			if (is_null($iErrorNumber))
+			{
+				$iErrorNumber = $arReplace['ERROR_CODE'];
+			}
 			unset($arReplace['ERROR_CODE']);
 		}
 		if (!empty($arReplace))
@@ -216,6 +231,23 @@ class Logs
 				$strMessage = str_replace('#'.$code.'#',$replace,$strMessage);
 			}
 		}
+		if (is_null($errorCollection))
+		{
+			$errorCollection = new ErrorCollection();
+		}
+		$errorCollection->setError($strMessage,((int)$iErrorNumber>0)?$iErrorNumber:null);
+		if (!is_null($exception))
+		{
+			$strMessage.="\n".$exception->getMessage().' ('.$exception->getFile().': '.$exception->getLine().")\n"
+				.$exception->getTraceAsString();
+		}
+		$tmp = strtoupper($type);
+		if (!is_null($iErrorNumber))
+		{
+			$tmp .= '['.$iErrorNumber.']';
+		}
+		$tmp .= ":\t".$strMessage;
+		$strMessage = $tmp;
 		//Вызываем события добавления сообщения в логи
 		switch (strtoupper($type))
 		{
@@ -238,22 +270,6 @@ class Logs
 				Events::runEvents('core','OnAddErrorMessageToLog',array ($strMessage));
 				break;
 		}
-		if (!is_null($errCollect))
-		{
-			$errCollect->setError($strMessage,$errorCode);
-		}
-		if (!is_null($exception))
-		{
-			$strMessage.="\n".$exception->getMessage().' ('.$exception->getFile().': '.$exception->getLine().")\n"
-				.$exception->getTraceAsString();
-		}
-		$tmp = strtoupper($type);
-		if (!is_null($errorCode))
-		{
-			$tmp .= '['.$errorCode.']';
-		}
-		$tmp .= ":\t".$strMessage;
-		$strMessage = $tmp;
 		//Пишем лог в общий файл логов
 		static::write2Log($strMessage);
 		//Пишем лог в файл info-логов

@@ -30,6 +30,7 @@ $templatePath = $app->getSettings()->getTemplatesRoot().'/'.$app->getSiteTemplat
 
 define('SITE_TEMPLATE_PATH',$app->getSitePath($templatePath));
 define('MS_PROLOG_INCLUDED',true);
+
 $app->includePlugin('ms.jquery');
 
 if (file_exists($templatePath.'/style.css'))

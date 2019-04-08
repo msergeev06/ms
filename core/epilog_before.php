@@ -12,10 +12,9 @@ use Ms\Core\Entity\Application;
 /*$footer = Application::getInstance()->getSettings()->getTemplatesRoot().'/'
 	.Application::getInstance()->getSiteTemplate().'/footer.php';*/
 
-if (file_exists(SITE_TEMPLATE_PATH.'/footer.php')
-)
+if (file_exists($_SERVER['DOCUMENT_ROOT'].SITE_TEMPLATE_PATH.'/footer.php'))
 {
-	include(SITE_TEMPLATE_PATH.'/footer.php');
+	include($_SERVER['DOCUMENT_ROOT'].SITE_TEMPLATE_PATH.'/footer.php');
 }
 
 Application::getInstance()->endBufferPage();

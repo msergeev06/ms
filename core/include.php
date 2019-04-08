@@ -44,9 +44,12 @@ require($coreRoot.'/lib/loader.php');
 		$coreNamespace.'\Exception\Io\FileNotOpenedException'     => $coreRoot.'/exception/io/file_not_opened.php',
 		$coreNamespace.'\Exception\Io\FileOpenException'          => $coreRoot.'/exception/io/file_open.php',
 		$coreNamespace.'\Exception\Io\InvalidPathException'       => $coreRoot.'/exception/io/invalid_path.php',
+		/** Interfaces */
+		$coreNamespace.'\Interfaces\AllErrors' => $coreRoot.'/interfaces/all_errors.php',
 		/** Lib */
 		$coreNamespace.'\Lib\DataManager' => $coreRoot.'/lib/data_manager.php',
 		$coreNamespace.'\Lib\ErrorHandler'=> $coreRoot.'/lib/error_handler.php',
+		$coreNamespace.'\Lib\Errors'      => $coreRoot.'/lib/errors.php',
 		$coreNamespace.'\Lib\Events'      => $coreRoot.'/lib/events.php',
 		$coreNamespace.'\Lib\File'        => $coreRoot.'/lib/file.php',
 		$coreNamespace.'\Lib\Form'        => $coreRoot.'/lib/form.php',
@@ -140,6 +143,7 @@ require($coreRoot.'/lib/loader.php');
 		$coreNamespace.'\Tables\OptionsTable'         => $coreRoot.'/tables/options.php',
 		$coreNamespace.'\Tables\SectionsTable'        => $coreRoot.'/tables/sections.php',
 		$coreNamespace.'\Tables\UrlrewriteTable'      => $coreRoot.'/tables/urlrewrite.php',
+		$coreNamespace.'\Tables\UserGroupAccessTable' => $coreRoot.'/tables/user_group_access.php',
 		$coreNamespace.'\Tables\UserGroupsTable'      => $coreRoot.'/tables/user_groups.php',
 		$coreNamespace.'\Tables\UserOptionsTable'     => $coreRoot.'/tables/user_options.php',
 		$coreNamespace.'\Tables\UserToGroupTable'     => $coreRoot.'/tables/user_to_group.php',

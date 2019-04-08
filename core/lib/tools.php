@@ -1061,4 +1061,63 @@ class Tools
 
 		return static::$isWindowsOs;
 	}
+
+	/**
+	 * Безопасная обертка PHP функции strrpos
+	 *
+	 * @param $haystack
+	 * @param $needle
+	 *
+	 * @see strrpos()
+	 *
+	 * @return bool|int
+	 */
+	public static function ms_strrpos ($haystack, $needle)
+	{
+		if(Application::getInstance()->getSettings()->isCharsetUtf8())
+		{
+			$ln = strlen($needle);
+			for($i=strlen($haystack)-$ln; $i>=0; $i--)
+			{
+				if(substr($haystack, $i, $ln)==$needle)
+				{
+					return $i;
+				}
+			}
+			return false;
+		}
+		$index = strpos(strrev($haystack), strrev($needle));
+		if($index === false)
+		{
+			return false;
+		}
+		$index = strlen($haystack) - strlen($needle) - $index;
+		return $index;
+	}
+
+	/**
+	 * Безопасная отправка почты
+	 *
+	 * @param        $to
+	 * @param        $subject
+	 * @param        $message
+	 * @param string $additional_headers
+	 * @param string $additional_parameters
+	 *
+	 * @return bool
+	 */
+	public static function ms_mail ($to, $subject, $message, $additional_headers="", $additional_parameters="")
+	{
+		if(function_exists("custom_mail"))
+		{
+			return custom_mail($to, $subject, $message, $additional_headers, $additional_parameters);
+		}
+
+		if($additional_parameters!="")
+		{
+			return @mail($to, $subject, $message, $additional_headers, $additional_parameters);
+		}
+
+		return @mail($to, $subject, $message, $additional_headers);
+	}
 }

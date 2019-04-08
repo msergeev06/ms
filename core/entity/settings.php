@@ -371,6 +371,16 @@ class Settings
 	}
 
 	/**
+	 * Возвращает TRUE, если установлена кодировка UTF-8
+	 *
+	 * @return bool
+	 */
+	public function isCharsetUtf8()
+	{
+		return (strtolower($this->getCharset())=='utf-8');
+	}
+
+	/**
 	 * Возвращает флаг отключения Iconv
 	 *
 	 * @access public

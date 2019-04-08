@@ -22,7 +22,7 @@ if (!$namespace || !$function)
 }
 elseif (!Loader::includeModule(Modules::getModuleFromNamespace ($namespace)))
 {
-	$arReturn['exit'] = 'no_include_module'.Modules::getModuleFromNamespace ($namespace);
+	$arReturn['exit'] = 'no_include_module '.Modules::getModuleFromNamespace ($namespace);
 	echo json_encode($arReturn);
 }
 else{

@@ -151,7 +151,6 @@ abstract class Component
 				$this->arParams[$code] = $this->arComponentParams[$code]->getValue();
 			}
 		}
-		$this->checkArParams();
 	}
 
 	protected function checkArParams () {}

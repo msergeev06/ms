@@ -188,4 +188,12 @@ class Server extends Type\ParameterDictionary
 	{
 		return $this->get('REMOTE_ADDR');
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getHttpReferer ()
+	{
+		return $this->get('HTTP_REFERER');
+	}
 }

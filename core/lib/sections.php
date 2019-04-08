@@ -15,10 +15,11 @@ namespace Ms\Core\Lib;
 use Ms\Core\Entity\Db\Query;
 use Ms\Core\Entity\Db\SqlHelper;
 use Ms\Core\Entity\Db\DBResult;
+use Ms\Core\Tables\TreeTable;
 
 abstract class Sections
 {
-	protected static $selectFields = array('ID','ACTIVE','SORT','NAME','LEFT_MARGIN','RIGHT_MARGIN','DEPTH_LEVEL','PARENT_SECTION_ID');
+//	protected static $selectFields = array('ID','ACTIVE','SORT','NAME','LEFT_MARGIN','RIGHT_MARGIN','DEPTH_LEVEL','PARENT_SECTION_ID');
 	protected static $tableClassName = null;
 
 	/**
@@ -59,41 +60,29 @@ abstract class Sections
 	 * @return array
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_select_fields
 	 */
-	public static function getSelectFields ()
+/*	public static function getSelectFields ()
 	{
 		return static::$selectFields;
-	}
+	}*/
 
 	/**
 	 * Возвращает массив дерева каталогов, либо FALSE
 	 *
 	 * @api
 	 *
-	 * @param bool $bActive - выбрать только активные разделы
+	 * @param bool|array $arSelect Массив возвращаемых полей
+	 * @param bool       $bActive  Выбрать только активные разделы
 	 *
 	 * @return bool|array
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_tree_list
+	 * TODO: Добавить правки в документацию
 	 */
-	final public static function getTreeList ($bActive=false)
+	final public static function getTreeList ($arSelect=[], $bActive=false)
 	{
-		/** @var DataManager $className */
+		/** @var TreeTable $className */
 		$className = static::getClassName();
-		$arGetList = array(
-			'order' => array('LEFT_MARGIN' => 'ASC')
-		);
-		if ($bActive)
-		{
-			$arGetList['filter'] = array('ACTIVE'=>true);
-		}
 
-		if ($arResult = $className::getList($arGetList))
-		{
-			return $arResult;
-		}
-		else
-		{
-			return false;
-		}
+		return $className::getTreeList($arSelect, $bActive);
 	}
 
 	/**
@@ -101,29 +90,19 @@ abstract class Sections
 	 *
 	 * @api
 	 *
-	 * @param int $ID - ID раздела
+	 * @param int        $ID        ID раздела
+	 * @param bool|array $arSelect  Массив возвращаемых полей
 	 *
 	 * @return bool|array
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_info
+	 * TODO: Добавить правки в документацию
 	 */
-	final public static function getInfo ($ID)
+	final public static function getInfo ($ID, $arSelect=[])
 	{
-		/** @var DataManager $className */
+		/** @var TreeTable $className */
 		$className = static::getClassName();
-		$arResult = $className::getOne(
-			array(
-				'select' => static::getSelectFields(),
-				'filter' => array('ID'=>intval($ID))
-			)
-		);
-		if ($arResult)
-		{
-			return $arResult;
-		}
-		else
-		{
-			return false;
-		}
+
+		return $className::getById($ID,$arSelect);
 	}
 
 	/**
@@ -131,42 +110,21 @@ abstract class Sections
 	 *
 	 * @api
 	 *
-	 * @param int  $ID          ID раздела
-	 * @param int  $DEPTH_LEVEL уровень вложенности
-	 * @param bool $bActive     вывести только активные разделы
+	 * @param int        $ID          ID раздела
+	 * @param bool|array $arSelect    Массив возвращаемых полей
+	 * @param int        $DEPTH_LEVEL Уровень вложенности
+	 * @param bool       $bActive     Вывести только активные разделы
 	 *
 	 * @return bool|array
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_child
+	 * TODO: Добавить правки в документацию
 	 */
-	final public static function getChild ($ID, $bActive=false, $DEPTH_LEVEL=0)
+	final public static function getChild ($ID, $arSelect = [], $bActive=false, $DEPTH_LEVEL=0)
 	{
-		/** @var DataManager $className */
+		/** @var TreeTable $className */
 		$className = static::getClassName();
-		$arSection = static::getInfo($ID);
-		$arGetList = array(
-			'select' => static::getSelectFields(),
-			'filter' => array(
-				'>=LEFT_MARGIN'=>$arSection['LEFT_MARGIN'],
-				'<=RIGHT_MARGIN'=>$arSection['RIGHT_MARGIN']
-			),
-			'order' => array('LEFT_MARGIN'=>'ASC')
-		);
-		if ($bActive)
-		{
-			$arGetList['filter'] = array_merge($arGetList['filter'], array('ACTIVE'=>true));
-		}
-		if (intval($DEPTH_LEVEL)>0)
-		{
-			$arGetList['filter'] = array_merge($arGetList['filter'],array('DEPTH_LEVEL'=>intval($DEPTH_LEVEL)));
-		}
-		if ($arResult = $className::getList($arGetList))
-		{
-			return $arResult;
-		}
-		else
-		{
-			return false;
-		}
+
+		return $className::getChild($ID, $arSelect, $bActive, $DEPTH_LEVEL);
 	}
 
 	/**
@@ -174,36 +132,20 @@ abstract class Sections
 	 *
 	 * @api
 	 *
-	 * @param int  $ID          ID раздела
-	 * @param bool $bActive     вернуть только активные разделы
+	 * @param int        $ID          ID раздела
+	 * @param bool|array $arSelect    Массив возвращаемых полей
+	 * @param bool       $bActive     Вернуть только активные разделы
 	 *
 	 * @return bool|array
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_parent
+	 * TODO: Добавить правки в документацию
 	 */
-	final public static function getParent ($ID, $bActive=false)
+	final public static function getParent ($ID, $arSelect=[], $bActive=false)
 	{
-		/** @var DataManager $className */
+		/** @var TreeTable $className */
 		$className = static::getClassName();
-		$arSection = static::getInfo($ID);
-		$arGetList = array(
-			'select' => static::getSelectFields(),
-			'filter' => array(
-				'<=LEFT_MARGIN'=>$arSection['LEFT_MARGIN'],
-				'>=RIGHT_MARGIN'=>$arSection['RIGHT_MARGIN']),
-			'order' => array('LEFT_MARGIN'=>'ASC')
-		);
-		if ($bActive)
-		{
-			$arGetList['filter'] = array_merge($arGetList['filter'],array('ACTIVE'=>true));
-		}
-		if ($arResult = $className::getList($arGetList))
-		{
-			return $arResult;
-		}
-		else
-		{
-			return false;
-		}
+
+		return $className::getParents($ID, $arSelect, $bActive);
 	}
 
 	/**
@@ -211,36 +153,20 @@ abstract class Sections
 	 *
 	 * @api
 	 *
-	 * @param int  $ID          ID раздела
-	 * @param bool $bActive     вернуть только активные разделы
+	 * @param int        $ID          ID раздела
+	 * @param bool|array $arSelect    Массив возвращаемых полей
+	 * @param bool       $bActive     Вернуть только активные разделы
 	 *
 	 * @return bool|array
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_branch
+	 * TODO: Добавить правки в документацию
 	 */
-	final public static function getBranch ($ID, $bActive=false)
+	final public static function getBranch ($ID, $arSelect=[], $bActive=false)
 	{
-		/** @var DataManager $className */
+		/** @var TreeTable $className */
 		$className = static::getClassName();
-		$arSection = static::getInfo($ID);
-		$arGetList = array(
-			'select' => static::getSelectFields(),
-			'filter' => array(
-				'>RIGHT_MARGIN'=>$arSection['LEFT_MARGIN'],
-				'<LEFT_MARGIN'=>$arSection['RIGHT_MARGIN']),
-			'order' => array('LEFT_MARGIN'=>'ASC')
-		);
-		if ($bActive)
-		{
-			$arGetList['filter'] = array_merge($arGetList['filter'],array('ACTIVE'=>true));
-		}
-		if ($arResult = $className::getList($arGetList))
-		{
-			return $arResult;
-		}
-		else
-		{
-			return false;
-		}
+
+		return $className::getBranch($ID, $arSelect, $bActive);
 	}
 
 	/**
@@ -252,10 +178,13 @@ abstract class Sections
 	 *
 	 * @return bool|int
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_parent_id
+	 * TODO: Добавить правки в документацию
 	 */
 	final public static function getParentID ($ID)
 	{
-		$arSection = static::getInfo($ID);
+		/** @var TreeTable $className */
+		$className = static::getClassName();
+		$arSection = $className::getById($ID,['PARENT_SECTION_ID']);
 		if (isset($arSection['PARENT_SECTION_ID']))
 		{
 			return $arSection['PARENT_SECTION_ID'];
@@ -271,14 +200,18 @@ abstract class Sections
 	 *
 	 * @api
 	 *
-	 * @param int $ID        ID раздела
+	 * @param int        $ID       ID раздела
+	 * @param bool|array $arSelect Массив возвращаемых полей
 	 *
 	 * @return array|bool
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_get_parent_info
+	 * TODO: Добавить правки в документацию
 	 */
-	final public static function getParentInfo ($ID)
+	final public static function getParentInfo ($ID, $arSelect = [])
 	{
-		if ($arSection = static::getInfo(static::getParentID($ID)))
+		/** @var TreeTable $className */
+		$className = static::getClassName();
+		if ($arSection = $className::getById(static::getParentID($ID),$arSelect))
 		{
 			return $arSection;
 		}
@@ -297,99 +230,18 @@ abstract class Sections
 	 *
 	 * @return bool|int
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_add_section
+	 * TODO: Добавить правки в документацию
 	 */
 	final public static function addSection ($arSection)
 	{
-		/*		Создание узла – самое простое действие над деревом. Для того, что бы его осуществить нам потребуется уровень и
-				правый ключ родительского узла (узел в который добавляется новый), либо максимальный правый ключ, если у
-				нового узла не будет родительского.*/
-
-		$tableName = static::getTableName();
-		/** @var DataManager $className */
+		/** @var TreeTable $className */
 		$className = static::getClassName();
-		$helper = new SqlHelper($tableName);
-		if (!$arSection = static::checkAddFields($arSection))
+		if (!isset($arSection['PARENT_SECTION_ID']) && isset($arSection['PARENT_ID']))
 		{
-			return false;
+			$arSection['PARENT_SECTION_ID'] = $arSection['PARENT_ID'];
 		}
 
-		/*		Пусть $right_key – правый ключ родительского узла, или максимальный правый ключ плюс единица (если
-				родительского узла нет, то узел с максимальным правым ключом не будет обновляться, соответственно, чтобы небыло
-				повторов, берем число на единицу большее). $level – уровень родительского узла, либо 0, если родительского нет.*/
-		if ($arSection['PARENT_SECTION_ID']==0)
-		{
-			$sql = "SELECT\n\t"
-				.$helper->getMaxFunction('RIGHT_MARGIN','RIGHT_MARGIN')."\n"
-				."FROM\n\t"
-				.$helper->wrapTableQuotes();
-			$query = new Query\QueryBase($sql);
-			$res = $query->exec();
-			if ($ar_res = $res->fetch())
-			{
-				$right_key = $ar_res['RIGHT_MARGIN'] + 1;
-				$level = 0;
-			}
-			else
-			{
-				$right_key = 1;
-				$level = 0;
-			}
-		}
-		else
-		{
-			$arParent = static::getInfo ($arSection['PARENT_SECTION_ID']);
-			$right_key = $arParent['RIGHT_MARGIN'];
-			$level = $arParent['DEPTH_LEVEL'];
-
-			//1. Обновляем ключи существующего дерева, узлы стоящие за родительским узлом:
-			$sql = "UPDATE\n\t"
-				.$helper->wrapTableQuotes()."\n"
-				."SET\n\t"
-				.$helper->wrapQuotes('LEFT_MARGIN')." = ".$helper->wrapQuotes('LEFT_MARGIN')." + 2,\n\t"
-				.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + 2\n"
-				."WHERE\n\t"
-				.$helper->wrapQuotes('LEFT_MARGIN')." > ".$right_key;
-			$query = new Query\QueryBase($sql);
-			$res = $query->exec();
-			/*			Но мы обновили только те узлы в которых изменяются оба ключа, при этом родительскую ветку (не узел, а все
-						родительские узлы) мы не трогали, так как в них изменяется только правый ключ. Следует иметь в виду, что
-						если у нас не будет родительского узла, то есть новый узел будет корневым, то данное обновление проводить
-						нельзя.*/
-		}
-
-
-		//2. Обновляем родительскую ветку:
-		$sql = "UPDATE\n\t"
-			.$helper->wrapTableQuotes()."\n"
-			."SET\n\t"
-			.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + 2\n"
-			."WHERE\n\t"
-			.$helper->wrapQuotes('RIGHT_MARGIN')." >= ".$right_key." AND\n\t"
-			.$helper->wrapQuotes('LEFT_MARGIN')." < ".$right_key;
-		$query = new Query\QueryBase($sql);
-		$query->exec();
-
-		//3. Теперь добавляем новый узел :
-		$arSection['LEFT_MARGIN'] = $right_key;
-		$arSection['RIGHT_MARGIN'] = $right_key + 1;
-		$arSection['DEPTH_LEVEL'] = $level + 1;
-		if (isset($arSection['ID']))
-		{
-			unset($arSection['ID']);
-		}
-		$res = $className::add($arSection);
-		$insertID = $res->getInsertId();
-		$arSection['ID'] = $insertID;
-		static::sortSection($insertID);
-
-		if ($insertID > 0)
-		{
-			return $insertID;
-		}
-		else
-		{
-			return false;
-		}
+		return $className::addNode($arSection);
 	}
 
 	/**
@@ -402,6 +254,7 @@ abstract class Sections
 	 * @param int       $sectionID   ID раздела
 	 * @param int|null  $sort        Новый индекс сортировки, если необходим
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/sections/method_sort_section
+	 * TODO: Добавить правки в документацию
 	 */
 	final public static function sortSection ($sectionID, $sort=null)
 	{

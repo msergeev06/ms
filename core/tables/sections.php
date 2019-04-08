@@ -25,42 +25,20 @@ class SectionsTable extends Lib\DataManager
 	{
 		return array(
 			'ID' => array(
-				//'ms_core_sections' => 'PARENT_SECTION_ID'
 				static::getTableName() => 'PARENT_SECTION_ID'
 			)
 		);
 	}
 	protected static function getMap()
 	{
-		return array(
-			new Fields\IntegerField('ID',array(
-				'primary' => true,
-				'autocomplete' => true,
-				'title' => 'ID раздела'
-			)),
+		$arTreeFields = parent::getMap();
+
+		$arSectionFields = [
 			Lib\TableHelper::activeField(),
 			Lib\TableHelper::sortField(),
 			new Fields\StringField('NAME',array(
 				'required' => true,
 				'title' => 'Название раздела'
-			)),
-			new Fields\IntegerField('LEFT_MARGIN',array(
-				'required' => true,
-				'default_create' => 0,
-				'default_insert' => 0,
-				'title' => 'Левая граница'
-			)),
-			new Fields\IntegerField('RIGHT_MARGIN',array(
-				'required' => true,
-				'default_create' => 0,
-				'default_insert' => 0,
-				'title' => 'Правая граница'
-			)),
-			new Fields\IntegerField('DEPTH_LEVEL',array(
-				'required' => true,
-				'default_create' => 0,
-				'default_insert' => 0,
-				'title' => 'Уровень вложенности'
 			)),
 			new Fields\IntegerField('PARENT_SECTION_ID',array(
 				'required' => true,
@@ -70,7 +48,9 @@ class SectionsTable extends Lib\DataManager
 				'link' => static::getTableName().'.ID',
 				'title' => 'Родительский раздел'
 			))
-		);
+		];
+
+		return array_merge($arTreeFields, $arSectionFields);
 	}
 
 	/**

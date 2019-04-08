@@ -97,11 +97,13 @@ abstract class Field
 	/**
 	 * Конструктор. Обрабатывает начальные параметры поля
 	 *
-	 * @param string $name       Название поля в API
-	 * @param array  $parameters Параметры поля
-	 * @since 0.1.0
+	 * @param string $name       Имя поля таблицы БД
+	 * @param array  $parameters Параметры поля таблицы БД
+	 * @param string $link       Связанное поле вида "таблица.поле"     @since 0.2.0
+	 * @param string $onUpdate   Действие при изменении связанного поля @since 0.2.0
+	 * @param string $onDelete   Действие при удалении связанного поля  @since 0.2.0
 	 */
-	public function __construct($name, $parameters = array())
+	public function __construct($name, $parameters = array(), $link=null, $onUpdate='cascade', $onDelete='restrict')
 	{
 		//Название поля таблицы
 		try
@@ -129,8 +131,12 @@ abstract class Field
 			$this->title = $parameters['title'];
 		}
 
-		//Связь поля текущей таблицы с primary другой таблицы
-		if (isset($parameters['link']))
+		//Связь поля текущей таблицы с полем другой таблицы
+		if (!is_null($link))
+		{
+			$this->link = $link;
+		}
+		elseif (isset($parameters['link']))
 		{
 			$this->link = $parameters['link'];
 		}
@@ -156,6 +162,10 @@ abstract class Field
 		)
 		{
 			$this->linkOnUpdate = $parameters['on_update'];
+		}
+		elseif (in_array(strtolower($onUpdate),array('cascade','set_null','no_action','restrict','set_default')))
+		{
+			$this->linkOnUpdate = strtolower($onUpdate);
 		}
 		else
 		{
@@ -183,6 +193,10 @@ abstract class Field
 		)
 		{
 			$this->linkOnDelete = $parameters['on_delete'];
+		}
+		elseif (in_array(strtolower($onDelete),array('cascade','set_null','no_action','restrict','set_default')))
+		{
+			$this->linkOnDelete = strtolower($onDelete);
 		}
 		else
 		{

@@ -73,13 +73,15 @@ class TextField extends StringField
 	/**
 	 * Конструктор
 	 *
-	 * @param string $name
-	 * @param array  $parameters
-	 * @since 0.1.0
+	 * @param string $name       Имя поля таблицы БД
+	 * @param array  $parameters Параметры поля таблицы БД
+	 * @param string $link       Связанное поле вида "таблица.поле"     @since 0.2.0
+	 * @param string $onUpdate   Действие при изменении связанного поля @since 0.2.0
+	 * @param string $onDelete   Действие при удалении связанного поля  @since 0.2.0
 	 */
-	function __construct($name, $parameters = array())
+	function __construct($name, $parameters = array(),$link=null,$onUpdate='cascade',$onDelete='restrict')
 	{
-		parent::__construct($name, $parameters);
+		parent::__construct($name, $parameters,$link,$onUpdate,$onDelete);
 
 		$this->dataType = $this->fieldType = 'text';
 

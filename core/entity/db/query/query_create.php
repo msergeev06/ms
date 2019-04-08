@@ -111,6 +111,12 @@ class QueryCreate extends QueryBase
 		{
 			$sql .= $this->getLinkedFields();
 		}
+		//Если есть дополнительный код, добавляем его
+		if (!is_null($innerSql = $tableClass::getInnerCreateSql()))
+		{
+			$sql .=",\n\t";
+			$sql .= $innerSql;
+		}
 		$sql .= "\n\t) ENGINE=InnoDB CHARACTER SET=utf8 COMMENT=\"".$this->tableTitle."\" ";
 		if ($bAutoIncrement)
 		{

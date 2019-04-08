@@ -108,8 +108,21 @@ abstract class DataManager
 	}
 
 	/**
+	 * Задает множественный первичный ключ для таблицы
+	 *
+	 * @api
+	 *
+	 * @return null|array
+	 * @since 0.2.0
+	 */
+	public static function getPrimary ()
+	{
+		return NULL;
+	}
+
+	/**
 	 * Возвращает массив дефолтных значений таблицы,
-	 * которые добавляются в таблицу при установке ядра или пакета
+	 * которые добавляются в таблицу при установке ядра или модуля
 	 *
 	 * @api
 	 *
@@ -147,6 +160,63 @@ abstract class DataManager
 	}
 
 	/**
+	 * Возвращает SQL запрос создания триггера для таблицы
+	 *
+	 * @param string $sAction SQL код действий триггера
+	 * @param string $sTime   Время срабатывания триггера ('BEFORE' или 'AFTER')
+	 * @param string $sEvent  Событие срабатывания триггера ('INSERT', 'UPDATE' или 'DELETE')
+	 *
+	 * @return string SQL код создания триггера или пустая строка в случае ошибки
+	 */
+	final public static function addTriggerSql ($sAction, $sTime='before',$sEvent='update')
+	{
+		$sTime = strtoupper($sTime);
+		$sEvent = strtoupper($sEvent);
+		if (
+			!in_array($sTime,array('BEFORE','AFTER'))
+			|| !in_array($sEvent,array ('INSERT','UPDATE','DELETE'))
+		) {
+			return null;
+		}
+		$helper = new Db\SqlHelper(static::getTableName());
+		$sql = '
+			DROP TRIGGER IF EXISTS '.$helper->wrapQuotes(static::getTableName().'_'.strtolower($sTime).'_'.strtolower($sEvent)).';
+			DELIMITER |
+			CREATE TRIGGER '.$helper->wrapQuotes(static::getTableName().'_'.strtolower($sTime).'_'.strtolower($sEvent)).' 
+			'.$sTime.' '.$sEvent.' ON '.$helper->wrapTableQuotes().' FOR EACH ROW
+			BEGIN 
+				'.$sAction.'
+			END;
+			DELIMITER ;
+		';
+
+		return $sql;
+	}
+
+	/**
+	 * Удаляет триггер для таблицы
+	 *
+	 * @param string $sTime  Время срабатывания триггера ('BEFORE' или 'AFTER')
+	 * @param string $sEvent Событие срабатывания триггера ('INSERT', 'UPDATE' или 'DELETE')
+	 *
+	 * @return string SQL код удаления триггера или пустая строка в случае ошибки
+	 */
+	final public static function deleteTriggerSql($sTime='before',$sEvent='update')
+	{
+		$sTime = strtolower($sTime);
+		$sEvent = strtolower($sEvent);
+		if (
+			!in_array($sTime,array ('before','after'))
+			||!in_array($sEvent,array ('insert','update','delete'))
+		) {
+			return null;
+		}
+		$helper = new Db\SqlHelper();
+
+		return 'DROP TRIGGER IF EXISTS '.$helper->wrapQuotes(static::getTableName().'_'.$sTime.'_'.$sEvent).';';
+	}
+
+	/**
 	 * Возвращает дополнительный SQL запрос, используемый после удаления таблицы
 	 *
 	 * @return null|string
@@ -155,6 +225,111 @@ abstract class DataManager
 	public static function getAdditionalDeleteSql ()
 	{
 		return null;
+	}
+
+	/**
+	 * Возвращает SQL код, вставляемый при создании таблицы.
+	 * Можно использовать для добавления индексов
+	 *
+	 * @return null|string
+	 * @since 0.2.0
+	 */
+	public static function getInnerCreateSql ()
+	{
+		return null;
+	}
+
+	/**
+	 * Добавляет один или несколько одиночных индексов в таблицу
+	 *
+	 * @param string|array $mFields Один или несколько полей для каждого из которых создаются индексы
+	 *
+	 * @return null|string
+	 * @since 0.2.0
+	 */
+	public static function addIndexes ($mFields)
+	{
+		if (!is_array($mFields))
+		{
+			$mFields = array($mFields);
+		}
+		elseif (empty($mFields))
+		{
+			return null;
+		}
+		$sql = '';
+
+		foreach ($mFields as $sFieldName)
+		{
+			$helper = new Db\SqlHelper();
+			$sFieldName = strtoupper($sFieldName);
+			$sql .= 'INDEX '.$helper->wrapQuotes('INDEX_'.$sFieldName)
+				.' ('.$helper->wrapQuotes($sFieldName).")\n\t";
+		}
+
+		if (strlen($sql)>0)
+		{
+			return $sql;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Возвращает SQL код уникального поля/полей
+	 *
+	 * @param string|array $mFields Поле/поля уникальные для таблицы
+	 * @param bool         $bIndex  Флаг, создавать индекс
+	 * @param null|string  $sName   Имя унимального (индекса), если не задан, создасться автоматически
+	 *
+	 * @return null|string
+	 */
+	final public static function addUnique($mFields,$bIndex=false,$sName=null)
+	{
+		if (!is_array($mFields)&&strlen($mFields)>0)
+		{
+			$mFields = array ($mFields);
+		}
+		elseif (!is_array($mFields))
+		{
+			return null;
+		}
+		$helper = new Db\SqlHelper();
+		$sql = 'UNIQUE ';
+		if ($bIndex)
+		{
+			$sql .= 'INDEX ';
+		}
+		if (is_null($sName))
+		{
+			$sName = 'UNIQUE';
+			if ($bIndex)
+			{
+				$sName .= '_INDEX';
+			}
+			foreach ($mFields as $field)
+			{
+				$sName .= '_'.$field;
+			}
+			$sName = strtolower($sName);
+		}
+		$sql .= $helper->wrapQuotes($sName).' (';
+		$bFirst = true;
+		foreach ($mFields as $field)
+		{
+			if ($bFirst)
+			{
+				$bFirst = false;
+			}
+			else
+			{
+				$sql .= ',';
+			}
+			$sql .= $helper->wrapQuotes($field);
+		}
+		$sql .= ')';
+
+		return $sql;
 	}
 
 	/**
@@ -177,11 +352,15 @@ abstract class DataManager
 	/**
 	 * Обработчик события перед обновлением записи в таблице
 	 *
-	 * @param mixed $primary  Значение PRIMARY поля таблицы
-	 * @param array $arUpdate Массив обновляемых полей записи
+	 * @param mixed       $primary    Значение PRIMARY поля таблицы
+	 * @param array       &$arUpdate  Массив обновляемых полей записи, можно изменить
+	 * @param null|string $sSqlWhere  SQL запроса WHERE
+	 *
+	 * @return mixed|false Для отмены обновления необходимо передать FALSE
+	 *
 	 * @since 0.2.0
 	 */
-	protected static function OnBeforeUpdate ($primary, $arUpdate) {}
+	protected static function OnBeforeUpdate ($primary, &$arUpdate, &$sSqlWhere=null) {}
 
 	/**
 	 * Обработчик события после попытки обновления записи в таблице
@@ -258,16 +437,18 @@ abstract class DataManager
 
 	/**
 	 * Обновляет значения в таблице
+	 * TODO: Переделать primary на возможность добавлять массив полей со значениями
 	 *
-	 * @param mixed $primary Поле PRIMARY таблицы
-	 * @param array $arUpdate Массив значений таблицы в поле 'VALUES'
-	 * @param bool  $bShowSql Флаг, показать SQL запрос вместо выполнения
+	 * @param mixed  $primary   Поле PRIMARY таблицы
+	 * @param array  $arUpdate  Массив значений таблицы в поле 'VALUES'
+	 * @param bool   $bShowSql  Флаг, показать SQL запрос вместо выполнения
+	 * @param string $sSqlWhere SQL код WHERE, если нужно обновить не по primary полю @since 0.2.0
 	 *
-	 * @return Db\DBResult|string Результат mysql запроса, либо текст запроса
+	 * @return Db\DBResult|string|false Результат mysql запроса, либо текст запроса, либо false
 	 * @throws
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_update
 	 */
-	final public static function update ($primary, $arUpdate, $bShowSql=false)
+	final public static function update ($primary, $arUpdate, $bShowSql=false, $sSqlWhere=null)
 	{
 		try {
 			if (isset($arUpdate['VALUES']))
@@ -281,15 +462,19 @@ abstract class DataManager
 			echo $e->showException();
 		}
 
-		$query = new Db\Query\QueryUpdate($primary,$arUpdate,static::getClassName());
+		//Обрабатываем событие перед обновлением записи
+		$bNext = static::OnBeforeUpdate($primary,$arUpdate, $sSqlWhere);
+		if ($bNext === FALSE)
+		{
+			return FALSE;
+		}
+
+		$query = new Db\Query\QueryUpdate($primary,$arUpdate,static::getClassName(),$sSqlWhere);
 
 		if ($bShowSql)
 		{
 			return $query->getSql();
 		}
-
-		//Обрабатываем событие перед обновлением записи
-		static::OnBeforeUpdate($primary,$arUpdate);
 
 		$res = $query->exec();
 
@@ -393,16 +578,23 @@ abstract class DataManager
 	 *
 	 * @api
 	 *
+	 * @param bool $bShowSql Флаг, показывать SQL запрос, вместо выполнения
+	 *
 	 * @return bool|Db\DBResult Результат mysql запроса, либо false
 	 * @throws
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_insert_default_rows
 	 */
-	final public static function insertDefaultRows ()
+	final public static function insertDefaultRows ($bShowSql=false)
 	{
 		$arDefaultValues = static::getValues();
 		if (count($arDefaultValues)>0)
 		{
 			$query = new Db\Query\QueryInsert($arDefaultValues,static::getClassName());
+			if ($bShowSql)
+			{
+				msEchoVar($query->getSql());
+				return false;
+			}
 			$res = $query->exec();
 
 			return $res;
@@ -417,24 +609,37 @@ abstract class DataManager
 	 *
 	 * @api
 	 *
+	 * @param bool $bShowSql Флаг, показывать SQL вместо выполнения
+	 *
 	 * @return Db\DBResult Результат mysql запроса
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_create_table
 	 */
-	final public static function createTable ()
+	final public static function createTable ($bShowSql=false)
 	{
 		$query = new Db\Query\QueryCreate(static::getClassName());
-		//msEchoVar($query->getSql());
-		$res = $query->exec();
-		if ($res->getResult())
+		if ($bShowSql)
+		{
+			msEchoVar($query->getSql());
+			$res = '';
+		}
+		else
+		{
+			$res = $query->exec();
+		}
+		if ($bShowSql||$res->getResult())
 		{
 			$additionalSql = static::getAdditionalCreateSql();
-			if (!is_null($additionalSql))
+			if (!$bShowSql&&!is_null($additionalSql))
 			{
 				$query = new Db\Query\QueryBase($additionalSql);
 				$query->exec();
-			}
 
-			static::OnAfterCreateTable();
+				static::OnAfterCreateTable();
+			}
+			else
+			{
+				msEchoVar($additionalSql);
+			}
 		}
 
 		return $res;

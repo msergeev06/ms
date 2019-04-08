@@ -30,16 +30,23 @@ class QueryUpdate extends QueryBase
 	private $updateArray=null;
 
 	/**
+	 * @var null||string
+	 */
+	private $sSqlWhere = null;
+
+	/**
 	 * Конструктор
+	 * TODO: Переделать updatePrimary на возможность добавлять массив полей со значениями
 	 *
-	 * @param null $updatePrimary
-	 * @param null $updateArray
-	 * @param null $tableClass
+	 * @param mixed  $updatePrimary Значение primary поля таблицы
+	 * @param array  $updateArray   Массив обновляемых полей
+	 * @param string $tableClass    Имя класса таблицы с пространством имен
+	 * @param string $sSqlWhere     SQL код WHERE, если нужно обновить не по primary полю
 	 *
 	 * @throws Exception\ArgumentTypeException
 	 * @since 0.2.0
 	 */
-	public function __construct ($updatePrimary=null,$updateArray=null,$tableClass=null)
+	public function __construct ($updatePrimary, array $updateArray,$tableClass,$sSqlWhere=null)
 	{
 		$this->setType('update');
 		try
@@ -78,6 +85,11 @@ class QueryUpdate extends QueryBase
 		catch (Exception\ObjectNotFoundException $e2)
 		{
 			die($e2->showException());
+		}
+
+		if (!is_null($sSqlWhere))
+		{
+			$this->sSqlWhere = $sSqlWhere;
 		}
 
 		$this->setSql($this->buildQuery());
@@ -201,8 +213,16 @@ class QueryUpdate extends QueryBase
 				}
 			}
 		}
-		$sql .= "\nWHERE\n\t".$helper->wrapFieldQuotes($primaryField)." =";
-		$sql .= $primaryObj->getSqlValue($primaryId);
+		$sql .= "\nWHERE\n\t";
+		if (is_null($this->sSqlWhere))
+		{
+			$sql .= $helper->wrapFieldQuotes($primaryField)." =";
+			$sql .= $primaryObj->getSqlValue($primaryId);
+		}
+		else
+		{
+			$sql .= $this->sSqlWhere;
+		}
 		$sql .= "\nLIMIT 1 ;";
 
 		return $sql;

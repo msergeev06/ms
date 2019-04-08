@@ -33,11 +33,13 @@ class UserToGroupTable extends DataManager
 			new Fields\IntegerField('USER_ID',array (
 				'required' => true,
 				'link' => UsersTable::getTableName().'.ID',
+				'on_delete' => 'cascade',
 				'title' => Loc::getCoreMessage('field_user_id')
 			)),
 			new Fields\IntegerField('GROUP_ID',array (
 				'required' => true,
 				'link' => UserGroupsTable::getTableName().'.ID',
+				'on_delete' => 'cascade',
 				'title' => Loc::getCoreMessage('field_group_id')
 			)),
 			new Fields\DateTimeField('ACTIVE_FROM',array (

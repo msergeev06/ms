@@ -12,6 +12,7 @@ namespace Ms\Core\Tables;
 
 use Ms\Core\Lib\DataManager;
 use Ms\Core\Entity\Db\Fields;
+use Ms\Core\Lib\Users;
 
 class UsersTable extends DataManager
 {
@@ -69,6 +70,11 @@ class UsersTable extends DataManager
 			new Fields\StringField('FIO_O',array(
 				'title' => 'Отчество'
 			)),
+			new Fields\IntegerField('AVATAR',array (
+				'size' => 11,
+				'link' => FileTable::getTableName().'.ID',
+				'title' => 'Аватар пользователя'
+			)),
 			new Fields\StringField('HASH',array(
 				'title' => 'Hash'
 			))
@@ -81,14 +87,14 @@ class UsersTable extends DataManager
 			array(
 				"ID" => 1,
 				"LOGIN" => "admin",
-				"PASSWORD" => "123456",
+				"PASSWORD" => Users::createMd5Pass('admin','admin'),
 				"EMAIL" => "admin@example.com",
-				"NAME" => "Admin"
+				"NAME" => "Админ"
 			),
 			array(
 				"ID" => 2,
 				"LOGIN" => "guest",
-				"PASSWORD" => "guest",
+				"PASSWORD" => Users::createMd5Pass('guest','guest'),
 				"EMAIL" => "mail@example.com",
 				"NAME" => "Гость"
 			)

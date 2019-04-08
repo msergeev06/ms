@@ -19,39 +19,17 @@ use Ms\Core\Tables\UserToGroupTable;
 class User
 {
 	/**
-	 * ID пользователя admin
-	 * @var int
-	 * @access private
-	 */
-	private $ADMIN_USER = 1;
-
-	/**
-	 * ID группы Администраторы
-	 * @var int
-	 * @access private
-	 */
-	private $ADMIN_GROUP = 1;
-
-	/**
-	 * ID пользователя guest
-	 * @var int
-	 * @access private
-	 */
-	private $GUEST_USER = 2;
-
-	/**
-	 * Время в секундах, на которое сохраняется сессия пользователя
-	 * @var int
-	 * @access private
-	 */
-	private $REMEMBER_TIME = 31536000; //365 дней
-
-	/**
 	 * ID текущего пользователя
 	 * @var int ID пользователя
 	 * @access protected
 	 */
 	protected $ID = null;
+
+	/**
+	 * Основные параметры пользователя
+	 * @var array
+	 */
+	protected $arUserData = array ();
 
 	/**
 	 * Флаг, говорящий администратор ли текущий пользователь
@@ -68,6 +46,11 @@ class User
 	protected $isGuest = null;
 
 	/**
+	 * Флаг, говорящий что текущий пользователь является системным
+	 * @var bool
+	 */
+	protected $isSysUser = false;
+	/**
 	 * Проверочная строка при авторизации
 	 * @var string
 	 * @access protected
@@ -83,6 +66,14 @@ class User
 
 	private static $object = null;
 
+
+	//<editor-fold defaultstate="collapse" desc="Создание и получение объекта пользователя">
+	/**
+	 * Возвращает единственный объект пользователя
+	 * Singleton
+	 *
+	 * @return User
+	 */
 	public static function getObject ()
 	{
 		if (is_null(static::$object))
@@ -98,6 +89,12 @@ class User
 	 */
 	private function __construct ()
 	{
+		if (defined('RUN_ON_SYSTEM_USER') && RUN_ON_SYSTEM_USER === true)
+		{
+			$this->logInSysUser();
+			return $this;
+		}
+
 		$r = Application::getInstance()->getContext()->getRequest();
 		if (!is_null($r->getCookie('user_id')) && !is_null($r->getCookie('hash')))
 		{
@@ -121,11 +118,11 @@ class User
 				{
 					$rememberMe = true;
 				}
-				if ($this->ID == $this->ADMIN_USER)
+				if ($this->ID == $this->getConst('ADMIN_USER'))
 				{
 					$this->logInAdmin($rememberMe);
 				}
-				elseif ($this->ID == $this->GUEST_USER)
+				elseif ($this->ID == $this->getConst('GUEST_USER'))
 				{
 					$this->logInGuest();
 				}
@@ -144,7 +141,10 @@ class User
 			$this->logInGuest();
 		}
 	}
+	//</editor-fold>
 
+
+	//<editor-fold defaultstate="collapse" desc="Методы получения данных о пользователе">
 	/**
 	 * Возвращает ID текущего пользователя
 	 *
@@ -155,7 +155,7 @@ class User
 	 */
 	public function getID ()
 	{
-		return $this->ID;
+		return (int)$this->ID;
 	}
 
 	/**
@@ -170,43 +170,9 @@ class User
 	 */
 	public function isAdmin ()
 	{
-		$now = new Date();
 		if (is_null($this->isAdmin))
 		{
-			if ($this->ID == 5)
-			{
-				$this->isAdmin = true;
-			}
-			else
-			{
-				$arRes = UserToGroupTable::getOne(
-					array (
-						'select' => 'ID',
-						'filter' => array (
-							'USER_ID' => $this->ID,
-							'GROUP_ID' => $this->ADMIN_GROUP,
-							array (
-								'LOGIC'=>'OR',
-								'ACTIVE_FROM'=>NULL,
-								'>=ACTIVE_FROM' => $now
-							),
-							array (
-								'LOGIC' => 'OR',
-								'ACTIVE_TO' => NULL,
-								'<=ACTIVE_TO' => $now
-							)
-						)
-					)
-				);
-				if ($arRes)
-				{
-					$this->isAdmin = true;
-				}
-				else
-				{
-					$this->isAdmin = false;
-				}
-			}
+			$this->isAdmin = Users::isAdmin($this->ID);
 		}
 
 		return $this->isAdmin;
@@ -227,6 +193,16 @@ class User
 	}
 
 	/**
+	 * Явялется ли текущий пользователь системным
+	 *
+	 * @return bool
+	 */
+	public function isSysUser()
+	{
+		return $this->isSysUser;
+	}
+
+	/**
 	 * Авторизован ли текущий пользователь
 	 * true - авторизован
 	 * false - требуется авторизация
@@ -244,45 +220,6 @@ class User
 	}
 
 	/**
-	 * Авторизует указанного пользователя
-	 *
-	 * @param int  $userID      ID пользователя
-	 * @param bool $rememberMe  Флаг, запомнить авторизацию
-	 */
-	public function logIn ($userID, $rememberMe=false)
-	{
-		$this->ID = intval($userID);
-		$this->hash = $this->generateRandomString();
-		UsersTable::update(intval($userID),array("HASH"=>$this->hash));
-		if ($this->ID == $this->ADMIN_USER || $this->isAdmin())
-		{
-			$this->logInAdmin($rememberMe);
-		}
-		elseif ($this->ID == $this->GUEST_USER)
-		{   //Авторизация гостя не должна проходить так, но на всякий случай
-			$this->logInGuest();
-		}
-		else
-		{
-			$this->logInOther($rememberMe);
-		}
-	}
-
-	/**
-	 * Разавторизовать пользователя. Автоматически авторизует гостя
-	 */
-	public function logOut ()
-	{
-		$r = Application::getInstance()->getContext()->getRequest();
-		if (!is_null($r->getCookie('user_id')))
-		{
-			UsersTable::update(intval($r->getCookie('user_id')),array("HASH"=>NULL));
-		}
-		$this->arParams = array();
-		$this->logInGuest();
-	}
-
-	/**
 	 * Вовзращает значение констант
 	 *
 	 * @param string $name Код константы
@@ -291,45 +228,19 @@ class User
 	 */
 	public function getConst ($name)
 	{
-		switch ($name)
+		switch (strtoupper($name))
 		{
 			case 'ADMIN_USER':
-				return $this->ADMIN_USER;
+				return Users::ADMIN_USER;
 			case 'ADMIN_GROUP':
-				return $this->ADMIN_GROUP;
+				return Users::ADMIN_GROUP;
 			case 'GUEST_USER':
-				return $this->GUEST_USER;
+				return Users::GUEST_USER;
 			case 'REMEMBER_TIME':
-				return $this->REMEMBER_TIME;
+				return Users::REMEMBER_TIME;
 			default:
 				return NULL;
 		}
-	}
-
-	/**
-	 * Генерирует случайную строку для хеша
-	 *
-	 * @param string $prefix [optional] Префикс
-	 *
-	 * @return string
-	 */
-	public function generateRandomString ($prefix=null)
-	{
-		if (is_null($prefix))
-		{
-			$prefix = rand();
-		}
-
-		if (function_exists('password_hash'))
-		{
-			$random = password_hash($prefix,PASSWORD_BCRYPT);
-		}
-		else
-		{
-			$random = md5(uniqid($prefix, true));
-		}
-
-		return $random;
 	}
 
 	/**
@@ -359,43 +270,18 @@ class User
 	 */
 	public function setParam ($strParamName, $value)
 	{
+		$strParamName = strtoupper($strParamName);
 		$this->arParams[$strParamName] = $value;
 	}
 
 	/**
 	 * Возвращает массив групп, в которых состоит пользователь.
-	 * Активность группы не проверяется, проверяется лишь дата привязки
 	 *
 	 * @return array|bool Массив групп, либо false
 	 */
 	public function getGroups ()
 	{
-		$now = new Date();
-		$arRes = UserToGroupTable::getList(
-			array (
-				'select' => array(
-					'GROUP_ID',
-					'GROUP_ID.ACTIVE' => 'GROUP_ACTIVE',
-					'GROUP_ID.NAME' => 'GROUP_NAME',
-					'GROUP_ID.CODE' => 'GROUP_CODE'
-				),
-				'filter' => array (
-					'USER_ID' => $this->ID,
-					array (
-						'LOGIC' => 'OR',
-						'ACTIVE_FROM' => NULL,
-						'>=ACTIVE_FROM' => $now
-					),
-					array (
-						'LOGIC' => 'OR',
-						'ACTIVE_TO' => NULL,
-						'<=ACTIVE_TO' => $now
-					)
-				)
-			)
-		);
-
-		return $arRes;
+		return Users::getGroups($this->ID);
 	}
 
 	/**
@@ -414,132 +300,57 @@ class User
 	 */
 	public function isInGroups ($arGroups = array (), $logic = 'or', $field = 'ID')
 	{
-		if (strtolower($logic) != 'or' && strtolower($logic) != 'and')
+		return Users::isInGroups($this->ID, $arGroups, $logic, $field);
+	}
+
+	/**
+	 * Возвращает логин пользователя
+	 *
+	 * @return mixed
+	 */
+	public function getLogin ()
+	{
+		if (!isset($this->arUserData['LOGIN']))
 		{
-			$logic = 'or';
+			$this->getUserData();
+		}
+
+		return $this->arUserData['LOGIN'];
+	}
+
+	/**
+	 * Возвращает имя пользователя
+	 *
+	 * @return string
+	 */
+	public function getName ()
+	{
+		if (!isset($this->arUserData['NAME']))
+		{
+			$this->getUserData();
+		}
+
+		if (isset($this->arUserData['NAME']))
+		{
+			return $this->arUserData['NAME'];
 		}
 		else
 		{
-			$logic = strtolower($logic);
+			return 'null';
 		}
-		if (strtoupper($field) != 'ID' && strtoupper($field) != 'CODE')
-		{
-			$field = 'ID';
-		}
-		else
-		{
-			$field = strtoupper($field);
-		}
-		$userGroups = $this->getGroups();
-		if (!$userGroups || empty($userGroups))
-		{
-			return false;
-		}
-		$isset = null;
-		foreach ($userGroups as $ar_group)
-		{
-			if (in_array($ar_group['GROUP_'.$field],$arGroups))
-			{
-				if (is_null($isset) || $logic == 'or')
-				{
-					$isset = true;
-				}
-			}
-			else
-			{
-				if (is_null($isset) || $logic == 'and')
-				{
-					$isset = false;
-				}
-			}
-		}
-		if (is_null($isset))
-		{
-			$isset = false;
-		}
-
-		return $isset;
 	}
 
-	/*	protected function issetAutorisedUser ()
+	public function getAvatar()
+	{
+		//TODO: Доделать аватары пользователей
+		if (!isset($this->arUserData['AVATAR']))
 		{
-			return !is_null($this->ID);
-		}*/
-
-	/**
-	 * Авторизует гостя
-	 */
-	protected function logInGuest ()
-	{
-		$this->ID = $this->GUEST_USER;
-		$this->isAdmin = false;
-		$this->isGuest = true;
-		$this->delCookie();
-	}
-
-	/**
-	 * Авторизует админа
-	 *
-	 * @param bool $rememberMe Если true, необходимо запомнить авторизацию
-	 */
-	protected function logInAdmin ($rememberMe=false)
-	{
-		$this->isAdmin = true;
-		$this->isGuest = false;
-		$this->setCookie($this->ID, $this->hash, $rememberMe);
-	}
-
-	/**
-	 * Авторизует остальных пользователей (не админ/не гость)
-	 *
-	 * @param bool $rememberMe Если true, необходимо запомнить авторизацию
-	 */
-	protected function logInOther ($rememberMe=false)
-	{
-		$this->isGuest = false;
-		$this->setCookie($this->ID, $this->hash, $rememberMe);
-	}
-
-	/**
-	 * Сохраняет cookie пользователя
-	 *
-	 * @param string $cookieName    Имя cookie
-	 * @param string $value         Значение cookie
-	 * @param int    $userID        ID пользователя
-	 *
-	 * @return bool
-	 */
-	public function setUserCookie ($cookieName, $value, $userID=null)
-	{
-		$r = Application::getInstance()->getContext()->getRequest();
-		if (is_null($userID))
-		{
-			$userID = $this->ID;
+			$this->getUserData();
 		}
-		$cookieName = str_replace('ms_','',$cookieName);
 
-		return $r->setCookie($cookieName.'_user_'.$userID,$value,(time()+$this->REMEMBER_TIME),'/');
-	}
-
-	/**
-	 * Возвращает значение cookie пользователя
-	 *
-	 * @param string $cookieName    Имя cookie
-	 * @param string $userID        ID пользователя
-	 *
-	 * @return null|string
-	 */
-	public function getUserCookie ($cookieName, $userID=null)
-	{
-		$r = Application::getInstance()->getContext()->getRequest();
-		if (is_null($userID))
+		if (isset($this->arUserData['AVATAR']))
 		{
-			$userID = $this->ID;
-		}
-		$cookieName = str_replace('ms_','',$cookieName);
-		if (!is_null($r->getCookie($cookieName.'_user_'.$userID)))
-		{
-			return $r->getCookie($cookieName.'_user_'.$userID);
+			return $this->arUserData['AVATAR'];
 		}
 		else
 		{
@@ -547,30 +358,10 @@ class User
 		}
 	}
 
-	/**
-	 * Возвращает true, если указанный cookie пользователя существует, false в противном случае
-	 *
-	 * @param string $cookieName Имя cookie
-	 * @param int    $userID     ID пользователя
-	 *
-	 * @return bool
-	 */
-	public function issetUserCookie ($cookieName, $userID=null)
+	public function isOnline ()
 	{
-		$r = Application::getInstance()->getContext()->getRequest();
-		if (is_null($userID))
-		{
-			$userID = $this->ID;
-		}
-		$cookieName = str_replace('ms_','',$cookieName);
-		if (!is_null($r->getCookie($cookieName.'_user_'.$userID)))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		//TODO: Доделать проверку активности пользователя
+		return $this->isAuthorise();
 	}
 
 	/**
@@ -604,18 +395,225 @@ class User
 	}
 
 	/**
+	 * Получает основные параметры пользователя
+	 *
+	 * @since 0.2.0
+	 */
+	protected function getUserData ()
+	{
+		if (empty($this->arUserData))
+		{
+			$arRes = UsersTable::getById(
+				$this->getID(),
+				array (
+					'ACTIVE',
+					'LOGIN',
+					'EMAIL',
+					'MOBILE',
+					'NAME',
+					'FIO_F',
+					'FIO_I',
+					'FIO_O',
+					'AVATAR'
+				)
+			);
+			if ($arRes)
+			{
+				$this->arUserData = $arRes;
+			}
+		}
+	}
+	//</editor-fold>
+
+
+	//<editor-fold defaultstate="collapse" desc="Методы авторизации пользователя">
+	/**
+	 * Авторизует указанного пользователя
+	 *
+	 * @param int  $userID      ID пользователя
+	 * @param bool $rememberMe  Флаг, запомнить авторизацию
+	 */
+	public function logIn ($userID, $rememberMe=false)
+	{
+		$this->ID = intval($userID);
+		$this->hash = $this->generateRandomString();
+		UsersTable::update(intval($userID),array("HASH"=>$this->hash));
+		if ($this->ID == $this->getConst('ADMIN_USER') || $this->isAdmin())
+		{
+			$this->logInAdmin($rememberMe);
+		}
+		elseif ($this->ID == $this->getConst('GUEST_USER'))
+		{   //Авторизация гостя не должна проходить так, но на всякий случай
+			$this->logInGuest();
+		}
+		else
+		{
+			$this->logInOther($rememberMe);
+		}
+		$this->arUserData = array();
+		$this->arParams = array ();
+	}
+
+	/**
+	 * Разавторизовать пользователя. Автоматически авторизует гостя
+	 */
+	public function logOut ()
+	{
+		$r = Application::getInstance()->getContext()->getRequest();
+		if (!is_null($r->getCookie('user_id')))
+		{
+			UsersTable::update(intval($r->getCookie('user_id')),array("HASH"=>NULL));
+		}
+		$this->arParams = array();
+		$this->logInGuest();
+	}
+
+	/**
+	 * Генерирует случайную строку для хеша
+	 *
+	 * @param string $prefix [optional] Префикс
+	 *
+	 * @return string
+	 */
+	public function generateRandomString ($prefix=null)
+	{
+		if (is_null($prefix))
+		{
+			$prefix = rand();
+		}
+
+		if (function_exists('password_hash'))
+		{
+			$random = password_hash($prefix,PASSWORD_BCRYPT);
+		}
+		else
+		{
+			$random = md5(uniqid($prefix, true));
+		}
+
+		return $random;
+	}
+
+	/**
+	 * Авторизует гостя
+	 */
+	protected function logInGuest ()
+	{
+		$this->ID = Users::GUEST_USER;
+		$this->isAdmin = false;
+		$this->isGuest = true;
+		$this->delCookie();
+	}
+
+	protected function logInSysUser()
+	{
+		$this->ID = Users::SYSTEM_USER;
+		$this->isAdmin = true;
+		$this->isGuest = false;
+	}
+
+	/**
+	 * Авторизует админа
+	 *
+	 * @param bool $rememberMe Если true, необходимо запомнить авторизацию
+	 */
+	protected function logInAdmin ($rememberMe=false)
+	{
+		$this->isAdmin = true;
+		$this->isGuest = false;
+		$this->setCookie($this->ID, $this->hash, $rememberMe);
+	}
+
+	/**
+	 * Авторизует остальных пользователей (не админ/не гость)
+	 *
+	 * @param bool $rememberMe Если true, необходимо запомнить авторизацию
+	 */
+	protected function logInOther ($rememberMe=false)
+	{
+		$this->isGuest = false;
+		$this->setCookie($this->ID, $this->hash, $rememberMe);
+	}
+	//</editor-fold>
+
+
+	//<editor-fold defaultstate="collapse" desc="Методы работы с куками">
+	/**
+	 * Сохраняет cookie пользователя
+	 *
+	 * @param string $cookieName    Имя cookie
+	 * @param string $value         Значение cookie
+	 * @param int    $userID        ID пользователя
+	 *
+	 * @return bool
+	 */
+	public function setUserCookie ($cookieName, $value, $userID=null)
+	{
+		if (is_null($userID))
+		{
+			$userID = $this->ID;
+		}
+
+		return Users::setUserCookie($cookieName,$value,$userID);
+	}
+
+	/**
+	 * Возвращает значение cookie пользователя
+	 *
+	 * @param string $cookieName    Имя cookie
+	 * @param string $userID        ID пользователя
+	 *
+	 * @return null|string
+	 */
+	public function getUserCookie ($cookieName, $userID=null)
+	{
+		if (is_null($userID))
+		{
+			$userID = $this->ID;
+		}
+
+		return Users::getUserCookie($cookieName, $userID);
+	}
+
+	/**
+	 * Возвращает true, если указанный cookie пользователя существует, false в противном случае
+	 *
+	 * @param string $cookieName Имя cookie
+	 * @param int    $userID     ID пользователя
+	 *
+	 * @return bool
+	 */
+	public function issetUserCookie ($cookieName, $userID=null)
+	{
+		$r = Application::getInstance()->getContext()->getRequest();
+		if (is_null($userID))
+		{
+			$userID = $this->ID;
+		}
+		$cookieName = str_replace('ms_','',$cookieName);
+		if (!is_null($r->getCookie($cookieName.'_user_'.$userID)))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * Устанавливает основные cookie пользователя
 	 *
 	 * @param int    $userID     ID пользователя
 	 * @param string $hash       Hash авторизации
 	 * @param bool   $rememberMe Флаг необходимости запомнить авторизацию
 	 */
-	protected function setCookie ($userID, $hash, $rememberMe=false)
+	protected function setCookie ($userID=null, $hash, $rememberMe=false)
 	{
 		$r = Application::getInstance()->getContext()->getRequest();
 		if ($rememberMe)
 		{
-			$time = time() + $this->REMEMBER_TIME;
+			$time = time() + Users::REMEMBER_TIME;
 		}
 		else
 		{
@@ -645,4 +643,6 @@ class User
 			$r->setCookie('remember',null,time()-30,'/');
 		}
 	}
+	//</editor-fold>
+
 }

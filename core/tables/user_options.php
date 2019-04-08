@@ -20,6 +20,7 @@ class UserOptionsTable extends DataManager
 			new Fields\IntegerField('USER_ID',array (
 				'required' => true,
 				'link' => UsersTable::getTableName().'.ID',
+				'on_delete' => 'cascade',
 				'title' => 'ID пользователя'
 			)),
 			new Fields\StringField('NAME',array (

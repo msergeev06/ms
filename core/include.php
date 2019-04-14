@@ -57,7 +57,6 @@ require($coreRoot.'/lib/loader.php');
 		$coreNamespace.'\Lib\Loc'         => $coreRoot.'/lib/loc.php',
 		$coreNamespace.'\Lib\Logs'        => $coreRoot.'/lib/logs.php',
 		$coreNamespace.'\Lib\Options'     => $coreRoot.'/lib/options.php',
-		$coreNamespace.'\Lib\Sections'    => $coreRoot.'/lib/sections.php',
 		$coreNamespace.'\Lib\ShellTools'  => $coreRoot.'/lib/shell_tools.php',
 		$coreNamespace.'\Lib\TableHelper' => $coreRoot.'/lib/table_helper.php',
 		$coreNamespace.'\Lib\Tools'       => $coreRoot.'/lib/tools.php',

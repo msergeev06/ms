@@ -8,7 +8,7 @@
  */
 
 return array (
-	'table_title' => 'Привязка пользвателей к группам',
+	'table_title' => 'Привязка пользователей к группам',
 	'field_user_id' => 'ID пользователя',
 	'field_group_id' => 'ID группы пользователей',
 	'field_active_from' => 'Привязка с',

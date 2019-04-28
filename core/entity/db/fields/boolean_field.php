@@ -194,7 +194,6 @@ class BooleanField extends ScalarField {
 	 * Возвращает значение приобразованное в формат SQL запроса
 	 *
 	 * @param mixed $value значение
-	 * @param string $type тип
 	 *
 	 * @return string
 	 * @since 0.2.0

@@ -108,16 +108,24 @@ abstract class DataManager
 	}
 
 	/**
-	 * Задает множественный первичный ключ для таблицы
+	 * Возвращает объект primary поля
 	 *
 	 * @api
 	 *
-	 * @return null|array
+	 * @return false|Fields\ScalarField
 	 * @since 0.2.0
 	 */
-	public static function getPrimary ()
+	public static function getPrimaryField ()
 	{
-		return NULL;
+        $arMap = static::getMap();
+        foreach ($arMap as $field)
+        {
+            if ($field->isPrimary()) {
+                return $field;
+            }
+        }
+
+        return false;
 	}
 
 	/**
@@ -525,7 +533,7 @@ abstract class DataManager
 	{
 		if (is_null($primaryName) || strlen($primaryName)<1)
 		{
-			$primaryName = static::getPrimaryField();
+			$primaryName = static::getPrimaryFieldName();
 		}
 		$arList['filter'] = array($primaryName => $primaryValue);
 		if (!empty($arSelect))
@@ -560,7 +568,7 @@ abstract class DataManager
 	 * @return string|bool Название поля, либо false
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_primary_field
 	 */
-	final public static function getPrimaryField ()
+	final public static function getPrimaryFieldName ()
 	{
 		$arMap = static::getMap();
 		foreach ($arMap as $field)

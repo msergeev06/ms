@@ -105,7 +105,7 @@ class QuerySelect extends QueryBase
 		$this->setType('select');
 		$this->setTableMap($tableClass::getMapArray());
 		$this->setTableName($tableClass::getTableName());
-		$this->primaryKey = $tableClass::getPrimaryField();
+		$this->primaryKey = $tableClass::getPrimaryFieldName();
 
 		if (!empty($arParams))
 		{

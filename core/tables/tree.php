@@ -12,6 +12,7 @@
 namespace Ms\Core\Tables;
 
 use Ms\Core\Entity\Db\DBResult;
+use Ms\Core\Entity\ErrorCollection;
 use Ms\Core\Lib;
 use Ms\Core\Entity\Db\Fields;
 use Ms\Core\Entity\Db\SqlHelper;
@@ -19,7 +20,20 @@ use Ms\Core\Entity\Db\Query;
 
 class TreeTable extends Lib\DataManager
 {
-    private static $defaultArSelect = ['ID','LEFT_MARGIN','RIGHT_MARGIN','DEPTH_LEVEL'];
+	private static $defaultArSelect = ['LEFT_MARGIN','RIGHT_MARGIN','DEPTH_LEVEL'];
+
+	/**
+	 * @var ErrorCollection
+	 */
+	protected static $errorCollection = null;
+
+	public static function getErrors ()
+	{
+		if (!is_null(static::$errorCollection))
+		{
+			return static::$errorCollection->toArray();
+		}
+	}
 
 	public static function getTableTitle()
 	{
@@ -37,22 +51,29 @@ class TreeTable extends Lib\DataManager
 			Lib\TableHelper::activeField(),
 			new Fields\IntegerField('LEFT_MARGIN',[
 				'required' => true,
-				'default_create' => 0,
-				'default_insert' => 0,
+				'default_create' => 1,
 				'title' => 'Левая граница'
 			]),
 			new Fields\IntegerField('RIGHT_MARGIN',[
 				'required' => true,
-				'default_create' => 0,
-				'default_insert' => 0,
+				'default_create' => 2,
 				'title' => 'Правая граница'
 			]),
 			new Fields\IntegerField('DEPTH_LEVEL',[
 				'required' => true,
-				'default_create' => 0,
-				'default_insert' => 0,
+				'default_create' => 1,
+				'default_insert' => 1,
 				'title' => 'Уровень вложенности'
-			])
+			]),
+			new Fields\IntegerField(
+				'PARENT_ID',
+				[
+					'title' => 'Родительский узел'
+				],
+				static::getTableName().'.ID',
+				'cascade',
+				'cascade'
+			)
 		];
 	}
 
@@ -84,6 +105,17 @@ class TreeTable extends Lib\DataManager
 	}
 
 	//<editor-fold defaultstate="collapse" desc=">> Методы взаимодействия с деревом">
+
+	/**
+	* Возвращает имя поля, в котором хранится указатель на родительский узел
+	*
+	* @return string
+	*/
+	public static function getParentFieldName ()
+	{
+		return 'PARENT_ID';
+	}
+
 	/**
 	 * Возвращает массив узлов дерева, либо FALSE
 	 *
@@ -119,16 +151,16 @@ class TreeTable extends Lib\DataManager
 	/**
 	 * Возвращает массив дочерних узлов для указанного, либо FALSE
 	 *
-	 * @param int        $ID          ID верхнего узла
+	 * @param mixed      $primary     Ключ верхнего узла
 	 * @param bool|array $arSelect    Массив возвращаемных полей
 	 * @param bool       $bActive     Вывести только активные узлы
 	 * @param int        $iDepthLevel Если > 0 - будут выбраны только указанного уровня вложенности
 	 *
 	 * @return bool|array
 	 */
-	final public static function getChildren ($ID, $arSelect = [], $bActive=false, $iDepthLevel=0)
+	final public static function getChildren ($primary, $arSelect = [], $bActive=false, $iDepthLevel=0)
 	{
-		$arNode = static::getById($ID,['LEFT_MARGIN','RIGHT_MARGIN']);
+		$arNode = static::getByPrimary($primary,null,['LEFT_MARGIN','RIGHT_MARGIN']);
 		if (!$arNode)
 		{
 			return false;
@@ -166,23 +198,24 @@ class TreeTable extends Lib\DataManager
 	/**
 	 * Возвращает массив родителей узла, либо FALSE
 	 *
-	 * @param int        $ID        ID узла
-	 * @param bool|array $arSelect  Массив возвращаемых полей
-	 * @param bool       $bActive   Вернуть только активные узлы
+	 * @param mixed      $primary           Ключ узла
+	 * @param bool|array $arSelect          Массив возвращаемых полей
+	 * @param bool       $bActive           Вернуть только активные узлы
+	 * @param bool       $bReturnYourself   Вернуть в том числе данные о самом узле
 	 *
 	 * @return bool|array
 	 */
-	final public static function getParents ($ID, $arSelect=[], $bActive=false)
+	final public static function getParents ($primary, $arSelect=[], $bActive=false, $bReturnYourself=false)
 	{
-		$arNode = static::getById($ID,['LEFT_MARGIN','RIGHT_MARGIN']);
+		$arNode = static::getByPrimary($primary,null,['LEFT_MARGIN','RIGHT_MARGIN']);
 		if (!$arNode)
 		{
 			return false;
 		}
 		$arGetList = [
 			'filter' => [
-				'<=LEFT_MARGIN'=>$arNode['LEFT_MARGIN'],
-				'>=RIGHT_MARGIN'=>$arNode['RIGHT_MARGIN']
+				'<'.($bReturnYourself?'=':'').'LEFT_MARGIN'=>$arNode['LEFT_MARGIN'],
+				'>'.($bReturnYourself?'=':'').'RIGHT_MARGIN'=>$arNode['RIGHT_MARGIN']
 			],
 			'order' => ['LEFT_MARGIN'=>'ASC']
 		];
@@ -207,15 +240,15 @@ class TreeTable extends Lib\DataManager
 	/**
 	 * Возвращает всю ветку, в которой участвует узел, либо FALSE
 	 *
-	 * @param int        $ID        ID узла
+	 * @param mixed      $primary   Ключ узла
 	 * @param bool|array $arSelect  Массив возвращаемых полей
 	 * @param bool       $bActive   Вернуть только активные узлы
 	 *
 	 * @return bool|array
 	 */
-	final public static function getBranch ($ID, $arSelect=[], $bActive=false)
+	final public static function getBranch ($primary, $arSelect=[], $bActive=false)
 	{
-		$arNode = static::getById($ID,['LEFT_MARGIN','RIGHT_MARGIN']);
+		$arNode = static::getByPrimary($primary,null,['LEFT_MARGIN','RIGHT_MARGIN']);
 		$arGetList = [
 			'filter' => [
 				'>RIGHT_MARGIN'=>$arNode['LEFT_MARGIN'],
@@ -244,15 +277,15 @@ class TreeTable extends Lib\DataManager
 	/**
 	 * Возвращает массив параметров родительского узла, либо FALSE
 	 *
-	 * @param int $ID    ID узла
-	 * @param bool|array Массив возвращаемых полей
+	 * @param mixed      $primary  Ключ узла
+	 * @param bool|array $arSelect Массив возвращаемых полей
 	 *
 	 * @return array|bool
 	 */
-	final public static function getParentInfo ($ID, $arSelect=[])
+	final public static function getParentInfo ($primary, $arSelect=[])
 	{
 	    //OK
-		$arNode = static::getById($ID,['LEFT_MARGIN','RIGHT_MARGIN']);
+		$arNode = static::getByPrimary($primary,null,['LEFT_MARGIN','RIGHT_MARGIN']);
 		if (!$arNode)
 		{
 			return false;
@@ -279,18 +312,19 @@ class TreeTable extends Lib\DataManager
 	}
 
 	/**
-	 * Возвращает ID родительского узла, либо FALSE
+	 * Возвращает значение ключа родительского узла, либо FALSE
 	 *
-	 * @param int $ID ID узла
+	 * @param mixed $primary Ключ узла
 	 *
 	 * @return bool|int
 	 */
-	final public static function getParentID ($ID)
+	final public static function getParentPrimary ($primary)
 	{
-	    //OK
-		if ($arResult = static::getParentInfo($ID,['ID']))
+		//OK
+		$sPrimaryName = static::getPrimaryFieldName();
+		if ($arResult = static::getParentInfo($primary,[$sPrimaryName]))
 		{
-			return (int)$arResult['ID'];
+			return (int)$arResult[$sPrimaryName];
 		}
 		else
 		{
@@ -301,14 +335,14 @@ class TreeTable extends Lib\DataManager
 	/**
 	 * Определяет уровень родительского узла
 	 *
-	 * @param int $ID ID узла
+	 * @param mixed $primary Ключ узла
 	 *
 	 * @return bool|int
 	 */
-	final public static function getParentLevel ($ID)
+	final public static function getParentLevel ($primary)
 	{
-	    //OK
-		if ($arResult = static::getParentInfo($ID,['DEPTH_LEVEL']))
+		//OK
+		if ($arResult = static::getParentInfo($primary,['DEPTH_LEVEL']))
 		{
 			return (int)$arResult['DEPTH_LEVEL'];
 		}
@@ -318,26 +352,26 @@ class TreeTable extends Lib\DataManager
 		}
 	}
 
-    /**
-     * Определяет ключи и уровень перемещаемого узла
-     * Записывает в $arParams следующие поля:
-     * level        уровень вложенности
-     * left_key     левая граница
-     * right_key    правая граница
-     *
-     * @api
-     *
-     * @param array $arNode Массив полей узла
-     * @param mixed &$arParams Массив параметров, куда будут записаны данные. Передается по ссылке
-     */
-    final protected static function getKeysAndLevel (array $arNode, &$arParams)
-    {
-        $arParams['level'] = $arNode['DEPTH_LEVEL'];
-        $arParams['left_key'] = $arNode['LEFT_MARGIN'];
-        $arParams['right_key'] = $arNode['RIGHT_MARGIN'];
-    }
+	/**
+	* Определяет ключи и уровень перемещаемого узла
+	* Записывает в $arParams следующие поля:
+	* level        уровень вложенности
+	* left_key     левая граница
+	* right_key    правая граница
+	*
+	* @api
+	*
+	* @param array $arNode Массив полей узла
+	* @param mixed &$arParams Массив параметров, куда будут записаны данные. Передается по ссылке
+	*/
+	final protected static function getKeysAndLevel (array $arNode, &$arParams)
+	{
+		$arParams['level'] = $arNode['DEPTH_LEVEL'];
+		$arParams['left_key'] = $arNode['LEFT_MARGIN'];
+		$arParams['right_key'] = $arNode['RIGHT_MARGIN'];
+	}
 
-    /**
+	/**
 	 * Добавляет новый узел в дерево
 	 *
 	 * @param array &$arNode Массив полей узла
@@ -351,18 +385,25 @@ class TreeTable extends Lib\DataManager
 				правый ключ родительского узла (узел в который добавляется новый), либо максимальный правый ключ, если у
 				нового узла не будет родительского.*/
 
+		static::$errorCollection = new ErrorCollection();
+
 		$helper = new SqlHelper(static::getTableName());
 		if (!static::checkNodeFields($arNode))
 		{
+			//Ошибка добавляется внутри checkNodeFields
 			return false;
 		}
 
 		/*		Пусть $right_key – правый ключ родительского узла, или максимальный правый ключ плюс единица (если
 				родительского узла нет, то узел с максимальным правым ключом не будет обновляться, соответственно, чтобы небыло
 				повторов, берем число на единицу большее). $level – уровень родительского узла, либо 0, если родительского нет.*/
+		/** @var Fields\ScalarField $oPrimaryField */
+		$oPrimaryField = static::getPrimaryField();
+		$sPrimaryFieldName = $oPrimaryField->getColumnName();
+		$sParentFieldName = static::getParentFieldName();
 		if (
-			(isset($arNode['PARENT_ID']) && (int)$arNode['PARENT_ID']==0)
-			|| !isset($arNode['PARENT_ID'])
+			(isset($arNode[$sParentFieldName]) && (string)strlen($arNode[$sParentFieldName])<=0)
+			|| !isset($arNode[$sParentFieldName])
 		) {
 			$sql = "SELECT\n\t"
 				.$helper->getMaxFunction('RIGHT_MARGIN','RIGHT_MARGIN')."\n"
@@ -383,7 +424,7 @@ class TreeTable extends Lib\DataManager
 		}
 		else
 		{
-			$arParent = static::getById($arNode['PARENT_ID'],['RIGHT_MARGIN','LEFT_MARGIN','DEPTH_LEVEL']);
+			$arParent = static::getByPrimary($arNode[$sParentFieldName],$sPrimaryFieldName,['RIGHT_MARGIN','LEFT_MARGIN','DEPTH_LEVEL']);
 			if ($arParent)
 			{
 				$right_key = $arParent['RIGHT_MARGIN'];
@@ -425,6 +466,7 @@ class TreeTable extends Lib\DataManager
 						нельзя.*/
 			if (!$res->getResult())
 			{
+				static::$errorCollection->add('UPDATE_TREE_KEYS','Возникла ошибка на шаге: 1. Обновляем ключи существующего дерева, узлы стоящие за родительским узлом');
 				return false;
 			}
 		}
@@ -442,6 +484,7 @@ class TreeTable extends Lib\DataManager
 		$res = $query->exec();
 		if (!$res->getResult())
 		{
+			static::$errorCollection->add('UPDATE_PARENT_BRANCH','Возникла ошибка на шаге: 2. Обновляем родительскую ветку');
 			return false;
 		}
 
@@ -449,24 +492,29 @@ class TreeTable extends Lib\DataManager
 		$arNode['LEFT_MARGIN'] = $right_key;
 		$arNode['RIGHT_MARGIN'] = $right_key + 1;
 		$arNode['DEPTH_LEVEL'] = $level + 1;
-		if (isset($arNode['PARENT_ID']))
-		{
-			unset($arNode['PARENT_ID']);
-		}
-		if (isset($arNode['ID']))
-		{
-			unset($arNode['ID']);
+		if (
+			isset($arNode[$sPrimaryFieldName])
+			&& ($oPrimaryField instanceof Fields\IntegerField)
+			&& $oPrimaryField->isAutocomplete()
+		) {
+			unset($arNode[$sPrimaryFieldName]);
 		}
 		$res = static::add($arNode);
-		$insertID = $res->getInsertId();
-		$arNode['ID'] = $insertID;
+		if (
+			($oPrimaryField instanceof Fields\IntegerField)
+			&& $oPrimaryField->isAutocomplete()
+		) {
+			$insertID = $res->getInsertId();
+			$arNode[$sPrimaryFieldName] = $insertID;
+		}
 
-		if ($insertID > 0)
+		if ($res->getResult())
 		{
-			return $insertID;
+			return $arNode[$sPrimaryFieldName];
 		}
 		else
 		{
+			static::$errorCollection->add('ADD_NEW_NODE','Возникла ошибка на шаге: 3. Теперь добавляем новый узел');
 			return false;
 		}
 	}
@@ -474,20 +522,31 @@ class TreeTable extends Lib\DataManager
 	/**
 	 * Проверяет наличие обязательных полей, удаляет неизменяемые поля. Возвращает измененный массив полей раздела
 	 *
-	 * @param array $arNode
+	 * @param array $arNode Массив полей узла
 	 *
 	 * @return bool|array
 	 */
 	final protected static function checkNodeFields (array &$arNode)
 	{
-	    //OK
+		if (is_null(static::$errorCollection))
+		{
+			static::$errorCollection = new ErrorCollection();
+		}
+		//OK
+		/** @var Fields\ScalarField $sPrimaryField */
+		$sPrimaryField = static::getPrimaryField();
+		$sPrimaryFieldName = $sPrimaryField->getColumnName();
 		if (is_null($arNode))
 		{
+			static::$errorCollection->add('EMPTY_NODE_FIELDS','Массив полей узла не задан');
 			return false;
 		}
-		if (isset($arNode['ID']))
-		{
-			unset($arNode['ID']);
+		if (
+			isset($arNode[$sPrimaryFieldName])
+			&& ($sPrimaryField instanceof Fields\IntegerField)
+			&& ($sPrimaryField->isAutocomplete())
+		) {
+			unset($arNode[$sPrimaryFieldName]);
 		}
 		if (isset($arNode['LEFT_MARGIN']))
 		{
@@ -506,38 +565,58 @@ class TreeTable extends Lib\DataManager
 	}
 
 	/**
-	 * Перемещает узел в другой родительский узел.
+	 * Перемещает узел из одного родительского узла в другой.
 	 *
-	 * @param int      $nodeID      ID раздела
-	 * @param int|null $newParentID ID нового родительского раздела
+	 * @param mixed      $primary          Ключ узла
+	 * @param null|mixed $newParentPrimary Ключ нового родительского раздела
 	 *
 	 * @return bool
 	 */
-	final public static function changeParent ($nodeID, $newParentID=null)
+	public static function changeParent ($primary, $newParentPrimary=null)
 	{
-	    //OK
-		$arNode = static::getById($nodeID,self::$defaultArSelect);
-        $arParent['ID'] = static::getParentID($arNode['ID']);
+		static::$errorCollection = new ErrorCollection();
+		//OK
+		$oPrimaryField = static::getPrimaryField();
+		$sPrimaryFieldName = $oPrimaryField->getColumnName();
+		$sParentFieldName = static::getParentFieldName();
+		$arNode = static::getByPrimary($primary, null, self::getArSelect());
+        $arParent[$sPrimaryFieldName] = static::getParentPrimary($arNode[$sPrimaryFieldName]);
 
-		//msDebug($arParent['ID']);
-		//msDebug($arSection['PARENT_SECTION_ID']);
-        $newParentID = (int)$newParentID;
-		if ($arParent['ID'] == $newParentID)
-		{
-			//Если раздел уже лежит в том разделе, где должен - ничего делать не нужно.
+		//<editor-fold defaultstate="collapse" desc="Если раздел уже лежит в том разделе, где должен - ничего делать не нужно.">
+		if (
+			(
+				!is_null($arParent[$sPrimaryFieldName])
+				&& !is_null($newParentPrimary)
+				&& $arParent[$sPrimaryFieldName] == $newParentPrimary
+			)
+			|| (is_null($arParent[$sPrimaryFieldName]) && is_null($newParentPrimary))
+		) {
+//			msDebug('Уже в нужном разделе');
 			return true;
 		}
+		//</editor-fold>
+
+		//<editor-fold defaultstate="collapse" desc="Для начала сразу записываем ключ нового родителя в узел">
+		$res = static::update($primary,[$sParentFieldName=>$newParentPrimary]);
+		if (!$res->getResult())
+//		if (false)
+		{
+			static::$errorCollection->add('CHANGE_PARENT_ID','Возникла ошибка на шаге: Для начала сразу записываем ключ нового родителя в узел');
+			return false;
+		}
+		//</editor-fold>
 
 		$helper = new SqlHelper(static::getTableName());
 		$arParams = array();
 
-		//1. Ключи и уровень перемещаемого узла
+		//<editor-fold defaultstate="collapse" desc="1. Ключи и уровень перемещаемого узла">
 		$arParams['level'] = $arNode['DEPTH_LEVEL'];
 		$arParams['left_key'] = $arNode['LEFT_MARGIN'];
 		$arParams['right_key'] = $arNode['RIGHT_MARGIN'];
+		//</editor-fold>
 
-		//2. Уровень нового родительского узла (если узел перемещается в "корень" то сразу можно подставить значение 0)
-		if ($newParentID == 0)
+		//<editor-fold defaultstate="collapse" desc="2,3. Уровень нового родительского узла (если узел перемещается в "корень" то сразу можно подставить значение 0)">
+		if (is_null($newParentPrimary))
 		{
 			$arParams['level_up'] = 0;
 			//3. Правый ключ узла за который мы вставляем узел (ветку)
@@ -560,14 +639,15 @@ class TreeTable extends Lib\DataManager
 			}
 			else
 			{
+				static::$errorCollection->add('LEVEL_NEW_PARENT_NODE','Возникла ошибка на шаге: 2,3. Уровень нового родительского узла (если узел перемещается в "корень" то сразу можно подставить значение 0)');
 				return false;
 			}
 			//msDebug('parent=0');
 		}
 		else
 		{
-			$arNewParent = static::getById($newParentID,self::$defaultArSelect);
-			$arChild = static::getChildren($arNewParent['ID']);
+			$arNewParent = static::getByPrimary($newParentPrimary, null, self::getArSelect());
+			$arChild = static::getChildren($arNewParent[$sPrimaryFieldName]);
 			//msDebug($arChild);
 			if (count($arChild)>1)
 			{
@@ -603,7 +683,7 @@ class TreeTable extends Lib\DataManager
 					."FROM\n\t"
 					.$helper->wrapTableQuotes()."\n"
 					."WHERE\n\t"
-					.$helper->wrapFieldQuotes('ID')." = ".$arParent['ID'];
+					.$helper->wrapFieldQuotes($sPrimaryFieldName)." = ".$oPrimaryField->getSqlValue($arNewParent[$sPrimaryFieldName]);
 				$query = new Query\QueryBase($sql);
 				$res = $query->exec();
 				if ($ar_res = $res->fetch())
@@ -612,19 +692,22 @@ class TreeTable extends Lib\DataManager
 				}
 				else
 				{
+					static::$errorCollection->add('LEVEL_NEW_PARENT_NODE','Возникла ошибка на шаге: 2,3. Уровень нового родительского узла (если не в корень)');
 					return false;
 				}
 			}
 		}
+		//</editor-fold>
 
-		//4. Определяем смещения:
+		//<editor-fold defaultstate="collapse" desc="4. Определяем смещения:">
 		$arParams['skew_level'] = $arParams['level_up'] - $arParams['level'] + 1; // - смещение уровня изменяемого узла;
 		$arParams['skew_tree'] = $arParams['right_key'] - $arParams['left_key'] + 1; // - смещение ключей дерева;
+		//</editor-fold>
 
-		//5. Выбираем все узлы перемещаемой ветки:
+		//<editor-fold defaultstate="collapse" desc="5. Выбираем все узлы перемещаемой ветки">
 		$arRes = static::getList(
 			array(
-				'select' => ['ID'],
+				'select' => [$sPrimaryFieldName],
 				'filter' => [
 					'>=LEFT_MARGIN'=>$arParams['left_key'],
 					'<=RIGHT_MARGIN'=>$arParams['right_key']
@@ -634,11 +717,24 @@ class TreeTable extends Lib\DataManager
 		$arParams['id_edit'] = array();
 		foreach($arRes as $ar_res)
 		{
-			$arParams['id_edit'][] = $ar_res['ID'];
+			$arParams['id_edit'][] = $ar_res[$sPrimaryFieldName];
 		}
-		//Получаем $id_edit - список id номеров перемещаемой ветки.
+		if ($oPrimaryField instanceof Fields\StringField)
+		{
+			if (!empty($arParams['id_edit']))
+			{
+				$arTmp = $arParams['id_edit'];
+				$arParams['id_edit'] = [];
+				foreach ($arTmp as $tmp)
+				{
+					$arParams['id_edit'][] = '"'.$tmp.'"';
+				}
+			}
+		}
+		//Получаем $id_edit - список ключей перемещаемой ветки.
+		//</editor-fold>
 
-		//6. Определяем куда перемещается узел
+		//<editor-fold defaultstate="collapse" desc="6. Определяем куда перемещается узел">
 		if ($arParams['right_key_near'] < $arParams['right_key'])
 		{
 			//Перемещаемся вверх
@@ -666,12 +762,14 @@ class TreeTable extends Lib\DataManager
 				."WHERE\n\t"
 				.$helper->wrapFieldQuotes('RIGHT_MARGIN')." < ".$arParams['left_key']." AND \n\t"
 				.$helper->wrapFieldQuotes('RIGHT_MARGIN')." > ".$arParams['right_key_near']." AND\n\t"
-				.$helper->wrapFieldQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+				.$helper->wrapFieldQuotes($sPrimaryFieldName)." NOT IN (".implode(',',$arParams['id_edit']).")";
 			$query = new Query\QueryBase($sql);
 			$res = $query->exec();
-			//msEchoVar($sql);
+//			msEchoVar($sql);
 			if (!$res->getResult())
+//			if (false)
 			{
+				static::$errorCollection->add('GO_UP_6_2','Возникла ошибка на шаге: Перемещаемся вверх 6.2.');
 				return false;
 			}
 
@@ -694,12 +792,14 @@ class TreeTable extends Lib\DataManager
 				."WHERE\n\t"
 				.$helper->wrapFieldQuotes('LEFT_MARGIN')." < ".$arParams['left_key']." AND\n\t"
 				.$helper->wrapFieldQuotes('LEFT_MARGIN')." > ".$arParams['right_key_near']." AND\n\t"
-				.$helper->wrapFieldQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+				.$helper->wrapFieldQuotes($sPrimaryFieldName)." NOT IN (".implode(',',$arParams['id_edit']).")";
 			$query = new Query\QueryBase($sql);
 			$res = $query->exec();
-			//msEchoVar($sql);
+//			msEchoVar($sql);
 			if (!$res->getResult())
+//			if (false)
 			{
+				static::$errorCollection->add('GO_UP_6_3','Возникла ошибка на шаге: Перемещаемся вверх 6.3.');
 				return false;
 			}
 
@@ -724,12 +824,14 @@ class TreeTable extends Lib\DataManager
 				.$helper->wrapFieldQuotes('DEPTH_LEVEL')." = "
 				.$helper->wrapFieldQuotes('DEPTH_LEVEL')." + ".$arParams['skew_level']."\n"
 				."WHERE\n\t"
-				.$helper->wrapFieldQuotes('ID')." IN (".implode(',',$arParams['id_edit']).")";
+				.$helper->wrapFieldQuotes($sPrimaryFieldName)." IN (".implode(',',$arParams['id_edit']).")";
 			$query = new Query\QueryBase($sql);
 			$res = $query->exec();
-			//msEchoVar($sql);
+//			msEchoVar($sql);
 			if (!$res->getResult())
+//			if (false)
 			{
+				static::$errorCollection->add('GO_UP_6_4','Возникла ошибка на шаге: Перемещаемся вверх 6.4.');
 				return false;
 			}
 		}
@@ -768,14 +870,16 @@ class TreeTable extends Lib\DataManager
 			$sql .= "=";
 			//			}
 			$sql .= " ".$arParams['right_key_near']." AND\n\t"
-				.$helper->wrapFieldQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+				.$helper->wrapFieldQuotes($sPrimaryFieldName)." NOT IN (".implode(',',$arParams['id_edit']).")";
 			$query = new Query\QueryBase($sql);
 			//TO DO: Убрать if
 			//if ($bExec) $query->exec();
 			$res = $query->exec();
-			//msEchoVar($sql);
+//			msEchoVar($sql);
 			if (!$res->getResult())
+//			if (false)
 			{
+				static::$errorCollection->add('GO_DOWN_6_2','Возникла ошибка на шаге: Перемещаемся вниз 6.2.');
 				return false;
 			}
 
@@ -798,19 +902,21 @@ class TreeTable extends Lib\DataManager
 				."WHERE\n\t"
 				.$helper->wrapFieldQuotes('LEFT_MARGIN')." > ".$arParams['left_key']." AND\n\t"
 				.$helper->wrapFieldQuotes('LEFT_MARGIN')." <= ".$arParams['right_key_near']." AND\n\t"
-				.$helper->wrapFieldQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+				.$helper->wrapFieldQuotes($sPrimaryFieldName)." NOT IN (".implode(',',$arParams['id_edit']).")";
 			$query = new Query\QueryBase($sql);
 			//TO DO: Убрать if
 			//if ($bExec) $query->exec();
 			$res = $query->exec();
-			//msEchoVar($sql);
+//			msEchoVar($sql);
 			if (!$res->getResult())
+//			if (false)
 			{
+				static::$errorCollection->add('GO_DOWN_6_3','Возникла ошибка на шаге: Перемещаемся вниз 6.3.');
 				return false;
 			}
 
 			/*
-			 * 6.5.
+			 * 6.4.
 			 * UPDATE
 			 *      table_name
 			 * SET
@@ -830,19 +936,22 @@ class TreeTable extends Lib\DataManager
 				.$helper->wrapFieldQuotes('DEPTH_LEVEL')." = "
 				.$helper->wrapFieldQuotes('DEPTH_LEVEL')." + ".$arParams['skew_level']."\n"
 				."WHERE\n\t"
-				.$helper->wrapFieldQuotes('ID')." IN (".implode(',',$arParams['id_edit']).")";
+				.$helper->wrapFieldQuotes($sPrimaryFieldName)." IN (".implode(',',$arParams['id_edit']).")";
 			$query = new Query\QueryBase($sql);
 			//TO DO: Убрать if
 			//if ($bExec) $query->exec();
 			$res = $query->exec();
-			//msEchoVar($sql);
+//			msEchoVar($sql);
 			if (!$res->getResult())
+//			if (false)
 			{
+				static::$errorCollection->add('GO_DOWN_6_4','Возникла ошибка на шаге: Перемещаемся вниз 6.4.');
 				return false;
 			}
 		}
+		//</editor-fold>
 
-		//msDebug($arParams);
+//		msDebug($arParams);
 
 		return true;
 	}
@@ -850,13 +959,13 @@ class TreeTable extends Lib\DataManager
 	/**
 	 * Обработчик события таблицы, перед обновлением данных. Исключает неизменяемые поля
 	 *
-	 * @param int         $nodeID     ID узла
+	 * @param mixed       $primary    Ключ узла
 	 * @param array       &$arUpdate  Массив обновляемых полей
 	 * @param null|string &$sSqlWhere SQL запрос WHERE
 	 *
 	 * @return mixed|false
 	 */
-	protected static function OnBeforeUpdate ($nodeID, &$arUpdate, &$sSqlWhere=null)
+	protected static function OnBeforeUpdate ($primary, &$arUpdate, &$sSqlWhere=null)
 	{
 		static::checkUpdateFields($arUpdate);
 
@@ -898,19 +1007,21 @@ class TreeTable extends Lib\DataManager
 	/**
 	 * Удаляет указанный узел
 	 *
-	 * @param int $nodeID ID удаляемого узла
+	 * @param mixed $primary Ключ удаляемого узла
 	 *
 	 * @return bool
 	 */
-	final public static function deleteNode ($nodeID)
+	final public static function deleteNode ($primary)
 	{
+		static::$errorCollection = new ErrorCollection();
+
 		/*		Удаление узла не намного сложнее, но требуется учесть, что у удаляемого узла могут быть подчиненные узлы. Для
 				осуществления этого действия нам потребуется левый и правый ключ удаляемого узла.*/
 
 		$helper = new SqlHelper(static::getTableName());
 
 		//Пусть $left_key – левый ключ удаляемого узла, а $right_key – правый
-		$arNode = static::getById($nodeID,['ID','LEFT_MARGIN','RIGHT_MARGIN','DEPTH_LEVEL']);
+		$arNode = static::getByPrimary($primary, null, self::getArSelect());
 		$left_key = $arNode['LEFT_MARGIN'];
 		$right_key = $arNode['RIGHT_MARGIN'];
 
@@ -932,6 +1043,7 @@ class TreeTable extends Lib\DataManager
 		$res = $query->exec();
 		if (!$res->getResult())
 		{
+			static::$errorCollection->add('DELETE_BRANCH','Возникла ошибка на шаге: 1. Удаляем узел (ветку)');
 			return FALSE;
 		}
 
@@ -962,6 +1074,7 @@ class TreeTable extends Lib\DataManager
 		$res = $query->exec();
 		if (!$res->getResult())
 		{
+			static::$errorCollection->add('DELETE_BRANCH','Возникла ошибка на шаге: 2. Обновляем ключи оставшихся веток');
 			return FALSE;
 		}
 
@@ -988,6 +1101,7 @@ class TreeTable extends Lib\DataManager
 		$res = $query->exec();
 		if (!$res->getResult())
 		{
+			static::$errorCollection->add('DELETE_BRANCH','Возникла ошибка на шаге: 2.2. Обновление последующих узлов');
 			return false;
 		}
 
@@ -999,89 +1113,97 @@ class TreeTable extends Lib\DataManager
 	/**
 	 * Деактивирует узел
 	 *
-	 * @param int $nodeID ID узла
+	 * @param mixed $primary Ключ узла
 	 *
 	 * @return false|DBResult|string
 	 */
-	final public static function deactivateNode ($nodeID)
+	final public static function deactivateNode ($primary)
 	{
 		$arUpdate = ['ACTIVE'=>false];
 
-		return static::update($nodeID,$arUpdate);
+		return static::update($primary, $arUpdate);
 	}
 
 	/**
 	 * Активирует узел
 	 *
-	 * @param int $nodeID ID узла
+	 * @param mixed $primary Ключ узла
 	 *
 	 * @return false|DBResult|string
 	 */
-	final public static function activateNode ($nodeID)
+	final public static function activateNode ($primary)
 	{
 		$arUpdate = ['ACTIVE'=>true];
 
-		return static::update($nodeID,$arUpdate);
+		return static::update($primary, $arUpdate);
 	}
 
 	/**
 	 * Устанавливает местоположение узла, сортируя узлы ветки по указанному полю, в указанном направлении
 	 *
-	 * @param int    $nodeID ID перемещаемого узла
-	 * @param string $sort   Поле для сортировки
-	 * @param string $order  Направление сортировки
-     *
-     * @return bool
+	 * @param mixed  $primary Ключ перемещаемого узла
+	 * @param string $sort    Поле для сортировки
+	 * @param string $order   Направление сортировки
+	 *
+	 * @return bool
 	 */
-	final public static function sortNode ($nodeID, $sort='LEFT_MARGIN', $order='ASC')
+	final public static function sortNode ($primary, $sort='LEFT_MARGIN', $order='ASC')
 	{
-	    //OK
-	    /*
-            Перемещение узла
-            Перемещение узла – самое сложное действие в управлении деревом.
+		static::$errorCollection = new ErrorCollection();
+		//OK
+		/*
+			Перемещение узла
+			Перемещение узла – самое сложное действие в управлении деревом.
 
-	        1. Вверх по дереву (в область вышестоящих узлов), включает в себя:
-                a Перенос ветки (узла) в подчинение нижестоящему по дереву узлу;
-                b Перенос ветки (узла) вверх без изменения родительского узла (изменение порядка узлов);
-            2. Вниз по дереву (в область нижестоящих узлов), включает в себя.
-                a Перенос ветки в «корень» дерева (учитывая, что переносимая ветка будет последней по порядку);
-                b Перенос ветки (узла) вниз без изменения родительского узла (изменение порядка узлов);
-                c Поднятие узла (ветки) на уровень выше;
-                d Перемещение ветки вниз по дереву;
+			1. Вверх по дереву (в область вышестоящих узлов), включает в себя:
+				a Перенос ветки (узла) в подчинение нижестоящему по дереву узлу;
+				b Перенос ветки (узла) вверх без изменения родительского узла (изменение порядка узлов);
+			2. Вниз по дереву (в область нижестоящих узлов), включает в себя.
+				a Перенос ветки в «корень» дерева (учитывая, что переносимая ветка будет последней по порядку);
+				b Перенос ветки (узла) вниз без изменения родительского узла (изменение порядка узлов);
+				c Поднятие узла (ветки) на уровень выше;
+				d Перемещение ветки вниз по дереву;
 
-	        Сортировка подразумевает п.п.: 1.b. и 2.b.
-	     */
-	    //Обрабатываем входящие переменные
-		$nodeID = (int)$nodeID;
+			Сортировка подразумевает п.п.: 1.b. и 2.b.
+		*/
+		//<editor-fold defaultstate="collapse" desc="Обрабатываем входящие переменные">
+		/** @var Fields\ScalarField $oPrimaryField */
+		$oPrimaryField = static::getPrimaryField();
+		$sPrimaryFieldName = $oPrimaryField->getColumnName();
+		$sParentFieldName = static::getParentFieldName();
 		$sort = strtoupper($sort);
 		$order = strtoupper($order);
+		//</editor-fold>
 
-		//Выбираем основные поля дерева
-		$arSelect = self::$defaultArSelect;
+		//<editor-fold defaultstate="collapse" desc="Выбираем поля дерева">
+		//Основные поля
+		$arSelect = self::getArSelect();
 		//Добавляем поле по которому будет сортировка, если его еще не выбрали
 		if (!in_array($sort,$arSelect))
 		{
 			$arSelect[] = $sort;
 		}
+//		msDebug($arSelect);
+		//</editor-fold>
 
-		//Получаем выбранные поля сортируемого узла
-		$arNode = static::getById($nodeID,$arSelect);
+		//<editor-fold defaultstate="collapse" desc="Получаем выбранные поля сортируемого узла">
+		$arNode = static::getByPrimary($primary, null, $arSelect);
 //		msDebug($arNode);
-		/** @var Lib\DataManager $className */
 		$helper = new SqlHelper(static::getTableName());
+		//</editor-fold>
 
 		//Создаем и наполняем массив параметров
 		$arParams = [];
-        //<editor-fold defaultstate="collapse" desc="1. Ключи и уровень перемещаемого узла">
+		//<editor-fold defaultstate="collapse" desc="1. Ключи и уровень перемещаемого узла">
 		$arParams['level'] = $arNode['DEPTH_LEVEL'];
 		$arParams['left_key'] = $arNode['LEFT_MARGIN'];
 		$arParams['right_key'] = $arNode['RIGHT_MARGIN'];
-        //</editor-fold>
+		//</editor-fold>
 
-        //<editor-fold defaultstate="collapse" desc="2. Уровень родительского узла">
-        //Получаем данные родителя нашего узла
-		$arParentNode = static::getParentInfo($nodeID,$arSelect);
-//        msDebug($arParentNode);
+		//<editor-fold defaultstate="collapse" desc="2. Уровень родительского узла">
+		//Получаем данные родителя нашего узла
+		$arParentNode = static::getParentInfo($primary, $arSelect);
+//		msDebug($arParentNode);
 		//Если родитель существует, сохраняем его уровень вложенности
 		if ($arParentNode)
 		{
@@ -1092,13 +1214,30 @@ class TreeTable extends Lib\DataManager
 		{
 			$arParams['level_up'] = 0;
 		}
-        //</editor-fold>
+		//</editor-fold>
 
-        //<editor-fold defaultstate="collapse" desc="3. Правый, левый ключ, уровень узла за который мы вставляем узел (ветку)">
-        //Если родитель существует, получаем массив дочерних узлов
+		//<editor-fold defaultstate="collapse" desc="3. Правый, левый ключ, уровень узла за который мы вставляем узел (ветку)">
+		//Если родитель существует, получаем массив дочерних узлов
 		if ($arParentNode)
 		{
-			$arChild = static::getChildren($arParentNode['ID'],$arSelect);
+			$arChild = static::getChildren($arParentNode[$sPrimaryFieldName],$arSelect);
+			$arParent = $arChild[0];
+			unset($arChild[0]);
+
+			//NOTE: Информация для будущего меня (так как забыл уже 1 раз для чего этот if)
+			// Следующий if необходим, так как мы получаем не только прямых потомков родительского узла, но и потомков потомков. Их нужно исключить
+			if (!empty($arChild))
+			{
+				foreach ($arChild as $i=>$ar_child)
+				{
+					$iChildParentId = $ar_child[$sParentFieldName];
+					//Если ID родителя дочернего узла не равен ID родительского узла нашего узла
+					if ($iChildParentId!=$arParentNode[$sPrimaryFieldName])
+					{
+						unset($arChild[$i]);
+					}
+				}
+			}
 		}
 		//Если родителя нет и наш узел перемещается в корень, получаем все узлы 1 уровня вложенности
 		else
@@ -1107,23 +1246,6 @@ class TreeTable extends Lib\DataManager
 		}
 
 //		msDebug($arChild);
-		$arParent = $arChild[0];
-		unset($arChild[0]);
-		//Не понимаю, зачем это нужно, ведь и так мы получили точно только потомков нашего родителя
-/*
-		if (!empty($arChild))
-		{
-			foreach ($arChild as $i=>$ar_child)
-			{
-			    //TO DO: Оптимизировать. Не дело запросы к базе в цикле
-                $iChildParentId = static::getParentID($ar_child['ID']);
-                //Если ID родителя дочернего узла не равен ID родительского узла нашего узла
-				if ($iChildParentId!=$arParentNode['ID'])
-				{
-					unset($arChild[$i]);
-				}
-			}
-		}*/
 		$arTemp = $arChild;
 		$arChild = array();
 		$arSort = array();
@@ -1131,42 +1253,51 @@ class TreeTable extends Lib\DataManager
 		{
 			foreach ($arTemp as $ar_child)
 			{
-				$arChild[$ar_child['ID']] = $ar_child;
-				$arSort[$ar_child['ID']] = $ar_child[$sort];
+				$arChild[$ar_child[$sPrimaryFieldName]] = $ar_child;
+				$arSort[$ar_child[$sPrimaryFieldName]] = $ar_child[$sort];
 			}
 		}
 		unset($arTemp);
-		$i=0;
+		$i = $arParams['position_now'] = 0;
 		foreach ($arSort as $id=>$sort)
 		{
-			if ($id==$arNode['ID'])
+			if ($id==$arNode[$sPrimaryFieldName])
 			{
 				$arParams['position_now'] = $i;
 			}
 			$i++;
 		}
 		if ($order=='ASC')
-        {
-            //Сортируем в прямом направлении
-            asort($arSort);
-        }
+		{
+			//Сортируем в прямом направлении
+			asort($arSort);
+		}
 		else
-        {
-            //Сортируем в обратном направлении
-            arsort($arSort);
-        }
+		{
+			//Сортируем в обратном направлении
+			arsort($arSort);
+		}
 		$arParams['arSort'] = $arSort;
-		$p = 0;
+		$p = $arParams['position_target'] = 0;
 		$temp_right_key = $temp_level = $temp_left_key = $arParams['level_near'] = $arParams['left_key_near'] = $arParams['right_key_near'] = 0;
 		foreach ($arSort as $id=>$sort)
 		{
-			if ($id==$arNode['ID'])
+			if ($id==$arNode[$sPrimaryFieldName])
 			{
 				if ($p==0)
 				{
-					$arParams['left_key_near'] = $arParent['LEFT_MARGIN'];
-					$arParams['right_key_near'] = $arParent['RIGHT_MARGIN'];
-					$arParams['level_near'] = $arParent['DEPTH_LEVEL'];
+					if (isset($arParent))
+					{
+						$arParams['left_key_near'] = $arParent['LEFT_MARGIN'];
+						$arParams['right_key_near'] = $arParent['RIGHT_MARGIN'];
+						$arParams['level_near'] = $arParent['DEPTH_LEVEL'];
+					}
+					else
+					{
+						$arParams['left_key_near'] = 0;
+						$arParams['right_key_near'] = 0;
+						$arParams['level_near'] = 0;
+					}
 					$arParams['position_target'] = $p;
 					break;
 				}
@@ -1193,32 +1324,41 @@ class TreeTable extends Lib\DataManager
 		{
 			return true;
 		}
-        //</editor-fold>
+		//</editor-fold>
 
-        //<editor-fold defaultstate="collapse" desc="4. Определяем смещения">
-        //$level_up - $level + 1 = $skew_level - смещение уровня изменяемого узла;
+		//<editor-fold defaultstate="collapse" desc="4. Определяем смещения">
+		//$level_up - $level + 1 = $skew_level - смещение уровня изменяемого узла;
 		$arParams['skew_level'] = $arParams['level_up'] - $arParams['level'] + 1;
 		//$right_key - $left_key + 1 = $skew_tree - смещение ключей дерева;
 		$arParams['skew_tree'] = $arParams['right_key'] - $arParams['left_key'] + 1;
-        //</editor-fold>
+		//</editor-fold>
 
-        //<editor-fold defaultstate="collapse" desc="5. Получаем $id_edit - список id номеров перемещаемой ветки">
-        //Выбираем все узлы перемещаемой ветки:
+		//<editor-fold defaultstate="collapse" desc="5. Получаем $id_edit - список id номеров перемещаемой ветки">
+		//Выбираем все узлы перемещаемой ветки:
 		$arRes = static::getList(
 			array(
-				'select' => ['ID'],
+				'select' => [$sPrimaryFieldName],
 				'filter' => ['>=LEFT_MARGIN'=>$arParams['left_key'], '<=RIGHT_MARGIN'=>$arParams['right_key']]
 			)
 		);
 		$arParams['id_edit'] = array();
 		foreach($arRes as $ar_res)
 		{
-			$arParams['id_edit'][] = $ar_res['ID'];
+			$arParams['id_edit'][] = $ar_res[$sPrimaryFieldName];
 		}
-        //</editor-fold>
+		if (!empty($arParams['id_edit']) && $oPrimaryField instanceof Fields\StringField)
+		{
+			$arTmp = $arParams['id_edit'];
+			$arParams['id_edit'] = [];
+			foreach ($arTmp as $value)
+			{
+				$arParams['id_edit'][] = '"'.$value.'"';
+			}
+		}
+		//</editor-fold>
 
-        //<editor-fold defaultstate="collapse" desc="6. Определяем в какую область перемещается узел и производим перенос">
-        //Если перемещаемся выше и встаем сразу за родительским узлом
+		//<editor-fold defaultstate="collapse" desc="6. Определяем в какую область перемещается узел и производим перенос">
+		//Если перемещаемся выше и встаем сразу за родительским узлом
 		if (($arParams['left_key_near'] < $arParams['left_key']) && ($arParams['level'] > $arParams['level_near']))
 		{
 			$arParams['up_down'] = "parent";
@@ -1235,7 +1375,7 @@ class TreeTable extends Lib\DataManager
 			WHERE
 				RIGHT_MARGIN < $left_key AND
 				RIGHT_MARGIN > $left_key_near AND
-				ID NOT IN ($id_edit)
+				$sPrimaryFieldName NOT IN ($id_edit)
 			 */
 			$sql = "UPDATE\n\t"
 				.$helper->wrapTableQuotes()."\n"
@@ -1245,39 +1385,45 @@ class TreeTable extends Lib\DataManager
 				."WHERE\n\t"
 				.$helper->wrapQuotes('RIGHT_MARGIN')." < ".$arParams['left_key']." AND\n\t"
 				.$helper->wrapQuotes('RIGHT_MARGIN')." > ".$arParams['left_key_near']." AND\n\t"
-				.$helper->wrapQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+				.$helper->wrapQuotes($sPrimaryFieldName)." NOT IN (".implode(',',$arParams['id_edit']).")";
 			$query = new Query\QueryBase($sql);
 			$res = $query->exec();
-            if (!$res->getResult())
-            {
-                return false;
-            }
+			if (!$res->getResult())
+			{
+				static::$errorCollection->add('SORT_UP_PARENT_1','Возникла ошибка на шаге: Если перемещаемся выше и встаем сразу за родительским узлом 1');
+				return false;
+			}
 
-            //Теперь можно переместить ветку:
-            /*
-            UPDATE
-                tableName
-            SET
-                LEFT_MARGIN = LEFT_MARGIN + $skew_edit,
-                RIGHT_MARGIN = RIGHT_MARGIN + $skew_edit,
-            WHERE
-                ID IN ($id_edit)
-            */
-            $sql = "UPDATE\n\t"
-                .$helper->wrapTableQuotes()."\n"
-                ."SET\n\t"
-                .$helper->wrapQuotes('LEFT_MARGIN')." = ".$helper->wrapQuotes('LEFT_MARGIN')." + ".$arParams['skew_edit'].",\n\t"
-                .$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + ".$arParams['skew_edit']."\n"
-                ."WHERE\n\t"
-                .$helper->wrapQuotes('ID')." IN (".implode(',',$arParams['id_edit']).")";
-            $query = new Query\QueryBase($sql);
-            $res = $query->exec();
-            if (!$res->getResult())
-            {
-                return false;
-            }
+			//Теперь можно переместить ветку:
+			/*
+			UPDATE
+				tableName
+			SET
+				LEFT_MARGIN = LEFT_MARGIN + $skew_edit,
+				RIGHT_MARGIN = RIGHT_MARGIN + $skew_edit,
+			WHERE
+				$sPrimaryFieldName IN ($id_edit)
+			*/
+			if ($arParams['skew_edit'] % 2)
+			{
+				$arParams['skew_edit']++;
+			}
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapQuotes('LEFT_MARGIN')." = ".$helper->wrapQuotes('LEFT_MARGIN')." + ".$arParams['skew_edit'].",\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + ".$arParams['skew_edit']."\n"
+				."WHERE\n\t"
+				.$helper->wrapQuotes($sPrimaryFieldName)." IN (".implode(',',$arParams['id_edit']).")";
+			$query = new Query\QueryBase($sql);
+			$res = $query->exec();
+			if (!$res->getResult())
+			{
+				static::$errorCollection->add('SORT_UP_PARENT_2','Возникла ошибка на шаге: Теперь можно переместить ветку');
+				return false;
+			}
 		}
-        //Если перемещаемся выше
+		//Если перемещаемся выше
 		elseif ($arParams['left_key_near'] < $arParams['left_key'])
 		{
 			$arParams['up_down'] = "up";
@@ -1294,7 +1440,7 @@ class TreeTable extends Lib\DataManager
 			WHERE
 				RIGHT_MARGIN < $left_key AND
 				RIGHT_MARGIN > $left_key_near AND
-				ID NOT IN ($id_edit)
+				$sPrimaryFieldName NOT IN ($id_edit)
 			 */
 			$sql = "UPDATE\n\t"
 				.$helper->wrapTableQuotes()."\n"
@@ -1304,13 +1450,14 @@ class TreeTable extends Lib\DataManager
 				."WHERE\n\t"
 				.$helper->wrapQuotes('RIGHT_MARGIN')." < ".$arParams['right_key']." AND\n\t"
 				.$helper->wrapQuotes('RIGHT_MARGIN')." > ".$arParams['right_key_near']." AND\n\t"
-				.$helper->wrapQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+				.$helper->wrapQuotes($sPrimaryFieldName)." NOT IN (".implode(',',$arParams['id_edit']).")";
 			$query = new Query\QueryBase($sql);
 			$res = $query->exec();
 			if (!$res->getResult())
-            {
-                return false;
-            }
+			{
+				static::$errorCollection->add('SORT_UP_1','Возникла ошибка на шаге: Если перемещаемся выше');
+				return false;
+			}
 
 			//Теперь можно переместить ветку:
 			/*
@@ -1320,7 +1467,7 @@ class TreeTable extends Lib\DataManager
 				LEFT_MARGIN = LEFT_MARGIN - ($skew_edit*(-1)),
 				RIGHT_MARGIN = RIGHT_MARGIN - ($skew_edit*(-1)),
 			WHERE
-				ID IN ($id_edit)
+				$sPrimaryFieldName IN ($id_edit)
 			*/
 			$sql = "UPDATE\n\t"
 				.$helper->wrapTableQuotes()."\n"
@@ -1328,15 +1475,16 @@ class TreeTable extends Lib\DataManager
 				.$helper->wrapQuotes('LEFT_MARGIN')." = ".$helper->wrapQuotes('LEFT_MARGIN')." - ".$arParams['skew_edit'].",\n\t"
 				.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." - ".$arParams['skew_edit']."\n"
 				."WHERE\n\t"
-				.$helper->wrapQuotes('ID')." IN (".implode(',',$arParams['id_edit']).")";
+				.$helper->wrapQuotes($sPrimaryFieldName)." IN (".implode(',',$arParams['id_edit']).")";
 			$query = new Query\QueryBase($sql);
 			$res = $query->exec();
 			if (!$res->getResult())
-            {
-                return false;
-            }
+			{
+				static::$errorCollection->add('SORT_UP_2','Возникла ошибка на шаге: Если перемещаемся выше. Теперь можно переместить ветку');
+				return false;
+			}
 		}
-        //Если перемещаемся ниже
+		//Если перемещаемся ниже
 		else
 		{
 			$arParams['up_down'] = "down";
@@ -1353,7 +1501,7 @@ class TreeTable extends Lib\DataManager
 			WHERE
 				RIGHT_MARGIN > $right_key AND
 				RIGHT_MARGIN <= $right_key_near AND
-				ID NOT IN ($id_edit)
+				$sPrimaryFieldName NOT IN ($id_edit)
 			*/
 			$sql = "UPDATE\n\t"
 				.$helper->wrapTableQuotes()."\n"
@@ -1363,13 +1511,14 @@ class TreeTable extends Lib\DataManager
 				."WHERE\n\t"
 				.$helper->wrapQuotes('RIGHT_MARGIN')." > ".$arParams['right_key']." AND\n\t"
 				.$helper->wrapQuotes('RIGHT_MARGIN')." <= ".$arParams['right_key_near']." AND\n\t"
-				.$helper->wrapQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+				.$helper->wrapQuotes($sPrimaryFieldName)." NOT IN (".implode(',',$arParams['id_edit']).")";
 			$query = new Query\QueryBase($sql);
 			$res = $query->exec();
 			if (!$res->getResult())
-            {
-                return false;
-            }
+			{
+				static::$errorCollection->add('SORT_DOWN_1','Возникла ошибка на шаге: Если перемещаемся ниже');
+				return false;
+			}
 
 			//Теперь можно переместить ветку:
 			/*
@@ -1379,7 +1528,7 @@ class TreeTable extends Lib\DataManager
 				LEFT_MARGIN = LEFT_MARGIN + $skew_edit,
 				RIGHT_MARGIN = RIGHT_MARGIN + $skew_edit,
 			WHERE
-				ID IN ($id_edit)
+				$sPrimaryFieldName IN ($id_edit)
 			*/
 			$sql = "UPDATE\n\t"
 				.$helper->wrapTableQuotes()."\n"
@@ -1387,52 +1536,59 @@ class TreeTable extends Lib\DataManager
 				.$helper->wrapQuotes('LEFT_MARGIN')." = ".$helper->wrapQuotes('LEFT_MARGIN')." + ".$arParams['skew_edit'].",\n\t"
 				.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + ".$arParams['skew_edit']."\n"
 				."WHERE\n\t"
-				.$helper->wrapQuotes('ID')." IN (".implode(',',$arParams['id_edit']).")";
+				.$helper->wrapQuotes($sPrimaryFieldName)." IN (".implode(',',$arParams['id_edit']).")";
 			$query = new Query\QueryBase($sql);
 			$res = $query->exec();
 			if (!$res->getResult())
-            {
-                return false;
-            }
+			{
+				static::$errorCollection->add('SORT_DOWN_2','Возникла ошибка на шаге: Если перемещаемся ниже. Теперь можно переместить ветку');
+				return false;
+			}
 		}
-        //</editor-fold>
+		//</editor-fold>
 
-        return true;
+//		msDebug($arParams);
+
+		return true;
 	}
 
-    /**
-     * Возвращает список узлов указанного уровня вложенности
-     *
-     * @param int   $iDepthLevel    Уровень вложенности. По-умолчанию 1, разделы, лежащие в корне
-     * @param array $arSelect       Массив возвращаемых полей узлов. Если передан пустой массив,
-     *                              будут выбраны поля по-молчанию: 'ID', 'LEFT_MARGIN', 'RIGHT_MARGIN', 'DEPTH_LEVEL'
-     *
-     * @return array|bool
-     */
+	/**
+	 * Возвращает список узлов указанного уровня вложенности
+	 *
+	 * @param int   $iDepthLevel    Уровень вложенности. По-умолчанию 1, разделы, лежащие в корне
+	 * @param array $arSelect       Массив возвращаемых полей узлов. Если передан пустой массив,
+	 *                              будут выбраны поля по-молчанию: [PRIMARY], 'LEFT_MARGIN', 'RIGHT_MARGIN', 'DEPTH_LEVEL', [PARENT_PRIMARY]
+	 *                              Для получения имен полей PRIMARY и PARENT_PRIMARY будут выполнены соответствующие методы
+	 *
+	 * @see Lib\DataManager::getPrimaryFieldName()
+	 * @see TreeTable::getParentFieldName()
+	 *
+	 * @return array|bool
+	 */
 	final public static function getNodesByDepthLevel ($iDepthLevel=1, $arSelect=[])
-    {
-        $iDepthLevel = (int)$iDepthLevel;
-        if ($iDepthLevel<=0)
-        {
-            $iDepthLevel=1;
-        }
-        if (empty($arSelect))
-        {
-            $arSelect = self::$defaultArSelect;
-        }
-        else
-        {
-            $arSelect = array_merge($arSelect,self::$defaultArSelect);
-            $arSelect = array_unique($arSelect);
-        }
-        $arRes = static::getList([
-            'select' => $arSelect,
-            'filter' => ['DEPTH_LEVEL'=>$iDepthLevel],
-            'order' => ['LEFT_MARGIN'=>'ASC']
-        ]);
+	{
+		$iDepthLevel = (int)$iDepthLevel;
+		if ($iDepthLevel<=0)
+		{
+			$iDepthLevel=1;
+		}
+		if (empty($arSelect))
+		{
+			$arSelect = self::getArSelect();
+		}
+		else
+		{
+			$arSelect = array_merge($arSelect,self::getArSelect());
+			$arSelect = array_unique($arSelect);
+		}
+		$arRes = static::getList([
+			'select' => $arSelect,
+			'filter' => ['DEPTH_LEVEL'=>$iDepthLevel],
+			'order' => ['LEFT_MARGIN'=>'ASC']
+		]);
 
-        return $arRes;
-    }
+		return $arRes;
+	}
 
 	/**
 	 * Проверка целостности таблицы. Если все в порядке, возвращает false.
@@ -1453,13 +1609,14 @@ class TreeTable extends Lib\DataManager
 		 */
 		$bError = false;
 		$arResult = [];
+		$sPrimaryFieldName = static::getPrimaryFieldName();
 		$helper = new SqlHelper(static::getTableName());
 
 		//1. Левый ключ ВСЕГДА меньше правого;
 		//Если все правильно то результата работы запроса не будет, иначе, получаем список идентификаторов неправильных строк;
 		$res1 = static::getList(
 			[
-				'select' => ['ID'],
+				'select' => [$sPrimaryFieldName],
 				'filter' => ['>=LEFT_MARGIN'=>'FIELD_RIGHT_MARGIN']
 			]
 		);
@@ -1475,7 +1632,7 @@ class TreeTable extends Lib\DataManager
 		//3. Наибольший правый ключ ВСЕГДА равен двойному числу узлов;
 		//Получаем количество записей (узлов), минимальный левый ключ и максимальный правый ключ, проверяем значения.
 		$sql2 = "SELECT\n\t"
-			.$helper->getCountFunction('ID','COUNT').",\n\t"
+			.$helper->getCountFunction($sPrimaryFieldName,'COUNT').",\n\t"
 			.$helper->getMinFunction('LEFT_MARGIN','MIN').",\n\t"
 			.$helper->getMaxFunction('RIGHT_MARGIN','MAX')."\n"
 			."FROM\n\t"
@@ -1509,7 +1666,7 @@ class TreeTable extends Lib\DataManager
 		//4. Разница между правым и левым ключом ВСЕГДА нечетное число;
 		//Если все правильно то результата работы запроса не будет, иначе, получаем список идентификаторов неправильных строк;
 		$sql4 = "SELECT\n\t"
-			.$helper->wrapQuotes('ID').",\n\t"
+			.$helper->wrapQuotes($sPrimaryFieldName).",\n\t"
 			."MOD((".$helper->wrapFieldQuotes('RIGHT_MARGIN')." - ".$helper->wrapFieldQuotes('LEFT_MARGIN')."), 2) AS REMAINDER\n "
 			."FROM\n\t"
 			.$helper->wrapTableQuotes()."\n"
@@ -1529,7 +1686,7 @@ class TreeTable extends Lib\DataManager
 		//5. Если уровень узла нечетное число то тогда левый ключ ВСЕГДА нечетное число, то же самое и для четных чисел;
 		//Если все правильно то результата работы запроса не будет, иначе, получаем список идентификаторов неправильных строк;
 		$sql5 = "SELECT\n\t"
-			.$helper->wrapQuotes('ID').",\n\t"
+			.$helper->wrapQuotes($sPrimaryFieldName).",\n\t"
 			."MOD((".$helper->wrapFieldQuotes('LEFT_MARGIN')." - ".$helper->wrapFieldQuotes('DEPTH_LEVEL')." + 2), 2) AS REMAINDER \n"
 			."FROM\n\t"
 			.$helper->wrapTableQuotes()."\n"
@@ -1562,8 +1719,8 @@ class TreeTable extends Lib\DataManager
 			неправильных строк;
 		 */
 		$sql6 = "SELECT\n\t"
-			."t1.".$helper->wrapQuotes('ID').",\n\t"
-			."COUNT(t1.".$helper->wrapQuotes('ID').") AS rep,\n\t"
+			."t1.".$helper->wrapQuotes($sPrimaryFieldName).",\n\t"
+			."COUNT(t1.".$helper->wrapQuotes($sPrimaryFieldName).") AS rep,\n\t"
 			."MAX(t3.".$helper->wrapQuotes('RIGHT_MARGIN').") AS max_right\n"
 			."FROM\n\t"
 			.$helper->wrapTableQuotes()." AS t1,\n\t"
@@ -1575,7 +1732,7 @@ class TreeTable extends Lib\DataManager
 			."t1.".$helper->wrapQuotes('RIGHT_MARGIN')." <> t2.".$helper->wrapQuotes('LEFT_MARGIN')." AND\n\t"
 			."t1.".$helper->wrapQuotes('RIGHT_MARGIN')." <> t2.".$helper->wrapQuotes('RIGHT_MARGIN')."\n"
 			."GROUP BY\n\t"
-			."t1.".$helper->wrapQuotes('ID')."\n"
+			."t1.".$helper->wrapQuotes($sPrimaryFieldName)."\n"
 			."HAVING\n\t"
 			."max_right <> SQRT(4 * rep + 1) + 1";
 		$query6 = new Query\QueryBase($sql6);
@@ -1597,6 +1754,21 @@ class TreeTable extends Lib\DataManager
 		{
 			return false;
 		}
+	}
+
+	/**
+	 * Возвращает массив полей узла по-умолчанию. При сборе массива вызываются методы, возвращающие Ключ таблицы и Ключ родительского узла
+	 *
+	 * @uses Lib\DataManager::getPrimaryFieldName()
+	 * @uses Tree::getParentFieldName()
+	 */
+	private static function getArSelect ()
+	{
+		$arReturn = [static::getPrimaryFieldName()];
+		$arReturn = array_merge($arReturn,self::$defaultArSelect);
+		$arReturn[] = static::getParentFieldName();
+
+		return $arReturn;
 	}
 
 	//</editor-fold>

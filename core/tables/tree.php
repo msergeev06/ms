@@ -202,10 +202,11 @@ class TreeTable extends Lib\DataManager
 	 * @param bool|array $arSelect          Массив возвращаемых полей
 	 * @param bool       $bActive           Вернуть только активные узлы
 	 * @param bool       $bReturnYourself   Вернуть в том числе данные о самом узле
+	 * @param bool       $bReverse          Флаг: вывести в обратном направлении (от себя и ближайшего родителя к корню)
 	 *
 	 * @return bool|array
 	 */
-	final public static function getParents ($primary, $arSelect=[], $bActive=false, $bReturnYourself=false)
+	final public static function getParents ($primary, $arSelect=[], $bActive=false, $bReturnYourself=false, $bReverse=false)
 	{
 		$arNode = static::getByPrimary($primary,null,['LEFT_MARGIN','RIGHT_MARGIN']);
 		if (!$arNode)
@@ -217,7 +218,7 @@ class TreeTable extends Lib\DataManager
 				'<'.($bReturnYourself?'=':'').'LEFT_MARGIN'=>$arNode['LEFT_MARGIN'],
 				'>'.($bReturnYourself?'=':'').'RIGHT_MARGIN'=>$arNode['RIGHT_MARGIN']
 			],
-			'order' => ['LEFT_MARGIN'=>'ASC']
+			'order' => ['LEFT_MARGIN'=>(!$bReverse)?'ASC':'DESC']
 		];
 		if ($arSelect && !empty($arSelect))
 		{
@@ -376,7 +377,7 @@ class TreeTable extends Lib\DataManager
 	 *
 	 * @param array &$arNode Массив полей узла
 	 *
-	 * @return bool|int
+	 * @return bool|mixed
 	 */
 	final public static function addNode (&$arNode)
 	{

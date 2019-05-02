@@ -15,9 +15,9 @@ use Ms\Core\Exception;
 
 /**
  * Class Field
- * @package MSergeev\Core
+ * @package Ms\Core
  * @subpackage Entity\Db\Fields
-
+ *
  * @var string                      $name                   Название поля в API
  * @var string                      $dataType               Тип поля в базе данных
  * @var string                      $fieldType              Тип поля в API
@@ -30,6 +30,7 @@ use Ms\Core\Exception;
  * @var null|string                 $link                   Связь поля таблицы
  * @var null|string                 $linkOnUpdate           Действие при обновлении значения в связанной таблицы
  * @var null|string                 $linkOnDelete           Действие при удалении записи в связанной таблице
+ * @var bool                        $linkNotForeignKey      Флаг, обозначающий, что поле связи с другой таблицей не является FOREIGN KEY
  *
  */
 abstract class Field
@@ -85,25 +86,31 @@ abstract class Field
 	protected $link=null;
 
 	/**
-	 * @var null|string Действие при обновлении значения в связанной таблицы
+	 * @var string Действие при обновлении значения в связанной таблицы
 	 */
-	protected $linkOnUpdate=null;
+	protected $linkOnUpdate='cascade';
 
 	/**
-	 * @var null|string Действие при удалении записи в связанной таблице
+	 * @var string Действие при удалении записи в связанной таблице
 	 */
-	protected $linkOnDelete=null;
+	protected $linkOnDelete='restrict';
+
+	/**
+	 * @var bool Флаг, обозначающий, что поле связи с другой таблицей не является FOREIGN KEY
+	 */
+	protected $linkNotForeignKey = false;
 
 	/**
 	 * Конструктор. Обрабатывает начальные параметры поля
 	 *
-	 * @param string $name       Имя поля таблицы БД
-	 * @param array  $parameters Параметры поля таблицы БД
-	 * @param string $link       Связанное поле вида "таблица.поле"     @since 0.2.0
-	 * @param string $onUpdate   Действие при изменении связанного поля @since 0.2.0
-	 * @param string $onDelete   Действие при удалении связанного поля  @since 0.2.0
+	 * @param string $name              Имя поля таблицы БД
+	 * @param array  $parameters        Параметры поля таблицы БД
+	 * @param string $link              Связанное поле вида "таблица.поле"
+	 * @param string $onUpdate          Действие при изменении связанного поля
+	 * @param string $onDelete          Действие при удалении связанного поля
+	 * @param bool   $linkNotForeignKey Флаг, что связь не является FOREIGN KEY
 	 */
-	public function __construct($name, $parameters = array(), $link=null, $onUpdate='cascade', $onDelete='restrict')
+	public function __construct($name, $parameters = array(), $link=null, $onUpdate='cascade', $onDelete='restrict', $linkNotForeignKey=false)
 	{
 		//Название поля таблицы
 		try
@@ -141,66 +148,75 @@ abstract class Field
 			$this->link = $parameters['link'];
 		}
 
-		//Действие при изменении записи в связанной таблице
-		/*
-		 * CASCADE: если связанная запись родительской таблицы обновлена или удалена,
-		 * и мы хотим чтобы соответствующие записи в таблицах-потомках также были обновлены или удалены.
-		 * Что происходит с записью в родительской таблице, тоже самое произойдет с записью в дочерних
-		 * таблицах. Однако не забывайте, что здесь можно легко попасться в ловушку бесконечного цикла.
-		 * SET NULL:если запись в родительской таблице обновлена или удалена, а мы хоти чтобы в дочерней
-		 * таблице некоторым занчениям было присвоено NULL (конечно если поле таблицы это позволяет)
-		 * NO ACTION: смотри RESTRICT
-		 * RESTRICT:если связанные записи родительской таблицы обновляются или удаляются со значениями
-		 * которые уже/еще содержатся в соответствующих записях дочерней таблицы, то база данных не
-		 * позволит изменять записи в родительской таблице. Обе команды NO ACTION и RESTRICT
-		 * эквивалентны отсутствию подвыражений ON UPDATE or ON DELETE для внешних ключей.
-		 * SET DEFAULT:На данный момент эта команда распознается парсером, но движок InnoDB никак на нее не реагирует.
-		 */
-		if (
-			isset($parameters['on_update'])
-			&& (in_array($parameters['on_update'],array('cascade','set_null','no_action','restrict','set_default')))
-		)
+		if (is_bool($linkNotForeignKey))
 		{
-			$this->linkOnUpdate = $parameters['on_update'];
-		}
-		elseif (in_array(strtolower($onUpdate),array('cascade','set_null','no_action','restrict','set_default')))
-		{
-			$this->linkOnUpdate = strtolower($onUpdate);
-		}
-		else
-		{
-			$this->linkOnUpdate = 'cascade';
+			$this->linkNotForeignKey = $linkNotForeignKey;
 		}
 
-		//Действие при удалении записи в связанной таблице
-		/*
-		 * CASCADE: если связанная запись родительской таблицы обновлена или удалена,
-		 * и мы хотим чтобы соответствующие записи в таблицах-потомках также были обновлены или удалены.
-		 * Что происходит с записью в родительской таблице, тоже самое произойдет с записью в дочерних
-		 * таблицах. Однако не забывайте, что здесь можно легко попасться в ловушку бесконечного цикла.
-		 * SET NULL:если запись в родительской таблице обновлена или удалена, а мы хоти чтобы в дочерней
-		 * таблице некоторым занчениям было присвоено NULL (конечно если поле таблицы это позволяет)
-		 * NO ACTION: смотри RESTRICT
-		 * RESTRICT:если связанные записи родительской таблицы обновляются или удаляются со значениями
-		 * которые уже/еще содержатся в соответствующих записях дочерней таблицы, то база данных не
-		 * позволит изменять записи в родительской таблице. Обе команды NO ACTION и RESTRICT
-		 * эквивалентны отсутствию подвыражений ON UPDATE or ON DELETE для внешних ключей.
-		 * SET DEFAULT:На данный момент эта команда распознается парсером, но движок InnoDB никак на нее не реагирует.
-		 */
-		if (
-			isset($parameters['on_delete'])
-			&& (in_array($parameters['on_delete'],array('cascade','set_null','no_action','restrict','set_default')))
-		)
+		//Если связь является FOREIGN KEY
+		if (!$this->linkNotForeignKey)
 		{
-			$this->linkOnDelete = $parameters['on_delete'];
-		}
-		elseif (in_array(strtolower($onDelete),array('cascade','set_null','no_action','restrict','set_default')))
-		{
-			$this->linkOnDelete = strtolower($onDelete);
-		}
-		else
-		{
-			$this->linkOnDelete = 'restrict';
+			//Действие при изменении записи в связанной таблице
+			/*
+			 * CASCADE: если связанная запись родительской таблицы обновлена или удалена,
+			 * и мы хотим чтобы соответствующие записи в таблицах-потомках также были обновлены или удалены.
+			 * Что происходит с записью в родительской таблице, тоже самое произойдет с записью в дочерних
+			 * таблицах. Однако не забывайте, что здесь можно легко попасться в ловушку бесконечного цикла.
+			 * SET NULL:если запись в родительской таблице обновлена или удалена, а мы хоти чтобы в дочерней
+			 * таблице некоторым занчениям было присвоено NULL (конечно если поле таблицы это позволяет)
+			 * NO ACTION: смотри RESTRICT
+			 * RESTRICT:если связанные записи родительской таблицы обновляются или удаляются со значениями
+			 * которые уже/еще содержатся в соответствующих записях дочерней таблицы, то база данных не
+			 * позволит изменять записи в родительской таблице. Обе команды NO ACTION и RESTRICT
+			 * эквивалентны отсутствию подвыражений ON UPDATE or ON DELETE для внешних ключей.
+			 * SET DEFAULT:На данный момент эта команда распознается парсером, но движок InnoDB никак на нее не реагирует.
+			 */
+			if (
+				isset($parameters['on_update'])
+				&& (in_array($parameters['on_update'],array('cascade','set_null','no_action','restrict','set_default')))
+			)
+			{
+				$this->linkOnUpdate = $parameters['on_update'];
+			}
+			elseif (in_array(strtolower($onUpdate),array('cascade','set_null','no_action','restrict','set_default')))
+			{
+				$this->linkOnUpdate = strtolower($onUpdate);
+			}
+			else
+			{
+				$this->linkOnUpdate = 'cascade';
+			}
+
+			//Действие при удалении записи в связанной таблице
+			/*
+			 * CASCADE: если связанная запись родительской таблицы обновлена или удалена,
+			 * и мы хотим чтобы соответствующие записи в таблицах-потомках также были обновлены или удалены.
+			 * Что происходит с записью в родительской таблице, тоже самое произойдет с записью в дочерних
+			 * таблицах. Однако не забывайте, что здесь можно легко попасться в ловушку бесконечного цикла.
+			 * SET NULL:если запись в родительской таблице обновлена или удалена, а мы хоти чтобы в дочерней
+			 * таблице некоторым занчениям было присвоено NULL (конечно если поле таблицы это позволяет)
+			 * NO ACTION: смотри RESTRICT
+			 * RESTRICT:если связанные записи родительской таблицы обновляются или удаляются со значениями
+			 * которые уже/еще содержатся в соответствующих записях дочерней таблицы, то база данных не
+			 * позволит изменять записи в родительской таблице. Обе команды NO ACTION и RESTRICT
+			 * эквивалентны отсутствию подвыражений ON UPDATE or ON DELETE для внешних ключей.
+			 * SET DEFAULT:На данный момент эта команда распознается парсером, но движок InnoDB никак на нее не реагирует.
+			 */
+			if (
+				isset($parameters['on_delete'])
+				&& (in_array($parameters['on_delete'],array('cascade','set_null','no_action','restrict','set_default')))
+			)
+			{
+				$this->linkOnDelete = $parameters['on_delete'];
+			}
+			elseif (in_array(strtolower($onDelete),array('cascade','set_null','no_action','restrict','set_default')))
+			{
+				$this->linkOnDelete = strtolower($onDelete);
+			}
+			else
+			{
+				$this->linkOnDelete = 'restrict';
+			}
 		}
 
 		//Функция, подготавливающая данные после получения их из базы данных
@@ -234,7 +250,6 @@ abstract class Field
 	 * @api
 	 *
 	 * @return string
-	 * @since 0.1.0
 	 */
 	public function getName()
 	{
@@ -247,7 +262,6 @@ abstract class Field
 	 * @api
 	 *
 	 * @return string
-	 * @since 0.1.0
 	 */
 	public function getTitle()
 	{
@@ -260,7 +274,6 @@ abstract class Field
 	 * @api
 	 *
 	 * @return string
-	 * @since 0.1.0
 	 */
 	public function getDataType()
 	{
@@ -273,7 +286,6 @@ abstract class Field
 	 * @api
 	 *
 	 * @return string
-	 * @since 0.1.0
 	 */
 	public function getFieldType()
 	{
@@ -286,7 +298,6 @@ abstract class Field
 	 * @api
 	 *
 	 * @return Field
-	 * @since 0.1.0
 	 */
 	public function getParentField()
 	{
@@ -299,7 +310,6 @@ abstract class Field
 	 * @api
 	 *
 	 * @return null|string
-	 * @since 0.1.0
 	 */
 	public function getLink()
 	{
@@ -310,7 +320,6 @@ abstract class Field
 	 * Возвращает строку - действия при измененнии связанной записи другой таблицы
 	 *
 	 * @return null|string
-	 * @since 0.2.0
 	 */
 	public function getLinkOnUpdate()
 	{
@@ -335,7 +344,6 @@ abstract class Field
 	 * Возвращает строку - действия при удалении связанной записи другой таблицы
 	 *
 	 * @return null|string
-	 * @since 0.2.0
 	 */
 	public function getLinkOnDelete()
 	{
@@ -364,7 +372,6 @@ abstract class Field
 	 * @param array|string $value Массив
 	 *
 	 * @return string
-	 * @since 0.1.0
 	 */
 	public function serialize($value)
 	{
@@ -384,7 +391,6 @@ abstract class Field
 	 * @param string $value Сериализованный массив
 	 *
 	 * @return array
-	 * @since 0.1.0
 	 */
 	public function unserialize($value)
 	{
@@ -400,7 +406,6 @@ abstract class Field
 	 * является ли значение данного поля сериализованным массивом
 	 *
 	 * @return bool
-	 * @since 0.1.0
 	 */
 	public function isSerialized ()
 	{
@@ -413,7 +418,6 @@ abstract class Field
 	 * @api
 	 *
 	 * @return callable|null
-	 * @since 0.1.0
 	 */
 	public function getFetchDataModification ()
 	{
@@ -426,7 +430,6 @@ abstract class Field
 	 * @api
 	 *
 	 * @return callable|null
-	 * @since 0.1.0
 	 */
 	public function getSaveDataModification ()
 	{
@@ -439,10 +442,19 @@ abstract class Field
 	 * @api
 	 *
 	 * @return string
-	 * @since 0.2.0
 	 */
 	public function getClassName ()
 	{
 		return get_called_class();
+	}
+
+	/**
+	 * Возвращает TRUE, если связь является FOREIGN KEY, иначе FALSE
+	 *
+	 * @return bool
+	 */
+	public function isLinkForeignKey ()
+	{
+		return !$this->linkNotForeignKey;
 	}
 }

@@ -202,6 +202,11 @@ class QueryInsert extends QueryBase
 				{
 					$this->getDefaultValue ($obMap, $columnName);
 				}
+				elseif ($obMap->isRequired() && $obMap->isRequiredNull())
+				{
+					$this->arNames[] = $helper->wrapQuotes($columnName);
+					$this->arValues[] = 'NULL';
+				}
 				else
 				{
 					throw new Exception\ArgumentNullException('field['.$fieldName.']');

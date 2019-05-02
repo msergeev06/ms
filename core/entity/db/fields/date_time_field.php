@@ -74,13 +74,14 @@ class DateTimeField extends ScalarField
 	 *
 	 * @param string $name       Имя поля таблицы БД
 	 * @param array  $parameters Параметры поля таблицы БД
-	 * @param string $link       Связанное поле вида "таблица.поле"     @since 0.2.0
-	 * @param string $onUpdate   Действие при изменении связанного поля @since 0.2.0
-	 * @param string $onDelete   Действие при удалении связанного поля  @since 0.2.0
+	 * @param string $link       Связанное поле вида "таблица.поле"
+	 * @param string $onUpdate   Действие при изменении связанного поля
+	 * @param string $onDelete   Действие при удалении связанного поля
+	 * @param bool   $linkNotForeignKey Флаг, что связь не является FOREIGN KEY
 	 */
-	public function __construct($name, $parameters = array(),$link=null,$onUpdate='cascade',$onDelete='restrict')
+	public function __construct($name, $parameters = array(),$link=null,$onUpdate='cascade',$onDelete='restrict',$linkNotForeignKey=false)
 	{
-		parent::__construct($name, $parameters,$link,$onUpdate,$onDelete);
+		parent::__construct($name, $parameters,$link,$onUpdate,$onDelete,$linkNotForeignKey);
 
 		$this->dataType = 'datetime';
 		$this->fieldType = 'Ms\Core\Entity\Type\Date';
@@ -95,7 +96,6 @@ class DateTimeField extends ScalarField
 	 * @param DateTimeField|null $obj
 	 *
 	 * @return bool|mixed|string
-	 * @since 0.1.0
 	 */
 	public static function saveDataModification ($value, $obj=null)
 	{
@@ -114,7 +114,6 @@ class DateTimeField extends ScalarField
 	 * @param DateTimeField|null $obj
 	 *
 	 * @return Date|null
-	 * @since 0.1.0
 	 */
 	public static function fetchDataModification ($value, $obj=null)
 	{

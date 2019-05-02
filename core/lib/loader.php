@@ -243,7 +243,20 @@ class Loader
 	 */
 	public static function classExists($className)
 	{
-		return (isset(static::$arAutoLoadClasses[$className]));
+		if  (!isset(static::$arAutoLoadClasses[$className]))
+		{
+			if ($filename = static::getFilePathByClassNamespace($className))
+			{
+				static::$arAutoLoadClasses[$className] = $filename;
+				include_once ($filename);
+			}
+
+			return (isset(static::$arAutoLoadClasses[$className]));
+		}
+		else
+		{
+			return true;
+		}
 	}
 
 	/**

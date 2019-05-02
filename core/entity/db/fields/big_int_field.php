@@ -72,15 +72,16 @@ class BigIntField extends IntegerField
 	/**
 	 * Конструктор
 	 *
-	 * @param string $name       Имя поля таблицы БД
-	 * @param array  $parameters Параметры поля таблицы БД
-	 * @param string $link       Связанное поле вида "таблица.поле"     @since 0.2.0
-	 * @param string $onUpdate   Действие при изменении связанного поля @since 0.2.0
-	 * @param string $onDelete   Действие при удалении связанного поля  @since 0.2.0
+	 * @param string $name              Имя поля таблицы БД
+	 * @param array  $parameters        Параметры поля таблицы БД
+	 * @param string $link              Связанное поле вида "таблица.поле"
+	 * @param string $onUpdate          Действие при изменении связанного поля
+	 * @param string $onDelete          Действие при удалении связанного поля
+	 * @param bool   $linkNotForeignKey Флаг, что связь не является FOREIGN KEY
 	 */
-	public function __construct($name, $parameters = array(),$link=null,$onUpdate='cascade',$onDelete='restrict')
+	public function __construct($name, $parameters = array(),$link=null,$onUpdate='cascade',$onDelete='restrict', $linkNotForeignKey=false)
 	{
-		parent::__construct($name, $parameters,$link,$onUpdate,$onDelete);
+		parent::__construct($name, $parameters,$link,$onUpdate,$onDelete, $linkNotForeignKey);
 
 		$this->dataType = 'bigint';
 		$this->fieldType = 'integer';

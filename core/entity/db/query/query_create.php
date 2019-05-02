@@ -7,7 +7,6 @@
  * @subpackage Entity\Db\Query
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2018 Mikhail Sergeev
- * @since 0.2.0
  */
 
 namespace Ms\Core\Entity\Db\Query;
@@ -27,7 +26,6 @@ class QueryCreate extends QueryBase
 	 *
 	 * @param string $tableClass Класс таблицы
 	 * @throws
-	 * @since 0.2.0
 	 */
 	public function __construct ($tableClass)
 	{
@@ -96,7 +94,7 @@ class QueryCreate extends QueryBase
 				$sql .= "COMMENT '".$objData->getTitle()."'";
 			}
 			//Обработка линкованных полей
-			if (!is_null($objData->getLink()))
+			if (!is_null($objData->getLink()) && $objData->isLinkForeignKey())
 			{
 				$this->arLinked[] = $objData;
 			}
@@ -133,12 +131,11 @@ class QueryCreate extends QueryBase
 	 * @param Fields\ScalarField $objData
 	 *
 	 * @return string
-	 * @since 0.2.0
 	 */
 	private function getDefaultValue (Fields\ScalarField $objData)
 	{
 		$sql = '';
-		$isNotNull = ($objData->isPrimary() || $objData->isRequired());
+		$isNotNull = ($objData->isPrimary() || ($objData->isRequired() && !$objData->isRequiredNull()));
 
 		if (!is_null($objData->getDefaultValue('create')) && $isNotNull)
 		{
@@ -173,7 +170,6 @@ class QueryCreate extends QueryBase
 	 * Возвращает часть SQL запроса, касающийся FOREIGN KEY
 	 *
 	 * @return string
-	 * @since 0.2.0
 	 */
 	private function getLinkedFields ()
 	{

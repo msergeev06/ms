@@ -79,15 +79,16 @@ class BooleanField extends ScalarField {
 	/**
 	 * Конструктор
 	 *
-	 * @param string $name       Имя поля таблицы БД
-	 * @param array  $parameters Параметры поля таблицы БД
-	 * @param string $link       Связанное поле вида "таблица.поле"     @since 0.2.0
-	 * @param string $onUpdate   Действие при изменении связанного поля @since 0.2.0
-	 * @param string $onDelete   Действие при удалении связанного поля  @since 0.2.0
+	 * @param string $name              Имя поля таблицы БД
+	 * @param array  $parameters        Параметры поля таблицы БД
+	 * @param string $link              Связанное поле вида "таблица.поле"
+	 * @param string $onUpdate          Действие при изменении связанного поля
+	 * @param string $onDelete          Действие при удалении связанного поля
+	 * @param bool   $linkNotForeignKey Флаг, что связь не является FOREIGN KEY
 	 */
-	function __construct($name, $parameters = array(),$link=null,$onUpdate='cascade',$onDelete='restrict')
+	function __construct($name, $parameters = array(),$link=null,$onUpdate='cascade',$onDelete='restrict', $linkNotForeignKey=false)
 	{
-		parent::__construct($name, $parameters,$link,$onUpdate,$onDelete);
+		parent::__construct($name, $parameters,$link,$onUpdate,$onDelete,$linkNotForeignKey);
 
 		$this->dataType = 'varchar';
 		$this->fieldType = 'boolean';
@@ -110,7 +111,6 @@ class BooleanField extends ScalarField {
 	 *
 	 * @param boolean|integer|string $value
 	 * @return mixed
-	 * @since 0.1.0
 	 */
 	public function normalizeValue($value)
 	{
@@ -145,7 +145,6 @@ class BooleanField extends ScalarField {
 	 * @api
 	 *
 	 * @return array
-	 * @since 0.1.0
 	 */
 	public function getValues()
 	{
@@ -158,7 +157,6 @@ class BooleanField extends ScalarField {
 	 * @api
 	 *
 	 * @return int
-	 * @since 0.1.0
 	 */
 	public function getSize() {
 		return $this->size;
@@ -170,7 +168,6 @@ class BooleanField extends ScalarField {
 	 * @api
 	 *
 	 * @return null|string
-	 * @since 0.1.0
 	 */
 	public function getDefaultValueDB()
 	{
@@ -196,7 +193,6 @@ class BooleanField extends ScalarField {
 	 * @param mixed $value значение
 	 *
 	 * @return string
-	 * @since 0.2.0
 	 */
 	public function getSqlValue($value)
 	{
@@ -219,7 +215,6 @@ class BooleanField extends ScalarField {
 	 * @param BooleanField|null $obj
 	 *
 	 * @return mixed|string
-	 * @since 0.1.0
 	 */
 	public static function saveDataModification ($value, $obj=null)
 	{
@@ -249,7 +244,6 @@ class BooleanField extends ScalarField {
 	 * @param BooleanField|null $obj
 	 *
 	 * @return array|mixed
-	 * @since 0.1.0
 	 */
 	public static function fetchDataModification ($value, $obj=null)
 	{

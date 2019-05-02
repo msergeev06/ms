@@ -79,15 +79,16 @@ class StringField extends ScalarField
 	/**
 	 * Конструктор
 	 *
-	 * @param string $name       Имя поля таблицы БД
-	 * @param array  $parameters Параметры поля таблицы БД
-	 * @param string $link       Связанное поле вида "таблица.поле"     @since 0.2.0
-	 * @param string $onUpdate   Действие при изменении связанного поля @since 0.2.0
-	 * @param string $onDelete   Действие при удалении связанного поля  @since 0.2.0
+	 * @param string $name              Имя поля таблицы БД
+	 * @param array  $parameters        Параметры поля таблицы БД
+	 * @param string $link              Связанное поле вида "таблица.поле"
+	 * @param string $onUpdate          Действие при изменении связанного поля
+	 * @param string $onDelete          Действие при удалении связанного поля
+	 * @param bool   $linkNotForeignKey Флаг, что связь не является FOREIGN KEY
 	 */
-	function __construct($name, $parameters = array(),$link=null,$onUpdate='cascade',$onDelete='restrict')
+	function __construct($name, $parameters = array(),$link=null,$onUpdate='cascade',$onDelete='restrict',$linkNotForeignKey=false)
 	{
-		parent::__construct($name, $parameters,$link,$onUpdate,$onDelete);
+		parent::__construct($name, $parameters,$link,$onUpdate,$onDelete,$linkNotForeignKey);
 
 		$this->dataType = 'varchar';
 		$this->fieldType = 'string';
@@ -104,7 +105,6 @@ class StringField extends ScalarField
 	 * @api
 	 *
 	 * @return int|null
-	 * @since 0.1.0
 	 */
 	public function getSize()
 	{
@@ -119,7 +119,6 @@ class StringField extends ScalarField
 	 *
 	 * @return mixed|string
 	 * @throws Exception\Db\DbException
-	 * @since 0.1.0
 	 */
 	public static function saveDataModification ($value, $obj=null)
 	{
@@ -139,7 +138,6 @@ class StringField extends ScalarField
 	 * @param StringField|null $obj
 	 *
 	 * @return array|mixed
-	 * @since 0.1.0
 	 */
 	public static function fetchDataModification ($value, $obj = NULL)
 	{

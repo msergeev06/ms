@@ -69,6 +69,11 @@ class ScalarField extends Field
 	protected $is_required = false;
 
 	/**
+	 * @var bool Значение по умолчанию для обязательного поля NULL
+	 */
+	protected $is_required_null = false;
+
+	/**
 	 * @var bool Для поля используется auto increment
 	 */
 	protected $is_autocomplete = false;
@@ -131,19 +136,21 @@ class ScalarField extends Field
 	/**
 	 * Конструктор
 	 *
-	 * @param string $name       Имя поля таблицы БД
-	 * @param array  $parameters Параметры поля таблицы БД
-	 * @param string $link       Связанное поле вида "таблица.поле"     @since 0.2.0
-	 * @param string $onUpdate   Действие при изменении связанного поля @since 0.2.0
-	 * @param string $onDelete   Действие при удалении связанного поля  @since 0.2.0
+	 * @param string $name              Имя поля таблицы БД
+	 * @param array  $parameters        Параметры поля таблицы БД
+	 * @param string $link              Связанное поле вида "таблица.поле"
+	 * @param string $onUpdate          Действие при изменении связанного поля
+	 * @param string $onDelete          Действие при удалении связанного поля
+	 * @param bool   $linkNotForeignKey Флаг, что связь не является FOREIGN KEY
 	 */
-	public function __construct($name, $parameters = array(),$link=null,$onUpdate='cascade',$onDelete='restrict')
+	public function __construct($name, $parameters = array(),$link=null,$onUpdate='cascade',$onDelete='restrict', $linkNotForeignKey=false)
 	{
-		parent::__construct($name, $parameters,$link,$onUpdate,$onDelete);
+		parent::__construct($name, $parameters,$link,$onUpdate,$onDelete,$linkNotForeignKey);
 
 		$this->is_primary = (isset($parameters['primary']) && $parameters['primary']);
 		$this->is_unique = (isset($parameters['unique']) && $parameters['unique']);
 		$this->is_required = (isset($parameters['required']) && $parameters['required']);
+		$this->is_required_null = (isset($parameters['required_null']) && $parameters['required_null']);
 		$this->is_autocomplete = (isset($parameters['autocomplete']) && $parameters['autocomplete']);
 
 		$this->values = isset($parameters['values']) ? $parameters['values'] : null;
@@ -173,7 +180,6 @@ class ScalarField extends Field
 	 * @api
 	 *
 	 * @return bool
-	 * @since 0.1.0
 	 */
 	public function isPrimary()
 	{
@@ -186,11 +192,22 @@ class ScalarField extends Field
 	 * @api
 	 *
 	 * @return bool
-	 * @since 0.1.0
 	 */
 	public function isRequired()
 	{
 		return $this->is_required;
+	}
+
+	/**
+	 * Возвращает флаг того, что значение по-умолчанию в таблице для обязательного поля равно NULL
+	 *
+	 * @api
+	 *
+	 * @return bool
+	 */
+	public function isRequiredNull()
+	{
+		return $this->is_required_null;
 	}
 
 	/**
@@ -199,7 +216,6 @@ class ScalarField extends Field
 	 * @api
 	 *
 	 * @return bool
-	 * @since 0.1.0
 	 */
 	public function isUnique()
 	{
@@ -212,7 +228,6 @@ class ScalarField extends Field
 	 * @api
 	 *
 	 * @return bool
-	 * @since 0.1.0
 	 */
 	public function isAutocomplete()
 	{
@@ -227,7 +242,6 @@ class ScalarField extends Field
 	 * @param string $type Тип значения по-умолчанию
 	 *
 	 * @return bool
-	 * @since 0.2.0
 	 */
 	public function isDefaultSql ($type='value')
 	{
@@ -253,7 +267,6 @@ class ScalarField extends Field
 	 * @param string $type Тип значения по-умолчанию
 	 *
 	 * @return callable|mixed|null
-	 * @since 0.2.0
 	 */
 	public function getDefaultValue($type='value')
 	{
@@ -312,7 +325,6 @@ class ScalarField extends Field
 	 * @api
 	 *
 	 * @return string
-	 * @since 0.1.0
 	 */
 	public function getColumnName()
 	{
@@ -325,7 +337,6 @@ class ScalarField extends Field
 	 * @ignore
 	 *
 	 * @return array
-	 * @since 0.1.0
 	 */
 	public function getRun ()
 	{
@@ -338,7 +349,6 @@ class ScalarField extends Field
 	 * @api
 	 *
 	 * @param $column_name
-	 * @since 0.1.0
 	 */
 	public function setColumnName($column_name)
 	{
@@ -348,13 +358,11 @@ class ScalarField extends Field
 	/**
 	 * Возвращает значение поля в SQL формате
 	 *
-	 * @param        $value
-	 * @param string $type
+	 * @param mixed $value
 	 *
 	 * @return string
-	 * @since 0.2.0
 	 */
-	public function getSqlValue ($value/*, $type='sql'*/)
+	public function getSqlValue ($value)
 	{
 		return "'".$value."'";
 	}
@@ -362,11 +370,10 @@ class ScalarField extends Field
 	/**
 	 * Обрабатывает значение поля перед сохранением в базе данных
 	 *
-	 * @param $value
-	 * @param ScalarField $obj
+	 * @param mixed         $value
+	 * @param ScalarField   $obj
 	 *
 	 * @return mixed|string
-	 * @since 0.1.0
 	 */
 	public static function saveDataModification ($value, $obj=null)
 	{
@@ -392,11 +399,10 @@ class ScalarField extends Field
 	/**
 	 * Обрабатывает значение поля после получения значения из базы данных
 	 *
-	 * @param $value
-	 * @param ScalarField $obj
+	 * @param mixed         $value
+	 * @param ScalarField   $obj
 	 *
 	 * @return array|mixed
-	 * @since 0.1.0
 	 */
 	public static function fetchDataModification ($value, $obj=null)
 	{

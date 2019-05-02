@@ -73,15 +73,16 @@ class IntegerField extends ScalarField
 	/**
 	 * Конструктор
 	 *
-	 * @param string $name       Имя поля таблицы БД
-	 * @param array  $parameters Параметры поля таблицы БД
-	 * @param string $link       Связанное поле вида "таблица.поле"     @since 0.2.0
-	 * @param string $onUpdate   Действие при изменении связанного поля @since 0.2.0
-	 * @param string $onDelete   Действие при удалении связанного поля  @since 0.2.0
+	 * @param string $name              Имя поля таблицы БД
+	 * @param array  $parameters        Параметры поля таблицы БД
+	 * @param string $link              Связанное поле вида "таблица.поле"
+	 * @param string $onUpdate          Действие при изменении связанного поля
+	 * @param string $onDelete          Действие при удалении связанного поля
+	 * @param bool   $linkNotForeignKey Флаг, что связь не является FOREIGN KEY
 	 */
-	public function __construct($name, $parameters = array(),$link=null,$onUpdate='cascade',$onDelete='restrict')
+	public function __construct($name, $parameters = array(),$link=null,$onUpdate='cascade',$onDelete='restrict',$linkNotForeignKey=false)
 	{
-		parent::__construct($name, $parameters,$link,$onUpdate,$onDelete);
+		parent::__construct($name, $parameters,$link,$onUpdate,$onDelete,$linkNotForeignKey);
 
 		$this->dataType = 'int';
 		$this->fieldType = 'integer';
@@ -99,7 +100,6 @@ class IntegerField extends ScalarField
 	 * @api
 	 *
 	 * @return int
-	 * @since 0.1.0
 	 */
 	public function getSize ()
 	{
@@ -115,7 +115,6 @@ class IntegerField extends ScalarField
 	 * @param IntegerField|null     $obj    Объект поля
 	 *
 	 * @return mixed
-	 * @since 0.1.0
 	 */
 	public static function saveDataModification ($value, $obj=null)
 	{
@@ -137,7 +136,6 @@ class IntegerField extends ScalarField
 	 * @param IntegerField|null     $obj
 	 *
 	 * @return array|int|mixed
-	 * @since 0.1.0
 	 */
 	public static function fetchDataModification ($value, $obj=null)
 	{
@@ -156,7 +154,6 @@ class IntegerField extends ScalarField
 	 * @param int    $value
 	 *
 	 * @return string
-	 * @since 0.2.0
 	 */
 	public function getSqlValue ($value)
 	{

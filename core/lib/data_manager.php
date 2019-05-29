@@ -20,6 +20,8 @@ use Ms\Core\Entity\Db\DBResult;
 
 abstract class DataManager
 {
+	protected static $sExpansionTableName='';
+
 	/**
 	 * Возвращает имя текущего класса
 	 *
@@ -55,8 +57,57 @@ abstract class DataManager
 		$table = Tools::camelCaseToUnderscore($arClass[3]);
 		//Удаляем _table
 		$name .= str_replace('_table','',$table);
+		//Добавляем расширение имени таблицы, если оно задано
+		$name .= static::getExpansionTableName();
 
 		return $name;
+	}
+
+	/**
+	 * Добавляет расширение имени таблицы
+	 *
+	 * @param $sName
+	 *
+	 * @throws Exception\ArgumentNullException
+	 * @throws Exception\ArgumentOutOfRangeException
+	 */
+	final public static function addExpansionTableName ($sName)
+	{
+		if (!isset($sName) || strlen((string)$sName)<=0)
+		{
+			throw new Exception\ArgumentNullException('sName');
+		}
+		elseif (strlen((string)$sName) > 42)
+		{
+			throw new Exception\ArgumentOutOfRangeException('sName',1,42);
+		}
+		else
+		{
+			static::$sExpansionTableName = strtolower($sName);
+		}
+	}
+
+	/**
+	 * Возвращает расширение имени таблицы, если оно задано
+	 *
+	 * @return string
+	 */
+	final public static function getExpansionTableName ()
+	{
+		if (strlen((string)self::$sExpansionTableName) > 1 && strlen((string)self::$sExpansionTableName) <= 42)
+		{
+			return '_'.self::$sExpansionTableName;
+		}
+
+		return '';
+	}
+
+	/**
+	 * Сбрасывает (очищает) расширение имени таблицы
+	 */
+	final public static function clearExpansionTableName ()
+	{
+		self::$sExpansionTableName = '';
 	}
 
 	/**

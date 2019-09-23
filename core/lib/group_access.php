@@ -21,7 +21,6 @@ class GroupAccess
 	public static function getAccess ($sModuleName, $sAccessName, $mGroupID)
 	{
 		$sModuleName = strtolower($sModuleName);
-		$sAccessName = strtoupper($sAccessName);
 		if (
 			!Modules::checkModuleName($sModuleName)
 			|| strlen($sAccessName) <= 0
@@ -94,6 +93,88 @@ class GroupAccess
 		{
 			$arReturn[$ar_res['GROUP_ID']] = $ar_res['ACCESS_CODE'];
 			self::$_arModuleGroupAccess[$sModuleName][$sAccessName][$ar_res['GROUP_ID']] = $ar_res['ACCESS_CODE'];
+		}
+
+		return $arReturn;
+	}
+
+	public static function getMultiAccess ($sModuleName, $arAccessName, $mGroupID)
+	{
+		$sModuleName = strtolower($sModuleName);
+		if (
+			!Modules::checkModuleName($sModuleName)
+		) {
+			return FALSE;
+		}
+
+		if (is_array($mGroupID))
+		{
+			$tmp = [];
+			foreach ($mGroupID as $groupID)
+			{
+				if ((int)$groupID!=0)
+				{
+					$tmp[] = (int)$groupID;
+				}
+			}
+			if (empty($tmp))
+			{
+				return FALSE;
+			}
+			$mGroupID = $tmp;
+			unset($tmp);
+		}
+		else
+		{
+			if ((int)$mGroupID<=0)
+			{
+				return FALSE;
+			}
+			else
+			{
+				$mGroupID = [$mGroupID];
+			}
+		}
+		$arReturn = [];
+		$arGroupSearch = [];
+
+		foreach ($mGroupID as $groupID)
+		{
+			foreach ($arAccessName as $sAccessName)
+			{
+				if (isset(self::$_arModuleGroupAccess[$sModuleName][$sAccessName][$groupID]))
+				{
+					$arReturn[$groupID] = [$sAccessName=>self::$_arModuleGroupAccess[$sModuleName][$sAccessName][$groupID]];
+				}
+				elseif (!in_array($groupID,$arGroupSearch))
+				{
+					$arGroupSearch[] = $groupID;
+				}
+			}
+		}
+
+		if (empty($arGroupSearch))
+		{
+			return $arReturn;
+		}
+
+		$arRes = UserGroupModulesAccessTable::getList([
+			'select' => ['GROUP_ID','ACCESS_NAME','ACCESS_CODE'],
+			'filter' => [
+				'MODULE_NAME' => $sModuleName,
+				'ACCESS_NAME' => $arAccessName,
+				'GROUP_ID'    => $arGroupSearch
+			]
+		]);
+		if (!$arRes)
+		{
+			return $arReturn;
+		}
+
+		foreach ($arRes as $ar_res)
+		{
+			$arReturn[$ar_res['GROUP_ID']] = [$ar_res['ACCESS_NAME']=>$ar_res['ACCESS_CODE']];
+			self::$_arModuleGroupAccess[$sModuleName][$ar_res['ACCESS_NAME']][$ar_res['GROUP_ID']] = $ar_res['ACCESS_CODE'];
 		}
 
 		return $arReturn;

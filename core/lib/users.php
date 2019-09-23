@@ -1045,4 +1045,20 @@ class Users
 	}
 	//TODO: Подумать над удалением доступов при удалении групп пользователей
 	//</editor-fold>
+
+	/**
+	 * Проверяет существование пользователя с заданным ID
+	 *
+	 * @param int $iUserID ID пользователя
+	 *
+	 * @return bool Если пользователь существует, возвращает true, иначе false
+	 */
+	public static function isset($iUserID)
+	{
+		if ((int)$iUserID <= 0)
+		{
+			return false;
+		}
+		return !!Tables\UsersTable::getById($iUserID);
+	}
 }

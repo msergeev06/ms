@@ -4,29 +4,30 @@ namespace Ms\Core\Lib;
 
 use Ms\Core\Entity\Application;
 use Ms\Core\Entity\User;
+use Ms\Core\Tables\UserGroupAccessTable;
 
 class Access
 {
-	const LEVEL_MODULE_SETUP = "S";
+	const LEVEL_MODULE_VIEW = "V"; //Работать с модулем
 
-	const LEVEL_MODULE_VIEW = "V";
+	const LEVEL_MODULE_EDIT = "E"; //Редактировать настройки модуля
 
-	const LEVEL_MODULE_EDIT = "E";
+	const LEVEL_MODULE_SETUP = "S"; //Устанавливать/удалять/обновлять модуль
 
-	const LEVEL_MODULE_ALL = "A";
+	const LEVEL_MODULE_ALL = "A"; //Все действия с модулем
 
-/*	public static function canViewPersonal ($userID = null)
-	{
-		$arUserGroups = array ();
-		if (self::can($userID,$arUserGroups))
+	/*	public static function canViewPersonal ($userID = null)
 		{
-			return true;
-		}
-		else
-		{
-			//TODO: Доделать проверку прав групп
-		}
-	}*/
+			$arUserGroups = array ();
+			if (self::can($userID,$arUserGroups))
+			{
+				return true;
+			}
+			else
+			{
+				//TODO: Доделать проверку прав групп
+			}
+		}*/
 
 	/**
 	 * Проверяет является ли указанный пользователь системным пользователем
@@ -53,7 +54,7 @@ class Access
 			return TRUE;
 		}
 		self::normalizeUserID($userID);
-		if ($userID == Users::SYSTEM_USER)
+		if ($userID == Users::SYSTEM_USER || self::isSystemUser($userID))
 		{
 			return true;
 		}
@@ -69,12 +70,69 @@ class Access
 		return false;
 	}
 
+	public static function canView ($sModuleName, $userID=null, &$arUserGroups=null)
+	{
+		return static::canLevel ($sModuleName, $userID, $arUserGroups);
+	}
+
+	public static function canEdit ($sModuleName, $userID=null, &$arUserGroups=null)
+	{
+		$arAccessCodes = [
+			static::LEVEL_MODULE_EDIT,
+			static::LEVEL_MODULE_SETUP,
+			static::LEVEL_MODULE_ALL
+		];
+
+		return static::canLevel ($sModuleName, $userID, $arUserGroups, $arAccessCodes);
+	}
+
+	public static function canSetup ($sModuleName, $userID=null, &$arUserGroups=null)
+	{
+		$arAccessCodes = [
+			static::LEVEL_MODULE_SETUP,
+			static::LEVEL_MODULE_ALL
+		];
+
+		return static::canLevel ($sModuleName, $userID, $arUserGroups, $arAccessCodes);
+	}
+
+	private static function canLevel ($sModuleName, $userID=null, &$arUserGroups=[], $arAccessCodes=null)
+	{
+		if (is_null($arAccessCodes))
+		{
+			$arAccessCodes = [
+				static::LEVEL_MODULE_VIEW,
+				static::LEVEL_MODULE_EDIT,
+				static::LEVEL_MODULE_SETUP,
+				static::LEVEL_MODULE_ALL
+			];
+		}
+
+		if (static::can($userID, $arUserGroups))
+		{
+			return true;
+		}
+
+		if (!Modules::checkModuleName($sModuleName))
+		{
+			return false;
+		}
+
+		$arRes = UserGroupAccessTable::getList([
+			'select' => ['ID'],
+			'filter' => [
+				'MODULE_NAME' => $sModuleName,
+				'USER_GROUP_ID' => $arUserGroups,
+				'ACCESS_CODE' => $arAccessCodes
+			]
+		]);
+
+		return !!$arRes;
+	}
+
 	private static function normalizeUserID (&$userID = null)
 	{
-		if (is_null($userID))
-		{
-			$userID = Application::getInstance()->getUser()->getID();
-		}
+		$userID = Tools::normalizeUserID($userID);
 	}
 
 	private static function getUserGroupsList ($userID = null)

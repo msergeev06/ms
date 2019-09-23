@@ -95,3 +95,11 @@ if (!function_exists('Write2CriticalLog'))
 	}
 }
 
+if (!function_exists('ms_sessid'))
+{
+	function ms_sessid ()
+	{
+		return \Ms\Core\Entity\Application::getInstance()->getSession()->getSID();
+	}
+}
+

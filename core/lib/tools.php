@@ -1120,4 +1120,18 @@ class Tools
 
 		return @mail($to, $subject, $message, $additional_headers);
 	}
+
+	public static function normalizeUserID ($userID=null)
+	{
+		if (is_null($userID) || (int)$userID < 0)
+		{
+			$userID = Application::getInstance()->getUser()->getID();
+		}
+		else
+		{
+			$userID = (int)$userID;
+		}
+
+		return $userID;
+	}
 }

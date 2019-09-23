@@ -13,7 +13,10 @@
 
 namespace Ms\Core\Lib;
 
+use Ms\Core\Entity\Application;
 use \Ms\Core\Entity\Db\Fields;
+use Ms\Core\Entity\Type\Date;
+use Ms\Core\Tables\UsersTable;
 
 class TableHelper
 {
@@ -116,12 +119,130 @@ class TableHelper
 	}
 
 	/**
+	 * Возвращает сущность Fields\IntegerField для поля таблицы 'CREATED_BY' (Кем создан)
+	 * Если указаны дополнительные параметры, они также добавляются к свойствам поля
+	 *
+	 * @param array $arParams Массив дополнительных параметров
+	 *
+	 * @return Fields\IntegerField
+	 */
+	public static function createdByField ($arParams=array())
+	{
+		if (isset($arParams['field']))
+		{
+			$field_name = $arParams['field'];
+			unset($arParams['field']);
+		}
+		else
+		{
+			$field_name = "CREATED_BY";
+		}
+		$arResult = [
+			'required' => true,
+			'required_null' => true,
+			'default_insert' => Application::getInstance()->getUser()->getID(),
+			'title' => 'ID пользователя кем создан'
+		];
+		self::parseParams($arResult,$arParams);
+
+		return new Fields\IntegerField($field_name,$arResult,UsersTable::getTableName().'.ID','cascade','set_null');
+	}
+
+	/**
+	 * Возвращает сущность Fields\DateTimeField для поля таблицы 'CREATED_DATE' (Дата создания)
+	 * Если указаны дополнительные параметры, они также добавляются к свойствам поля
+	 *
+	 * @param array $arParams Массив дополнительных параметров
+	 *
+	 * @return Fields\DateTimeField
+	 */
+	public static function createdDateField ($arParams=array())
+	{
+		if (isset($arParams['field']))
+		{
+			$field_name = $arParams['field'];
+			unset($arParams['field']);
+		}
+		else
+		{
+			$field_name = "CREATED_DATE";
+		}
+		$arResult = [
+			'required' => true,
+			'required_null' => true,
+			'default_insert' => new Date(),
+			'title' => 'Дата создания'
+		];
+		self::parseParams($arResult,$arParams);
+
+		return new Fields\DateTimeField($field_name,$arResult);
+	}
+
+	/**
+	 * Возвращает сущность Fields\IntegerField для поля таблицы 'UPDATED_BY' (Кем изменен)
+	 * Если указаны дополнительные параметры, они также добавляются к свойствам поля
+	 *
+	 * @param array $arParams Массив дополнительных параметров
+	 *
+	 * @return Fields\IntegerField
+	 */
+	public static function updatedByField ($arParams=array())
+	{
+		if (isset($arParams['field']))
+		{
+			$field_name = $arParams['field'];
+			unset($arParams['field']);
+		}
+		else
+		{
+			$field_name = "UPDATED_BY";
+		}
+		$arResult = [
+			'required' => true,
+			'required_null' => true,
+			'default_insert' => Application::getInstance()->getUser()->getID(),
+			'title' => 'ID пользователя, кем изменен'
+		];
+		self::parseParams($arResult,$arParams);
+
+		return new Fields\IntegerField($field_name,$arResult,UsersTable::getTableName().'.ID','cascade','set_null');
+	}
+
+	/**
+	 * Возвращает сущность Fields\DateTimeField для поля таблицы 'UPDATED_DATE' (Дата изменения)
+	 * Если указаны дополнительные параметры, они также добавляются к свойствам поля
+	 *
+	 * @param array $arParams Массив дополнительных параметров
+	 *
+	 * @return Fields\DateTimeField
+	 */
+	public static function updatedDateField ($arParams=array())
+	{
+		if (isset($arParams['field']))
+		{
+			$field_name = $arParams['field'];
+			unset($arParams['field']);
+		}
+		else
+		{
+			$field_name = "UPDATED_DATE";
+		}
+		$arResult = [
+			'required' => true,
+			'required_null' => true,
+			'default_update' => Application::getInstance()->getUser()->getID(),
+			'title' => 'Дата изменения'
+		];
+		self::parseParams($arResult,$arParams);
+
+		return new Fields\DateTimeField($field_name,$arResult);
+	}
+
+	/**
 	 * Обрабатывает переданные параметры и объединяет с параметрами сущности
 	 *
-	 * @param array $arResult Массив основных параметров сущности
-	 * @param array $arParams Массив дополнительных параметро сущности
-	 *
-	 * @return array Объединенный массив параметров сущности
+	 * @param array &$arResult Массив основных параметров сущности
+	 * @param array  $arParams Массив дополнительных параметро сущности
 	 */
 	private static function parseParams (array &$arResult,array $arParams)
 	{
@@ -139,6 +260,11 @@ class TableHelper
 		{
 			$arResult['required'] = $arParams['required'];
 			unset($arParams['required']);
+		}
+		if (isset($arParams['required_null']))
+		{
+			$arResult['required_null'] = $arParams['required_null'];
+			unset($arParams['required_null']);
 		}
 		if (isset($arParams['default_value']))
 		{

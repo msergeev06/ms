@@ -76,6 +76,13 @@ abstract class Component
 	protected $arRawParams;
 
 	/**
+	 * Родительский компонент
+	 * @var Component
+	 * @access protected
+	 */
+	protected $parentComponent = null;
+
+	/**
 	 * Массив значений параметров компонента
 	 * @var array
 	 * @access public
@@ -92,11 +99,12 @@ abstract class Component
 	/**
 	 * Конструктор компонента
 	 *
-	 * @param string $component Namespace и название компонента, в виде namespace:componentName
-	 * @param string $template  Используемый шаблон компонента
-	 * @param array  $arParams  Массив значений параметров компонента
+	 * @param string    $component          Пространство имен и название компонента, в виде namespace:componentName
+	 * @param string    $template           Используемый шаблон компонента
+	 * @param array     $arParams           Массив значений параметров компонента
+	 * @param Component $parentComponent    Родительский компонент
 	 */
-	public function __construct ($component, $template='.default', $arParams=array())
+	public function __construct ($component, $template='.default', $arParams=array(), Component $parentComponent=null)
 	{
 		//Инициализируем основные параметры компонента
 		$this->arRawParams = $arParams;
@@ -107,6 +115,7 @@ abstract class Component
 		$this->siteTemplate = Application::getInstance()->getSiteTemplate();
 		if ($template == '') $template = '.default';
 		$this->componentTemplate = $template;
+		$this->parentComponent = $parentComponent;
 		//Обрабатываем параметры компонента
 		$this->initParams();
 		//Вызываем основную функцию компонента (запускаем компонент)
@@ -135,13 +144,15 @@ abstract class Component
 	private function loadParameters ($path)
 	{
 		$arComponentParams = include($path);
+		$arRawParams = $this->arRawParams;
 		if (!empty($arComponentParams))
 		{
 			foreach($arComponentParams as $code=>$ar_params)
 			{
-				if (isset($this->arRawParams[$code]))
+				if (isset($arRawParams[$code]))
 				{
-					$value = $this->arRawParams[$code];
+					$value = $arRawParams[$code];
+					unset($arRawParams[$code]);
 				}
 				else
 				{
@@ -149,6 +160,16 @@ abstract class Component
 				}
 				$this->arComponentParams[$code] = new ComponentParameter($code,$ar_params,$value);
 				$this->arParams[$code] = $this->arComponentParams[$code]->getValue();
+			}
+		}
+		if (!empty($arRawParams))
+		{
+			foreach ($arRawParams as $code=>$value)
+			{
+				if (!isset($this->arParams[$code]))
+				{
+					$this->arParams[$code] = $value;
+				}
 			}
 		}
 	}

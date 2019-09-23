@@ -96,6 +96,13 @@ class Application
 	protected $settings;
 
 	/**
+	 * Объект сессии
+	 * @var Session
+	 * @access protected
+	 */
+	protected $session=null;
+
+	/**
 	 * Список подключенных плагинов
 	 * @var array
 	 * @access private
@@ -245,6 +252,16 @@ class Application
 		$context->initialize($request, $server, array('env' => $params["env"]));
 
 		$this->setContext($context);
+	}
+
+	public function getSession()
+	{
+		if (is_null($this->session))
+		{
+			$this->session = new Session();
+		}
+
+		return $this->session;
 	}
 
 	//</editor-fold>
@@ -590,14 +607,15 @@ class Application
 	/**
 	 * Подключает указанный компонент
 	 *
-	 * @param string $component         Метка компонента (namespace:componentName)
-	 * @param string $componentTemplate Шаблон компонента
-	 * @param array  $componentParams   Массив параметров компонента
+	 * @param string    $component          Метка компонента (namespace:componentName)
+	 * @param string    $componentTemplate  Шаблон компонента
+	 * @param array     $componentParams    Массив параметров компонента
+	 * @param Component $parentComponent    Родительский компонент, вызвавший этот
 	 *
 	 * @access public
 	 * @return string|Component Строка с ошибкой, либо объект компонента
 	 */
-	public function includeComponent($component, $componentTemplate='', $componentParams=array())
+	public function includeComponent($component, $componentTemplate='', $componentParams=array(), Component $parentComponent=null)
 	{
 		list($namespace,$componentName) = explode(':',$component);
 		$componentsRoot = $this->settings->getComponentsRoot().'/'
@@ -631,7 +649,7 @@ class Application
 		{
 			include_once ($componentsRoot.'/class.php');
 
-			return new $componentClassName($component,$componentTemplate,$componentParams);
+			return new $componentClassName($component,$componentTemplate,$componentParams, $parentComponent);
 		}
 		else
 		{
@@ -750,6 +768,7 @@ class Application
 		$this->arBuffer['page_title'] = '';
 		$this->arBuffer['head_css'] = '';
 		$this->arBuffer['head_js'] = '';
+		$this->arBuffer['head_script'] = '';
 	}
 
 	/**
@@ -791,6 +810,10 @@ class Application
 		{
 			foreach ($this->arBuffer as $name=>$buff)
 			{
+				if ($name == "head_script")
+				{
+					$buff = "<script>\n".$buff."\n</script>\n";
+				}
 				$buffer = str_replace('#'.strtoupper($name).'#',$buff,$buffer);
 			}
 		}
@@ -964,14 +987,13 @@ class Application
 
 	/**
 	 * Выводит meta-теги на странице
-
-	 * @return string Метка на страницу
 	 */
 	public function showMeta ()
 	{
 		$this->showBufferContent('refresh');
 		$this->showBufferContent('head_css');
 		$this->showBufferContent('head_js');
+		$this->showBufferContent('head_script');
 	}
 
 	/**

@@ -1,6 +1,7 @@
 <?php
 /**
  * Ms\Core\Exception\Db\DbException
+ * Класс для исключений баз данных
  *
  * @package Ms\Core
  * @subpackage Exception\Db
@@ -13,17 +14,30 @@ namespace Ms\Core\Exception\Db;
 use Ms\Core\Exception\SystemException;
 
 /**
- * Class DbException is used for all exceptions thrown in database.
+ * Class DbException
+ * @package Ms\Core
+ * @subpackage Exception\Db
+ *
+ * @link https://api.dobrozhil.ru/classes/ms_core_exception_db_db_exception/
  */
 class DbException extends SystemException
 {
-	/** @var string */
+	/**
+	 * @var string Сообщение базы данных об ошибке
+	 */
 	protected $databaseMessage;
 
 	/**
-	 * @param string $message Application message.
-	 * @param string $databaseMessage Database reason.
-	 * @param \Exception $previous The previous exception used for the exception chaining.
+	 * Конструктор. Создает объект исключения
+	 *
+	 * @param string            $message            Сообщение исключения
+	 *                                              Необязательный, по-умолчанию пустая строка
+	 * @param string            $databaseMessage    Сообщение базы данных
+	 *                                              Необязательный, по-умолчанию пустая строка
+	 * @param \Exception|null    $previous          Предыдущее исключение
+	 *                                              Необязательный, по-умолчанию null
+	 *
+	 * @link https://api.dobrozhil.ru/methods/ms_core_exception_db_db_exception_construct/
 	 */
 	public function __construct($message = "", $databaseMessage = "", \Exception $previous = null)
 	{
@@ -38,18 +52,14 @@ class DbException extends SystemException
 	}
 
 	/**
-	 * Returns database specific message provided to the constructor.
+	 * Возвращает сообщение базы данных об ошибке
 	 *
 	 * @return string
+	 *
+	 * @link https://api.dobrozhil.ru/methods/ms_core_exception_db_db_exception_get_database_message/
 	 */
 	public function getDatabaseMessage()
 	{
 		return $this->databaseMessage;
 	}
-
-	public function getClassName ()
-	{
-		return __CLASS__;
-	}
-
 }

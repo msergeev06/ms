@@ -42,8 +42,6 @@ class QueryInsert extends QueryBase
 	 * @param array     $insertArray    Массив добавляемый полей => значений
 	 * @param string    $tableClass     Класс таблицы
 	 *
-	 * @throws Exception\ArgumentNullException
-	 * @throws Exception\ArgumentTypeException
 	 * @since 0.2.0
 	 */
 	public function __construct (array $insertArray=null, $tableClass=null)

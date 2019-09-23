@@ -134,6 +134,11 @@ class ScalarField extends Field
 	protected $default_update_sql = false;
 
 	/**
+	 * @var null|array Массив разрешенных значений для поля, либо null - не производить валидацию
+	 */
+	protected $allowed_values = null;
+
+	/**
 	 * Конструктор
 	 *
 	 * @param string $name              Имя поля таблицы БД
@@ -167,6 +172,8 @@ class ScalarField extends Field
 
 		$this->default_update = isset($parameters['default_update']) ? $parameters['default_update'] : null;
 		$this->default_update_sql = (isset($parameters['default_update_sql']) && $parameters['default_update_sql']) ? true : false;
+
+		$this->allowed_values = (isset($parameters['allowed_values']) && is_array($parameters['allowed_values'])) ? $parameters['allowed_values'] : null;
 
 		if (isset($parameters["run"]))
 		{
@@ -365,6 +372,16 @@ class ScalarField extends Field
 	public function getSqlValue ($value)
 	{
 		return "'".$value."'";
+	}
+
+	/**
+	 * Возвращает массив разрешенных для поля значений, либо null
+	 *
+	 * @return array|null
+	 */
+	public function getAllowedValues ()
+	{
+		return $this->allowed_values;
 	}
 
 	/**

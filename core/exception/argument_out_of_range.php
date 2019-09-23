@@ -1,22 +1,46 @@
 <?php
+/**
+ * Ms\Core\Exception\ArgumentOutOfRangeException
+ * Класс исключений, связанных с передачей в функции и методы аргументов с неправильном типом и/или в неправильной форме
+ *
+ * @package Ms\Core
+ * @subpackage Exception
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
+ * @copyright 2019 Mikhail Sergeev
+ */
 
 namespace Ms\Core\Exception;
 
 /**
- * Exception is thrown when the value of an argument is outside the allowable range of values.
+ * Class ArgumentOutOfRangeException
+ * @package Ms\Core
+ * @subpackage Exception
+ *
+ * @link https://api.dobrozhil.ru/classes/ms_core_exception_argument_out_of_range_exception/
  */
 class ArgumentOutOfRangeException extends ArgumentException
 {
+	/**
+	 * @var mixed Нижний предел значения аргумента
+	 */
 	protected $lowerLimit;
+	/**
+	 * @var mixed Верхний предел значения агрумента
+	 */
 	protected $upperLimit;
 
 	/**
-	 * Creates new exception object.
+	 * Конструктор. Создает объект исключения
 	 *
-	 * @param string $parameter Argument that generates exception
-	 * @param null $lowerLimit Either lower limit of the allowable range of values or an array of allowable values
-	 * @param null $upperLimit Upper limit of the allowable values
-	 * @param \Exception $previous
+	 * @param string     $parameter     Имя параметра, вызвавшего исключение
+	 * @param null       $lowerLimit    Нижняя граница значения
+	 *                                  Необязателен, по-умолчанию null
+	 * @param null       $upperLimit    Верхняя граница значения
+	 *                                  Необязательный, по-умолчанию null
+	 * @param \Exception $previous      Предыдущее исключение
+	 *                                  Необязательный, по-умолчанию null
+	 *
+	 * @link https://api.dobrozhil.ru/methods/ms_core_exception_argument_out_of_range_exception_construct/
 	 */
 	public function __construct($parameter, $lowerLimit = null, $upperLimit = null, \Exception $previous = null)
 	{
@@ -37,18 +61,27 @@ class ArgumentOutOfRangeException extends ArgumentException
 		parent::__construct($message, $parameter, $previous);
 	}
 
+	/**
+	 * Возвращает нижнюю границу значения аргумента
+	 *
+	 * @return null|mixed
+	 *
+	 * @link https://api.dobrozhil.ru/methods/ms_core_exception_argument_out_of_range_exception_get_lower_limit/
+	 */
 	public function getLowerLimitType()
 	{
 		return $this->lowerLimit;
 	}
 
+	/**
+	 * Возвращает верхнюю границу значения аргумента
+	 *
+	 * @return mixed|null
+	 *
+	 * @link https://api.dobrozhil.ru/methods/ms_core_exception_argument_out_of_range_exception_get_upper_limit/
+	 */
 	public function getUpperType()
 	{
 		return $this->upperLimit;
-	}
-
-	public function getClassName ()
-	{
-		return __CLASS__;
 	}
 }

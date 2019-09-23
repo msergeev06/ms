@@ -1,6 +1,7 @@
 <?php
 /**
  * Ms\Core\Exception\Db\SqlQueryException
+ * Класс для исключений, возникающих при ошибке SQL запроса
  *
  * @package Ms\Core
  * @subpackage Exception\Db
@@ -11,18 +12,32 @@
 namespace Ms\Core\Exception\Db;
 
 /**
- * Exception is thrown when database returns a error on query execution.
+ * Class SqlQueryException
+ * @package Ms\Core
+ * @subpackage Exception\Db
+ *
+ * @link https://api.dobrozhil.ru/classes/ms_core_exception_db_sql_query_exception/
  */
 class SqlQueryException extends SqlException
 {
-	/** @var string */
+	/**
+	 * @var string Текст SQL запроса
+	 */
 	protected $query = "";
 
 	/**
-	 * @param string $message Application message.
-	 * @param string $databaseMessage Database reason.
-	 * @param string $query Sql query text.
-	 * @param \Exception $previous The previous exception used for the exception chaining.
+	 * Конструктор. Создает объект исключения
+	 *
+	 * @param string            $message            Сообщение исключения
+	 *                                              Необязательный, по-умолчанию пустая строка
+	 * @param string            $databaseMessage    Сообщение базы данных
+	 *                                              Необязательный, по-умолчанию пустая строка
+	 * @param string            $query              Текст sql-запроса
+	 *                                              Необязательный, по-умолчанию пустая строка
+	 * @param \Exception|null   $previous           Предыдущее исключение
+	 *                                              Необязательный, по-умолчанию null
+	 *
+	 * @link https://api.dobrozhil.ru/methods/ms_core_exception_db_sql_query_exception_construct/
 	 */
 	public function __construct($message = "", $databaseMessage = "", $query = "", \Exception $previous = null)
 	{
@@ -31,15 +46,24 @@ class SqlQueryException extends SqlException
 	}
 
 	/**
-	 * Returns text of the sql query.
+	 * Возвращает текст SQL-запроса
 	 *
 	 * @return string
+	 *
+	 * @link https://api.dobrozhil.ru/methods/ms_core_exception_db_sql_query_exception_get_query/
 	 */
 	public function getQuery()
 	{
 		return $this->query;
 	}
 
+	/**
+	 * Возвращает текст исключения в виде html-кода
+	 *
+	 * @return string
+	 *
+	 * @link https://api.dobrozhil.ru/methods/ms_core_exception_db_sql_query_exception_show_exception/
+	 */
 	public function showException()
 	{
 		$html = '<pre><b><i>'.$this->getClassName().':</i></b> "'.$this->getMessage().'"'."\n";
@@ -51,10 +75,4 @@ class SqlQueryException extends SqlException
 
 		return $html;
 	}
-
-	public function getClassName ()
-	{
-		return __CLASS__;
-	}
-
 }

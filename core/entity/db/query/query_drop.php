@@ -20,16 +20,19 @@ class QueryDrop extends QueryBase
 	/**
 	 * Конструктор
 	 *
-	 * @param string $tableClass Имя класса таблицы
-	 * @since 0.2.0
+	 * @param string $tableClass         Имя класса таблицы
+	 * @param bool   $bIgnoreForeignKeys Флаг, означающий необходимость игнорировать ограничения внешнего ключа
 	 */
-	public function __construct ($tableClass)
+	public function __construct ($tableClass, $bIgnoreForeignKeys=false)
 	{
 		$this->setType('drop');
 		/** @var DataManager $tableClass */
 		$helper = new SqlHelper($tableClass::getTableName());
 
-		$sql = "DROP TABLE IF EXISTS ".$helper->wrapTableQuotes();
+		$sql = '';
+		if ($bIgnoreForeignKeys) $sql .= "SET FOREIGN_KEY_CHECKS=0;\n";
+		$sql .= "DROP TABLE IF EXISTS ".$helper->wrapTableQuotes().';';
+		if ($bIgnoreForeignKeys) $sql .= "\nSET FOREIGN_KEY_CHECKS=1;";
 
 		$this->setSql($sql);
 	}

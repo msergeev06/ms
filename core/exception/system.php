@@ -1,4 +1,14 @@
 <?php
+/**
+ * Ms\Core\Exception\SystemException
+ * Данный класс является базовым для всех исключений системы и наследуется от системного исключения \Exception
+ * Все остальные исключения должны быть унаследованы от него, либо от его потомков.
+ *
+ * @package Ms\Core
+ * @subpackage Exception
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
+ * @copyright 2019 Mikhail Sergeev
+ */
 
 namespace Ms\Core\Exception;
 
@@ -6,18 +16,27 @@ use Ms\Core\Entity\Application;
 use Ms\Core\Lib\IO\Files;
 
 /**
- * Base class for fatal exceptions
+ * Class SystemException
+ * @package Ms\Core
+ * @subpackage Exception
+ * @link https://api.dobrozhil.ru/classes/ms_core_exception_system_exception/
  */
 class SystemException extends \Exception
 {
 	/**
-	 * Creates new exception object.
+	 * Конструктор. Создает новый объект исключения.
 	 *
-	 * @param string $message
-	 * @param int $code
-	 * @param string $file
-	 * @param int $line
-	 * @param \Exception $previous
+	 * @param string $message       Сообщение исключения
+	 * @param int $code             Код исключения.
+	 *                              Необязательный, по-умолчанию равен 0
+	 * @param string $file          Путь к файлу, в котором произошло исключение
+	 *                              Необязательный, по-умолчанию пустая строка
+	 * @param int $line             Порядковый номер строки, в которой произошло исключение
+	 *                              Необязательный, по-умолчанию 0
+	 * @param \Exception $previous  Исключение, предшествующее текущему
+	 *                              Необязательный, по-умолчанию null
+	 *
+	 * @link https://api.dobrozhil.ru/methods/ms_core_exception_system_exception_construct/
 	 */
 	public function __construct($message = "", $code = 0, $file = "", $line = 0, \Exception $previous = null)
 	{
@@ -31,6 +50,14 @@ class SystemException extends \Exception
 		}
 	}
 
+	/**
+	 * Генерирует сообщение об исключении. Сохраняет информацию о новом исключении в системный лог-файл.
+	 * Кроме этого, при включенном режиме отладки, возвращает html-код исключения, при выключенном пустую строку
+	 *
+	 * @return string
+	 *
+	 * @link https://api.dobrozhil.ru/methods/ms_core_exception_system_exception_show_exception/
+	 */
 	public function showException()
 	{
 		$filename = Application::getInstance()->getSettings()->getSystemLogFile();
@@ -63,9 +90,16 @@ class SystemException extends \Exception
 		return '';
 	}
 
-	public function getClassName ()
+	/**
+	 * Возвращает имя (с пространством имен), вызвавшего его класса (используется get_called_class)
+	 *
+	 * @return string
+	 *
+	 * @link https://api.dobrozhil.ru/methods/ms_core_exception_system_exception_get_class_name/
+	 */
+	final public function getClassName ()
 	{
-		return __CLASS__;
+		return get_called_class();
 	}
 
 }

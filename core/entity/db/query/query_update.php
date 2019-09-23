@@ -43,7 +43,6 @@ class QueryUpdate extends QueryBase
 	 * @param string $tableClass    Имя класса таблицы с пространством имен
 	 * @param string $sSqlWhere     SQL код WHERE, если нужно обновить не по primary полю
 	 *
-	 * @throws Exception\ArgumentTypeException
 	 * @since 0.2.0
 	 */
 	public function __construct ($updatePrimary, array $updateArray,$tableClass,$sSqlWhere=null)
@@ -85,6 +84,10 @@ class QueryUpdate extends QueryBase
 		catch (Exception\ObjectNotFoundException $e2)
 		{
 			die($e2->showException());
+		}
+		catch (Exception\ArgumentTypeException $e3)
+		{
+			die($e3->showException());
 		}
 
 		if (!is_null($sSqlWhere))

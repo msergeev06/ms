@@ -1,6 +1,7 @@
 <?php
 /**
  * Ms\Core\Exception\Db\ConnectionException
+ * Класс для исключений подключения к базе данных
  *
  * @package Ms\Core
  * @subpackage Exception\Db
@@ -11,23 +12,27 @@
 namespace Ms\Core\Exception\Db;
 
 /**
- * Class ConnectionException used to indicate errors during database connection process.
+ * Class ConnectionException
+ * @package Ms\Core
+ * @subpackage Exception\Db
+ *
+ * @link https://api.dobrozhil.ru/classes/ms_core_exception_db_connection_exception/
  */
 class ConnectionException extends DbException
 {
 	/**
-	 * @param string $message Application message.
-	 * @param string $databaseMessage Database reason.
-	 * @param \Exception $previous The previous exception used for the exception chaining.
+	 * Конструктор. Создает объект исключения
+	 *
+	 * @param string        $message            Сообщение исключения
+	 *                                          Необязательный, по-умолчанию пустая строка
+	 * @param string        $databaseMessage    Сообщение базы данных
+	 *                                          Необязательный, по-умолчанию пустая строка
+	 * @param \Exception    $previous           Предыдущее исключение
+	 *                                          Необязательный, по-умолчанию null
+	 * @link https://api.dobrozhil.ru/methods/ms_core_exception_db_connection_exception_construct/
 	 */
 	public function __construct($message = "", $databaseMessage = "", \Exception $previous = null)
 	{
 		parent::__construct($message, $databaseMessage, $previous);
 	}
-
-	public function getClassName ()
-	{
-		return __CLASS__;
-	}
-
 }

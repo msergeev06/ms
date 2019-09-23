@@ -394,10 +394,15 @@ abstract class DataManager
 	/**
 	 * Обработчик события перед добавлением новой записи в таблицу
 	 *
-	 * @param array $arAdd Массив полей таблицы
+	 * @param array &$arAdd Массив полей таблицы
+	 *
+	 * @return mixed|false Для отмены добавления необходимо передать FALSE
 	 * @since 0.2.0
 	 */
-	protected static function OnBeforeAdd ($arAdd) {}
+	protected static function OnBeforeAdd (&$arAdd)
+	{
+		return true;
+	}
 
 	/**
 	 * Обработчик события после попытки добавления новой записи в таблицу
@@ -419,7 +424,10 @@ abstract class DataManager
 	 *
 	 * @since 0.2.0
 	 */
-	protected static function OnBeforeUpdate ($primary, &$arUpdate, &$sSqlWhere=null) {}
+	protected static function OnBeforeUpdate ($primary, &$arUpdate, &$sSqlWhere=null)
+	{
+		return true;
+	}
 
 	/**
 	 * Обработчик события после попытки обновления записи в таблице
@@ -436,9 +444,14 @@ abstract class DataManager
 	 *
 	 * @param mixed $primary Значение PRIMARY поля таблицы
 	 * @param bool  $confirm Флаг подтверждения удаления связанных записей
+	 *
+	 * @return mixed|false Для отмены удаления необходимо передать FALSE
 	 * @since 0.2.0
 	 */
-	protected static function OnBeforeDelete ($primary, $confirm) {}
+	protected static function OnBeforeDelete ($primary, $confirm)
+	{
+		return true;
+	}
 
 	/**
 	 * Обработчки события после попытки удаления записи из таблицы
@@ -451,13 +464,104 @@ abstract class DataManager
 	protected static function OnAfterDelete ($primary, $confirm, $res) {}
 
 	/**
+	 * Валидирует поля таблицы
+	 *
+	 * @param string                    $sFieldName Имя поля таблицы
+	 * @param mixed                     $mValue     Полученное значение поля таблицы
+	 * @param string                    $actionType Тип действия (insert, update)
+	 * @param null|Fields\ScalarField   $obField    Сущность поля таблицы
+	 *
+	 * @return bool
+	 * @throws Exception\ValidateException
+	 */
+	public static function validateFields ($sFieldName, &$mValue, $actionType='insert', $obField=null)
+	{
+		if (!is_null($obField))
+		{
+			//Если есть список допустимых значений, проверяем их
+			$arAllowedValues = $obField->getAllowedValues();
+			if (!is_null($arAllowedValues))
+			{
+				if (in_array($mValue, $arAllowedValues))
+				{
+					return true;
+				}
+				else
+				{
+					throw new Exception\ValidateException(
+						'Значение не совпадает с возможными вариантами значений',
+						$sFieldName,
+						$mValue,
+						$arAllowedValues
+					);
+				}
+			}
+
+			//Проверяем типы данных
+			if ($obField instanceof Fields\BooleanField)
+			{
+				if (is_bool($mValue))
+				{
+					return true;
+				}
+				elseif (is_bool($obField->normalizeValue($mValue)))
+				{
+					return true;
+				}
+				else
+				{
+					throw new Exception\ValidateException(
+						'Тип поля boolean, значение другого типа',
+						$sFieldName,
+						$mValue
+					);
+				}
+			}
+
+			//Проверяем обязательные значения
+			if ($obField->isRequired())
+			{
+				if (is_null($mValue))
+				{
+					if ($obField->isRequiredNull())
+					{
+						return true;
+					}
+					elseif ($obField->isAutocomplete())
+					{
+						return true;
+					}
+					elseif (!is_null($obField->getDefaultValue($actionType)))
+					{
+						return true;
+					}
+					else
+					{
+						throw new Exception\ValidateException(
+							'Передано значение null, однако поле не может быть null, не является автозаполняемым и не имеет значения по-умолчанию',
+							$sFieldName,
+							$mValue
+						);
+					}
+				}
+				else
+				{
+					return true;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Добавляет значения в таблицу
 	 *
 	 * @param array $arAdd      Массив содержащий значения таблицы
 	 * @param bool  $bShowSql   Необходимость отобразить sql запрос вместо запроса
 	 *
 	 * @return Db\DBResult|string Результат mysql запроса, либо сам текст запроса
-	 * @throws
+	 * @throws Exception\ValidateException
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_add
 	 */
 	final public static function add ($arAdd, $bShowSql=false)
@@ -474,6 +578,21 @@ abstract class DataManager
 			echo $e->showException();
 		}
 
+		//Валидация полей
+		$bValidate = true;
+		$arMap = static::getMapArray();
+		if (!empty($arMap))
+		{
+			foreach ($arMap as $fieldName => $obField)
+			{
+				$bValidate = static::validateFields ($fieldName, $arAdd[$fieldName], 'insert', $obField);
+			}
+		}
+		if (!$bValidate)
+		{
+			return new DBResult();
+		}
+
 		$query = new Db\Query\QueryInsert($arAdd,static::getClassName());
 
 		if ($bShowSql)
@@ -482,13 +601,31 @@ abstract class DataManager
 		}
 		else
 		{
-			//Обрабатываем событие перед добавлением записи
-			static::OnBeforeAdd($arAdd);
+			$bAdd = true;
+
+			//Обрабатываем системное событие перед добавлением записи
+			$bAdd = Events::runEvents('core','OnBeforeInsert',[static::getClassName(),&$arAdd]);
+
+			if ($bAdd === false)
+			{
+				return new DBResult();
+			}
+
+			//Обрабатываем событие таблицы перед добавлением записи
+			$bAdd = static::OnBeforeAdd($arAdd);
+
+			if ($bAdd === false)
+			{
+				return new DBResult();
+			}
 
 			$res = $query->exec();
 
-			//Обрабатываем событие после попытки добавления записи
+			//Обрабатываем событие таблицы после попытки добавления записи
 			static::OnAfterAdd($arAdd,$res);
+
+			//Обрабатываем системное событие после попытки добавления записи
+			Events::runEvents('core','OnAfterInsert',[static::getClassName(),$arAdd, $res]);
 
 			return $res;
 		}
@@ -503,8 +640,8 @@ abstract class DataManager
 	 * @param bool   $bShowSql  Флаг, показать SQL запрос вместо выполнения
 	 * @param string $sSqlWhere SQL код WHERE, если нужно обновить не по primary полю @since 0.2.0
 	 *
-	 * @return Db\DBResult|string|false Результат mysql запроса, либо текст запроса, либо false
-	 * @throws
+	 * @return Db\DBResult|string Результат mysql запроса, либо текст запроса
+	 * @throws Exception\ValidateException
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_update
 	 */
 	final public static function update ($primary, $arUpdate, $bShowSql=false, $sSqlWhere=null)
@@ -521,11 +658,35 @@ abstract class DataManager
 			echo $e->showException();
 		}
 
-		//Обрабатываем событие перед обновлением записи
+		//Валидация полей
+		$bValidate = true;
+		$arMap = static::getMapArray();
+		if (!empty($arUpdate))
+		{
+			foreach ($arUpdate as $fieldName => &$value)
+			{
+				$bValidate = static::validateFields ($fieldName, $value, 'update', $arMap[$fieldName]);
+			}
+			unset($value);
+		}
+		if (!$bValidate)
+		{
+			return new DBResult();
+		}
+
+		//Обрабатываем системное событие перед обновлением записи в таблице
+		$bNext = true;
+		$bNext = Events::runEvents('core','OnBeforeUpdate',[static::getClassName(),$primary,&$arUpdate, &$sSqlWhere]);
+		if ($bNext === FALSE)
+		{
+			return new DBResult();
+		}
+
+		//Обрабатываем событие таблицы перед обновлением записи
 		$bNext = static::OnBeforeUpdate($primary,$arUpdate, $sSqlWhere);
 		if ($bNext === FALSE)
 		{
-			return FALSE;
+			return new DBResult();
 		}
 
 		$query = new Db\Query\QueryUpdate($primary,$arUpdate,static::getClassName(),$sSqlWhere);
@@ -537,8 +698,11 @@ abstract class DataManager
 
 		$res = $query->exec();
 
-		//Обрабатываем событие после попытки обновления записи
+		//Обрабатываем событие таблицы после попытки обновления записи
 		static::OnAfterUpdate($primary,$arUpdate,$res);
+
+		//Обрабатываем системное событие таблицы после попытки обновления записи
+		Events::runEvents('core','OnAfterUpdate',[static::getClassName(),$primary, $arUpdate, $res]);
 
 		return $res;
 	}
@@ -558,13 +722,28 @@ abstract class DataManager
 	{
 		$query = new Db\Query\QueryDelete($primary,$confirm,static::getClassName());
 
-		//Обрабатываем событие перед удалением записи из таблицы
-		static::OnBeforeDelete($primary,$confirm);
+		$bDelete = true;
+		//Обрабатываем системное событие перед удалением записи из таблицы
+		$bDelete = Events::runEvents('core','OnBeforeDelete',[static::getClassName(),$primary, &$confirm]);
+		if ($bDelete === false)
+		{
+			return new DBResult();
+		}
+
+		//Обрабатываем событие таблицы перед удалением записи из таблицы
+		$bDelete = static::OnBeforeDelete($primary,$confirm);
+		if ($bDelete === false)
+		{
+			return new DBResult();
+		}
 
 		$res = $query->exec();
 
-		//Обрабатываем событие после попытки удаления записи из таблицы
+		//Обрабатываем событие таблицы после попытки удаления записи из таблицы
 		static::OnAfterDelete($primary, $confirm, $res);
+
+		//Обрабатываем системное событие после попытки удаления записи из таблицы
+		Events::runEvents('core','OnAfterDelete',[static::getClassName(),$primary, $confirm, $res]);
 
 		return $res;
 	}
@@ -707,13 +886,15 @@ abstract class DataManager
 	/**
 	 * Удаляет таблицу из БД. Возвращает TRUE, если табилца успешно удалена, иначе FALSE
 	 *
+	 * @param bool $bIgnoreForeignKeys Флаг, означающий необходимо игнорировать ограничения внешних ключей
+	 *
 	 * @return bool
 	 */
-	final public static function dropTable ()
+	final public static function dropTable ($bIgnoreForeignKeys=false)
 	{
-		$query = new Db\Query\QueryDrop(static::getClassName());
+		$query = new Db\Query\QueryDrop(static::getClassName(),$bIgnoreForeignKeys);
 
-		$res = Events::runEvents('core','OnBeforeDropTable',array (static::getClassName()));
+		$res = Events::runEvents('core','OnBeforeDropTable',array (static::getClassName(),$bIgnoreForeignKeys));
 		if ($res === false)
 		{
 			return false;

@@ -308,11 +308,45 @@ class Modules
 	 */
 	public static function getPathToModuleTablesFiles ($moduleName)
 	{
+		$pathToModule = static::getPathToModule($moduleName);
+		if ($pathToModule)
+		{
+			return $pathToModule.'/tables';
+		}
+
+		return false;
+	}
+
+	/**
+	 * Возвращает путь к файлам модуля
+	 *
+	 * @param string $moduleName Имя модуля
+	 *
+	 * @return bool|string
+	 */
+	public static function getPathToModule ($moduleName)
+	{
 		if (static::checkModuleName($moduleName))
 		{
-			$modulesRoot = Application::getInstance()->getSettings()->getModulesRoot();
+			return Application::getInstance()->getSettings()->getModulesRoot().'/'.$moduleName;
+		}
 
-			return $modulesRoot.'/'.$moduleName.'/tables';
+		return false;
+	}
+
+	/**
+	 * Возвращает путь к JavaScript файлам модуля
+	 *
+	 * @param string $moduleName Имя модуля
+	 *
+	 * @return bool|string
+	 */
+	public static function getPathToModuleJs ($moduleName)
+	{
+		$path = static::getPathToModule($moduleName);
+		if ($path)
+		{
+			return $path.'/js';
 		}
 
 		return false;

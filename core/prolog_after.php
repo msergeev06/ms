@@ -9,6 +9,8 @@
  */
 
 use Ms\Core\Entity\Application;
+use Ms\Core\Lib\Events;
+use Ms\Core\Lib\CoreJs;
 
 $app = Application::getInstance();
 
@@ -26,12 +28,14 @@ $app->startBufferPage();
 
 $templatePath = $app->getSettings()->getTemplatesRoot().'/'.$app->getSiteTemplate();
 
-\Ms\Core\Lib\Events::runEvents('core','OnPrologAfter',array(&$templatePath));
+Events::runEvents('core','OnPrologAfter',array(&$templatePath));
 
 define('SITE_TEMPLATE_PATH',$app->getSitePath($templatePath));
 define('MS_PROLOG_INCLUDED',true);
 
 $app->includePlugin('ms.jquery');
+
+CoreJs::init();
 
 if (file_exists($templatePath.'/style.css'))
 {

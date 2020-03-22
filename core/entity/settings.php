@@ -523,17 +523,45 @@ class Settings
 	}
 
 	/**
-	 * Возвращает срок хранения файлов лога в днях
+	 * Возвращает срок хранения системных файлов лога в днях
 	 *
 	 * @access public
 	 * @return int
 	 */
 	public function getExpireLogFiles ()
 	{
-		if (isset($this->arSettings['debug']['expirelogfiles']))
-			return $this->arSettings['debug']['expirelogfiles'];
+		if (isset($this->arSettings['debug']['expiresystemlogfiles']))
+			return $this->arSettings['debug']['expiresystemlogfiles'];
 		else
-			return 10;
+			return 14;
+	}
+
+	/**
+	 * Возвращает срок хранения ежедневных файлов лога в днях
+	 *
+	 * @access public
+	 * @return int
+	 */
+	public function getExpireDailyLogFiles ()
+	{
+		if (isset($this->arSettings['debug']['expiredailylogfiles']))
+			return $this->arSettings['debug']['expiredailylogfiles'];
+		else
+			return 14;
+	}
+
+	/**
+	 * Возвращает срок хранения ежедневных файлов лога в месяцах
+	 *
+	 * @access public
+	 * @return int
+	 */
+	public function getExpireMonthlyLogFiles ()
+	{
+		if (isset($this->arSettings['debug']['expiremonthlylogfiles']))
+			return $this->arSettings['debug']['expiremonthlylogfiles'];
+		else
+			return 6;
 	}
 
 	/**

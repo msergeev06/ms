@@ -139,6 +139,11 @@ class ScalarField extends Field
 	protected $allowed_values = null;
 
 	/**
+	 * @var array|null Массив с диапазоном разрешенный значения для поля, либо null - не производить валидацию
+	 */
+	protected $allowed_values_range = null;
+
+	/**
 	 * Конструктор
 	 *
 	 * @param string $name              Имя поля таблицы БД
@@ -179,6 +184,159 @@ class ScalarField extends Field
 		{
 			$this->arRun = $parameters["run"];
 		}
+
+		return $this;
+	}
+
+	//<editor-fold defaultstate="collapse" desc=">>>>>> Base">
+	public function setPrimary (bool $isPrimary = true)
+	{
+		$this->is_primary = $isPrimary;
+
+		return $this;
+	}
+
+	public function setUnique (bool $isUnique = true)
+	{
+		$this->is_unique = $isUnique;
+
+		return $this;
+	}
+
+	public function setRequired (bool $isRequired = true)
+	{
+		$this->is_required = $isRequired;
+
+		return $this;
+	}
+
+	public function setRequiredNull (bool $isRequiredNull = true)
+	{
+		$this->is_required_null = $isRequiredNull;
+
+		return $this;
+	}
+
+	public function setAutocomplete (bool $isAutocomplete = true)
+	{
+		$this->is_autocomplete = $isAutocomplete;
+
+		return $this;
+	}
+
+	public function setValues (array $arValues)
+	{
+		$this->values = $arValues;
+
+		return $this;
+	}
+
+	public function setColumnName (string $columnName)
+	{
+		$this->column_name = $columnName;
+
+		return $this;
+	}
+	//</editor-fold>
+
+	//<editor-fold defaultstate="collapse" desc=">>>>>> Set Default Values">
+	/**
+	 * @param mixed $defaultValue
+	 *
+	 * @return $this
+	 */
+	public function setDefaultValue ($defaultValue)
+	{
+		$this->default_value = $defaultValue;
+
+		return $this;
+	}
+
+	public function setDefaultValueSql (bool $isDefaultValueSql = true)
+	{
+		$this->default_value_sql = $isDefaultValueSql;
+
+		return $this;
+	}
+
+	/**
+	 * @param mixed $defaultCreate
+	 *
+	 * @return $this
+	 */
+	public function setDefaultCreate ($defaultCreate)
+	{
+		$this->default_create = $defaultCreate;
+
+		return $this;
+	}
+
+	public function setDefaultCreateSql (bool $isDefaultCreateSql = true)
+	{
+		$this->default_create_sql = $isDefaultCreateSql;
+
+		return $this;
+	}
+
+	/**
+	 * @param mixed $defaultInsert
+	 *
+	 * @return $this
+	 */
+	public function setDefaultInsert ($defaultInsert)
+	{
+		$this->default_insert = $defaultInsert;
+
+		return $this;
+	}
+
+	public function setDefaultInsertSql (bool $isDefaultInsertSql = true)
+	{
+		$this->default_insert_sql = $isDefaultInsertSql;
+
+		return $this;
+	}
+
+	/**
+	 * @param mixed $defaultUpdate
+	 *
+	 * @return $this
+	 */
+	public function setDefaultUpdate ($defaultUpdate)
+	{
+		$this->default_value = $defaultUpdate;
+
+		return $this;
+	}
+
+	public function setDefaultUpdateSql (bool $isDefaultUpdateSql = true)
+	{
+		$this->default_update_sql = $isDefaultUpdateSql;
+
+		return $this;
+	}
+	//</editor-fold>
+
+	public function setAllowedValues (array $allowedValues)
+	{
+		$this->allowed_values = $allowedValues;
+
+		return $this;
+	}
+
+	public function setAllowedValuesRange (float $rangeMin, float $rangeMax)
+	{
+		$this->allowed_values_range = ['min'=>$rangeMin, 'max'=>$rangeMax];
+
+		return $this;
+	}
+
+	public function setArRun (array $arRun)
+	{
+		//TODO: Что это?
+		$this->arRun = $arRun;
+
+		return $this;
 	}
 
 	/**
@@ -351,18 +509,6 @@ class ScalarField extends Field
 	}
 
 	/**
-	 * Задает название поля в базе данных
-	 *
-	 * @api
-	 *
-	 * @param $column_name
-	 */
-	public function setColumnName($column_name)
-	{
-		$this->column_name = $column_name;
-	}
-
-	/**
 	 * Возвращает значение поля в SQL формате
 	 *
 	 * @param mixed $value
@@ -382,6 +528,16 @@ class ScalarField extends Field
 	public function getAllowedValues ()
 	{
 		return $this->allowed_values;
+	}
+
+	/**
+	 * Возвращает массив с диапазоном разрешенных значений для поля, либо null
+	 *
+	 * @return array|null
+	 */
+	public function getAllowedValuesRange ()
+	{
+		return $this->allowed_values_range;
 	}
 
 	/**

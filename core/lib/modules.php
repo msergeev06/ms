@@ -485,6 +485,7 @@ class Modules
 	 *
 	 * @return bool
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_install_module
+	 * TODO: Обновить описание модуля
 	 */
 	public static function installModule ($moduleName)
 	{
@@ -496,6 +497,12 @@ class Modules
 				$installReturn = include(static::$modulesRoot.'/'.$moduleName.'/install/install.php');
 				return !($installReturn === false);
 			}
+			else
+			{
+				//Если нет файла установки, выполняем автоматическую установку
+				//1. Создаем таблицы, если у модуля есть таблицы
+				Installer::createModuleTables($moduleName);
+			}
 		}
 
 		return false;
@@ -504,20 +511,36 @@ class Modules
 	/**
 	 * Запускает файл удаления модуля, возвращая результат запуска
 	 *
-	 * @param string $moduleName
+	 * @param string $moduleName            Имя модула
+	 * @param bool   $bDeleteModuleTables   Удалять ли таблицы модуля
 	 *
 	 * @return bool
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/modules/method_un_install_module
+	 * TODO: Обновить описание метода
 	 */
-	public static function unInstallModule ($moduleName)
+	public static function unInstallModule ($moduleName, $bDeleteModuleTables=true)
 	{
 		static::init();
 		if (static::checkModuleName($moduleName))
 		{
+			if ($bDeleteModuleTables && !defined(strtoupper($moduleName).'_DELETE_TABLES'))
+			{
+				define(strtoupper($moduleName).'_DELETE_TABLES',true);
+			}
+
 			if (file_exists(static::$modulesRoot.'/'.$moduleName.'/install/uninstall.php'))
 			{
 				$installReturn = include(static::$modulesRoot.'/'.$moduleName.'/install/uninstall.php');
 				return !($installReturn === false);
+			}
+			else
+			{
+				//Если нет файла удаления модуля, удаляем автоматически
+				//1. Удаляем таблицы модуля, если они есть и пользователь не выбрал "Сохранить данные в БД"
+				if ($bDeleteModuleTables)
+				{
+					Installer::dropModuleTables($moduleName);
+				}
 			}
 		}
 

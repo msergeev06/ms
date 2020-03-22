@@ -20,6 +20,7 @@ use Ms\Core\Tables\UsersTable;
 
 class TableHelper
 {
+	//TODO: Переделать на методы классов полей
 	/**
 	 * Возвращает сущность Fields\IntegerField для primary поля таблицы 'ID' (Ключ)
 	 * Если указаны дополнительные параметры, они также добавляются к свойствам поля
@@ -230,7 +231,7 @@ class TableHelper
 		$arResult = [
 			'required' => true,
 			'required_null' => true,
-			'default_update' => Application::getInstance()->getUser()->getID(),
+			'default_update' => new Date(),
 			'title' => 'Дата изменения'
 		];
 		self::parseParams($arResult,$arParams);

@@ -103,6 +103,11 @@ class DBResult
 	protected $arSelect = array();
 
 	/**
+	 * @var Query\QueryBase
+	 */
+	protected $obQuery = null;
+
+	/**
 	 * Создает объект при получении результата mysql запроса
 	 *
 	 * @api
@@ -115,6 +120,7 @@ class DBResult
 	{
 		$DB = Application::getInstance()->getConnection();
 		$this->result = $res;
+		$this->obQuery = $obQuery;
 		if (!is_null($obQuery))
 		{
 			$this->table_map = $obQuery->getTableMap();
@@ -129,7 +135,8 @@ class DBResult
 		}
 		if ($res)
 		{
-			if ($this->query_type == "select"){
+			if ($this->query_type == "select")
+			{
 				//$this->mysql_num_fields = mysql_num_fields($res);
 				$this->mysql_num_fields = $DB->getConnectionNumFields($res);
 				//$this->mysql_num_rows = mysql_num_rows($res);
@@ -343,6 +350,12 @@ class DBResult
 		return $this->result;
 	}
 
+	//TODO: Сделать нормальный метод
+	public function isSuccess ()
+	{
+		return !is_null($this->result);
+	}
+
 	/**
 	 * Устанавливает номер ошибки mysql запроса
 	 *
@@ -445,5 +458,13 @@ class DBResult
 	public function getInsertId ()
 	{
 		return $this->mysql_insert_id;
+	}
+
+	/**
+	 * @return Query\QueryBase
+	 */
+	public function getObQuery (): Query\QueryBase
+	{
+		return $this->obQuery;
 	}
 }

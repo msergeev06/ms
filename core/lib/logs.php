@@ -13,6 +13,9 @@ namespace Ms\Core\Lib;
 
 use Ms\Core\Entity\Application;
 use Ms\Core\Entity\ErrorCollection;
+use Ms\Core\Entity\Errors\FileLogger;
+use Ms\Core\Exception\ArgumentException;
+use Ms\Core\Exception\ArgumentOutOfRangeException;
 use Ms\Core\Lib\IO\Files;
 use Ms\Core\Entity\Type\Date;
 
@@ -54,6 +57,9 @@ class Logs
 	 *                                                  ошибка с тем же сообщением, что идет в лог файл
 	 * @param null|int             $iErrorNumber        Номер ошибки
 	 * @param null|\Throwable      $exception           Исключение
+	 *
+	 * @deprecated 1.0.0
+	 * @see        FileLogger
 	 */
 	public static function setDebug ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
@@ -77,6 +83,9 @@ class Logs
 	 *                                                  ошибка с тем же сообщением, что идет в лог файл
 	 * @param null|int             $iErrorNumber        Номер ошибки
 	 * @param null|\Throwable      $exception           Исключение
+	 *
+	 * @deprecated 1.0.0
+	 * @see        FileLogger
 	 */
 	public static function setInfo ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
@@ -100,6 +109,9 @@ class Logs
 	 *                                                  ошибка с тем же сообщением, что идет в лог файл
 	 * @param null|int             $iErrorNumber        Номер ошибки
 	 * @param null|\Throwable      $exception           Исключение
+	 *
+	 * @deprecated 1.0.0
+	 * @see        FileLogger
 	 */
 	public static function setNotice ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
@@ -123,6 +135,9 @@ class Logs
 	 *                                                  ошибка с тем же сообщением, что идет в лог файл
 	 * @param null|int             $iErrorNumber        Номер ошибки
 	 * @param null|\Throwable      $exception           Исключение
+	 *
+	 * @deprecated 1.0.0
+	 * @see        FileLogger
 	 */
 	public static function setWarning ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
@@ -146,6 +161,9 @@ class Logs
 	 *                                                  ошибка с тем же сообщением, что идет в лог файл
 	 * @param null|int             $iErrorNumber        Номер ошибки
 	 * @param null|\Throwable      $exception           Исключение
+	 *
+	 * @deprecated 1.0.0
+	 * @see        FileLogger
 	 */
 	public static function setError ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
@@ -169,6 +187,9 @@ class Logs
 	 *                                                  ошибка с тем же сообщением, что идет в лог файл
 	 * @param null|int             $iErrorNumber        Номер ошибки
 	 * @param null|\Throwable      $exception           Исключение
+	 *
+	 * @deprecated 1.0.0
+	 * @see        FileLogger
 	 */
 	public static function setCritical ($strMessage, $arReplace=array (), ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
@@ -181,8 +202,12 @@ class Logs
 	 * @param string $strMessage Текст для записи в лог
 	 * @param string $nameLog    Название лог файла
 	 * @param bool   $noDate     Флаг, не использовать текущую дату в логе
+	 * @param string $module     Имя модуля, для которого создается лог
+	 *
+	 * @deprecated 1.0.0
+	 * @see        FileLogger
 	 */
-	public static function write2Log ($strMessage, $nameLog='sys', $noDate=false)
+	public static function write2Log ($strMessage, $nameLog='sys', $noDate=false, string $module = 'core')
 	{
 		$now = new Date();
 		$dir = static::getLogsDir();
@@ -204,8 +229,36 @@ class Logs
 			fwrite ($f1, $data);
 			fclose($f1);
 		}
+		try
+		{
+			$logger = (new FileLogger($module,'debug'))
+				->setLogFileName($nameLog)
+			;
+			if ($noDate)
+			{
+				$logger->setPeriodDaily();
+			}
+			else
+			{
+				$logger->setPeriodMonthly();
+			}
+
+			$logger->addMessage($strMessage);
+		}
+		catch (ArgumentException $e){}
 	}
 
+	/**
+	 * @param                      $type
+	 * @param                      $strMessage
+	 * @param array                $arReplace
+	 * @param ErrorCollection|null $errorCollection
+	 * @param null                 $iErrorNumber
+	 * @param \Throwable|null      $exception
+	 *
+	 * @deprecated 1.0.0
+	 * @see        FileLogger
+	 */
 	private static function setSpecial ($type,$strMessage,$arReplace=array (),ErrorCollection &$errorCollection=null,$iErrorNumber=null,\Throwable $exception=null)
 	{
 		if (isset($arReplace['EXCEPTION']))
@@ -251,30 +304,43 @@ class Logs
 		//Вызываем события добавления сообщения в логи
 		switch (strtoupper($type))
 		{
-			case 'DEBUG':
+			case 'DEBUG'://DEBUG
 				Events::runEvents('core','OnAddDebugMessageToLog',array ($strMessage));
+				$loggerType = 'debug';
 				break;
-			case 'INFO':
-				Events::runEvents('core','OnAddInfoMessageToLog',array ($strMessage));
-				break;
-			case 'NOTICE':
+			case 'INFO'://NOTICE
 				Events::runEvents('core','OnAddNoticeMessageToLog',array ($strMessage));
+				$loggerType = 'notice';
 				break;
-			case 'WARNING':
-				Events::runEvents('core','OnAddWarningMessageToLog',array ($strMessage));
+			case 'NOTICE'://NOTICE
+				Events::runEvents('core','OnAddNoticeMessageToLog',array ($strMessage));
+				$loggerType = 'notice';
 				break;
-			case 'CRITICAL':
-				Events::runEvents('core','OnAddCriticalMessageToLog',array ($strMessage));
+			case 'WARNING'://ERROR
+				Events::runEvents('core','OnAddErrorMessageToLog',array ($strMessage));
+				$loggerType = 'error';
+				break;
+			case 'CRITICAL'://ERROR
+				Events::runEvents('core','OnAddErrorMessageToLog',array ($strMessage));
+				$loggerType = 'error';
 				break;
 			default://ERROR
 				Events::runEvents('core','OnAddErrorMessageToLog',array ($strMessage));
+				$loggerType = 'error';
 				break;
 		}
-		//Пишем лог в общий файл логов
+/*		//Пишем лог в общий файл логов
 		static::write2Log($strMessage);
 		//Пишем лог в файл info-логов
 		$date = new Date();
 		$sDate = $date->format('Y-m');
-		static::write2Log($strMessage, $type.'_'.$sDate,true);
+		static::write2Log($strMessage, $type.'_'.$sDate,true);*/
+		try
+		{
+			$logger = (new FileLogger('old_system',$loggerType))
+				->addMessage($strMessage)
+			;
+		}
+		catch (ArgumentException $e){}
 	}
 }

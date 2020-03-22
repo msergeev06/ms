@@ -92,6 +92,19 @@ class IntegerField extends ScalarField
 			$this->size = intval($parameters['size']);
 		}
 
+		return $this;
+	}
+
+	/**
+	 * @param int $size
+	 *
+	 * @return IntegerField
+	 */
+	public function setSize (int $size)
+	{
+		$this->size = $size;
+
+		return $this;
 	}
 
 	/**
@@ -159,4 +172,5 @@ class IntegerField extends ScalarField
 	{
 		return (string) $value;
 	}
+
 }

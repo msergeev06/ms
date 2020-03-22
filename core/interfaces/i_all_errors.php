@@ -17,7 +17,7 @@ namespace Ms\Core\Interfaces;
  * @subpackage Interfaces
  * @link https://api.dobrozhil.ru/classes/ms_core_interfaces_all_errors/
  */
-interface AllErrors
+interface IAllErrors
 {
 	public static function getError ($iErrorCode, $arReplace=array());
 

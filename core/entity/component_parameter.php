@@ -214,7 +214,7 @@ class ComponentParameter
 	{
 		$tmpValue = $this->value;
 		//Если значение вида ={$var}
-		if (preg_match('/^\=\{(.+)\}/',$this->value,$m))
+		if (!is_array($this->value) && preg_match('/^\=\{(.+)\}/',$this->value,$m))
 		{
 			$var = $m[1];
 			$pattern = '/^(\$.+)\[[\\\'\\"\\`]+(.+)[\\\'\\"\\`]+\]/';

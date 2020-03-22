@@ -11,7 +11,9 @@
  */
 
 namespace Ms\Core\Entity;
+use Ms\Core\Entity\Collections\ComponentPathCollection;
 use Ms\Core\Exception;
+use Ms\Core\Tables\UrlrewriteTable;
 
 /**
  * Class Component
@@ -99,16 +101,22 @@ abstract class Component
 	/**
 	 * Конструктор компонента
 	 *
-	 * @param string    $component          Пространство имен и название компонента, в виде namespace:componentName
-	 * @param string    $template           Используемый шаблон компонента
-	 * @param array     $arParams           Массив значений параметров компонента
-	 * @param Component $parentComponent    Родительский компонент
+	 * @param string    $component       Пространство имен и название компонента, в виде namespace:componentName
+	 * @param string    $template        Используемый шаблон компонента
+	 * @param array     $arParams        Массив значений параметров компонента
+	 * @param Component $parentComponent Родительский компонент
+	 *
+	 * @throws Exception\ArgumentException
 	 */
 	public function __construct ($component, $template='.default', $arParams=array(), Component $parentComponent=null)
 	{
 		//Инициализируем основные параметры компонента
 		$this->arRawParams = $arParams;
 
+		if (!(strpos($component,':') !== false))
+		{
+			throw new Exception\ArgumentException('Имя компонента должно быть указано в виде namespace:componentName','$component');
+		}
 		list($this->namespace,$this->componentName) = explode(':',$component);
 		$this->componentsRoot = Application::getInstance()->getSettings()->getComponentsRoot();
 		$this->templatesRoot = Application::getInstance()->getSettings()->getTemplatesRoot();
@@ -118,6 +126,15 @@ abstract class Component
 		$this->parentComponent = $parentComponent;
 		//Обрабатываем параметры компонента
 		$this->initParams();
+		if (isset($_REQUEST['init_paths']) && $_REQUEST['init_paths']=='Y')
+		{
+			//Проверяем наличие необходимых путей в таблице
+			$this->checkUrlRewritePaths();
+		}
+		if (isset($_REQUEST['show_running_components']) && $_REQUEST['show_running_components']=='Y')
+		{
+			echo get_called_class().'<br>';
+		}
 		//Вызываем основную функцию компонента (запускаем компонент)
 		$this->run();
 	}
@@ -269,6 +286,16 @@ abstract class Component
 	}
 
 	/**
+	 * Возвращает имя используемого класса компонента
+	 *
+	 * @return string
+	 */
+	public function getClassName ()
+	{
+		return get_called_class();
+	}
+
+	/**
 	 * Метод подключает шаблон компонента при этом подключаются (если существуют) следующие файлы:
 	 * 1. Файл параметров шаблона компонента (параметры добавляются к уже существующим параметрам компонента)
 	 * 2. Файл изменения логики работы компонента.
@@ -325,5 +352,113 @@ abstract class Component
 		}
 
 		return null;
+	}
+
+	/**
+	 * Возвращает коллекцию путей компонента.
+	 * Должен быть переопределен в компонентах работающих с более, чем 1 страницей
+	 *
+	 * @return ComponentPathCollection
+	 */
+	protected function getPathsCollection ()
+	{
+		return new ComponentPathCollection();
+	}
+
+	/**
+	 * Проверяет необходимость добавления новых путей компонента. И если она есть - добавляет их
+	 */
+	private function checkUrlRewritePaths ()
+	{
+		$pathsCollection = $this->getPathsCollection();
+		if ($pathsCollection->isEmpty())
+		{
+			return;
+		}
+//		msDebug($pathsCollection);
+
+		$arFilter = ['LOGIC'=>'OR'];
+		foreach ($pathsCollection as $objPath)
+		{
+			if ($objPath instanceof ComponentPaths && $objPath->checkObject())
+			{
+				$arFilter[] = [
+					'COMPONENT_NAME' => $objPath->getComponentFullName(),
+					'CONDITION' => $objPath->getCondition(),
+					'RULE' => $objPath->getRule(),
+					'PATH' => $objPath->getPath()
+				];
+			}
+		}
+		if (count($arFilter) <= 1)
+		{
+			return;
+		}
+
+		$arRes = UrlrewriteTable::getList([
+			'filter' => $arFilter
+		]);
+		if (!$arRes)
+		{
+			$this->addNewUrlRewritePaths($pathsCollection);
+			return;
+		}
+		$addCollection = new ComponentPathCollection();
+		foreach ($pathsCollection as $objPath)
+		{
+			$bFind = false;
+			foreach ($arRes as $ar_res)
+			{
+				if (
+					$ar_res['COMPONENT_NAME'] == $objPath->getComponentFullName()
+					&& $ar_res['CONDITION'] == $objPath->getCondition()
+					&& $ar_res['RULE'] == $objPath->getRule()
+					&& $ar_res['PATH'] == $objPath->getPath()
+				) {
+					$bFind = true;
+					break;
+				}
+			}
+			if (!$bFind)
+			{
+				$addCollection->addPath($objPath);
+			}
+		}
+		if (!$addCollection->isEmpty())
+		{
+			$this->addNewUrlRewritePaths($addCollection);
+		}
+	}
+
+	/**
+	 * Добавляет несуществующие в БД пути компонента
+	 *
+	 * @param ComponentPathCollection $addCollection
+	 */
+	private function addNewUrlRewritePaths (ComponentPathCollection $addCollection)
+	{
+		if ($addCollection->isEmpty())
+		{
+			return;
+		}
+		$arAdd = [];
+		/** @var ComponentPaths $objPath */
+		foreach ($addCollection as $objPath)
+		{
+			$arAdd[] = [
+				'COMPONENT_NAME' => $objPath->getComponentFullName(),
+				'CONDITION' => $objPath->getCondition(),
+				'RULE' => $objPath->getRule(),
+				'PATH' => $objPath->getPath()
+			];
+		}
+		if (!empty($arAdd))
+		{
+			try
+			{
+				UrlrewriteTable::add($arAdd);
+			}
+			catch (Exception\ValidateException $e){}
+		}
 	}
 }

@@ -17,66 +17,57 @@ use Ms\Core\Entity\Application;
 
 class DataBase {
 
+//<editor-fold defaultstate="collapse" desc=">>> Свойства">
 	/**
-	 * @var string Hostname Базы данных. Используется для подключения к DB
+	 * @var array Отладочная информация по всем запросам сессии
 	 */
-	protected $host;
-
+	protected $arLog = array();
 	/**
 	 * @var string Имя базы данных. Используется для подключения к DB
 	 */
 	protected $base;
-
 	/**
-	 * @var string Пользователь базы данных. Используется для подключения к DB
+	 * @var int Время выполнения всех запросов
 	 */
-	protected $user;
-
+	protected $db_all_query_time=0;
 	/**
-	 * @var string Пароль пользователя базы данных. Используется для подключения к DB
+	 * @var resource|\mysqli|bool Ссылка на подключение к базе данных, либо false
 	 */
-	protected $pass;
-
+	protected $db_conn;
+	/**
+	 * @var int Время выполнения последнего запроса
+	 */
+	protected $db_last_query_time=0;
+	/**
+	 * @var int Количество запросов к базе данных
+	 */
+	protected $db_queries=0;
+	/**
+	 * @var int Время начала последнего запроса
+	 */
+	protected $db_query_start=0;
+	/**
+	 * @var int Время окончания последнего запроса
+	 */
+	protected $db_query_stop=0;
 	/**
 	 * @var string Используемый драйвер для подключения к БД
 	 * @since 0.2.0
 	 */
 	protected $driver;
-
 	/**
-	 * @var resource|\mysqli|bool Ссылка на подключение к базе данных, либо false
+	 * @var string Hostname Базы данных. Используется для подключения к DB
 	 */
-	protected $db_conn;
-
+	protected $host;
 	/**
-	 * @var array Отладочная информация по всем запросам сессии
+	 * @var string Пароль пользователя базы данных. Используется для подключения к DB
 	 */
-	protected $arLog = array();
-
+	protected $pass;
 	/**
-	 * @var int Количество запросов к базе данных
+	 * @var string Пользователь базы данных. Используется для подключения к DB
 	 */
-	protected $db_queries=0;
-
-	/**
-	 * @var int Время начала последнего запроса
-	 */
-	protected $db_query_start=0;
-
-	/**
-	 * @var int Время окончания последнего запроса
-	 */
-	protected $db_query_stop=0;
-
-	/**
-	 * @var int Время выполнения последнего запроса
-	 */
-	protected $db_last_query_time=0;
-
-	/**
-	 * @var int Время выполнения всех запросов
-	 */
-	protected $db_all_query_time=0;
+	protected $user;
+//</editor-fold>1
 
 	/**
 	 * Осуществляет подключение к базе данных и передает начальные параметры подключения
@@ -99,131 +90,7 @@ class DataBase {
 		$this->setConnectParams();
 	}
 
-	/**
-	 * Восстанавливает базу данных из последнего существующего backup
-	 *
-	 * @return bool
-	 */
-	public function restoreDB ()
-	{
-		$documentRoot = Application::getInstance()->getDocumentRoot();
-		$dirBackupDb = Application::getInstance()->getSettings()->getDirBackupDb();
-
-		if (!$documentRoot || !$dirBackupDb || file_exists($documentRoot.'/backup'))
-		{
-			return false;
-		}
-
-		//Создаем файл backup в корне, чтобы система понимала, что идет процесс восстановления БД
-		$f1 = fopen($documentRoot.'/backup','w');
-		fwrite($f1,date('Y-m-d H:i:s'));
-		fclose($f1);
-
-		$comm = $this->getCreateDbCommand($this->base);
-		exec($comm);
-		$fileTime = null;
-		$filePath = null;
-		$dir=$dirBackupDb;
-		if (is_dir($dir)) {
-			if ($dh = opendir($dir)) {
-				while (($file = readdir($dh)) !== false) {
-					if (!is_dir($dir.$file) && $file != "." && $file != ".." && $file != ".htaccess")
-					{
-						if (strstr($file,$this->base)!==false)
-						{
-							if (is_null($fileTime))
-							{
-								$fileTime = filemtime($dir.$file);
-								$filePath = $dir.$file;
-							}
-							elseif (filemtime($dir.$file) > $fileTime)
-							{
-								$fileTime = filemtime($dir.$file);
-								$filePath = $dir.$file;
-							}
-						}
-					}
-				}
-				closedir($dh);
-			}
-		}
-		if (!is_null($filePath))
-		{
-			$comm = $this->getBackupCommand($filePath);
-			exec($comm);
-			//после завершения восстановления, удаляем файл backup
-			unlink($documentRoot.'/backup');
-			return true;
-		}
-
-		unlink($documentRoot.'/backup');
-		return false;
-	}
-
-
-
-	/**
-	 * Осуществляет запрос к базе данных, используя данные объекта Query
-	 *
-	 * @api
-	 *
-	 * @param Query\QueryBase $obQuery Объект, содержащий SQL запрос
-	 *
-	 * @return DBResult Результат MYSQL запроса
-	 */
-	public function query (Query\QueryBase $obQuery)
-	{
-		$sql = $obQuery->getSql();
-		$queryHash = $this->getQueryHash($sql);
-		$this->setQueryStart($queryHash);
-		//$db_res = mysql_query($sql, $this->db_conn);
-		$db_res = $this->getConnectionQuery($sql);
-		$this->setQueryStop($queryHash);
-
-		$res = new DBResult($db_res,$obQuery);
-		//$res->setAffectedRows(mysql_affected_rows($this->db_conn));
-		$res->setAffectedRows($this->getConnectionAffectedRows());
-		if ($obQuery instanceof Query\QueryInsert)
-		{
-			//$res->setInsertId(mysql_insert_id($this->db_conn));
-			$res->setInsertId($this->getInsertId());
-		}
-		if (!$res->getResult())
-		{
-			//$res->setResultErrorNumber(mysql_errno($this->db_conn));
-			$res->setResultErrorNumber($this->getConnectionErrorNo());
-			//$res->setResultErrorText(mysql_error($this->db_conn));
-			$res->setResultErrorText($this->getConnectionError());
-		}
-
-		return $res;
-	}
-
-	/**
-	 * Выполняет произвольный SQL запрос
-	 *
-	 * @param string $sql
-	 *
-	 * @return resource
-	 */
-	public function querySQL ($sql)
-	{
-		//mysql_query($sql,$this->db_conn);
-		$this->getConnectionQuery($sql);
-		//return mysql_affected_rows($this->db_conn);
-		return $this->getConnectionAffectedRows();
-	}
-
-	/**
-	 * Возвращает время выполнения последнего SQL запроса
-	 *
-	 * @return float
-	 */
-	public function getLastQueryTime ()
-	{
-		return floatval($this->db_last_query_time);
-	}
-
+//<editor-fold defaultstate="collapse" desc=">>> Динамические методы">
 	/**
 	 * Возвращает общее время всех SQL запросов
 	 *
@@ -232,6 +99,124 @@ class DataBase {
 	public function getAllQueryTime ()
 	{
 		return floatval($this->db_all_query_time);
+	}
+
+	/**
+	 * Возвращает команду shell для восстановления базы из бекапа
+	 *
+	 * @param string $filePath
+	 *
+	 * @return string
+	 */
+	public function getBackupCommand ($filePath)
+	{
+		//gunzip < /path/to/filename.sql.gz | mysql -uroot -prootpsw msergeev
+		$comm = 'sudo gunzip < '
+			.$filePath.' | mysql -u'
+			.$this->user.' -p'
+			.$this->pass.' '
+			.$this->base;
+
+		return $comm;
+	}
+
+	/**
+	 * Извлекает результирующий ряд в виде ассоциативного массива, для требуемого драйвера
+	 *
+	 * @param resource|\mysqli_result $resource
+	 *
+	 * @return array
+	 * @since 0.2.0
+	 */
+	public function getConnectionFetchArray ($resource)
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_fetch_assoc($resource);
+		}
+		else
+		{
+			return $resource->fetch_array();
+		}
+	}
+
+	/**
+	 * Возвращает число столбцов, затронутых последним запросом, для требуемого драйвера
+	 *
+	 * @param resource $resource
+	 *
+	 * @return int
+	 * @since 0.2.0
+	 */
+	public function getConnectionNumFields ($resource)
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_num_fields($resource);
+		}
+		else
+		{
+			return $this->db_conn->field_count;
+		}
+	}
+
+	/**
+	 * Получает число рядов в результирующей выборке, для требуемого драйвера
+	 *
+	 * @param resource|\mysqli_result $resource
+	 *
+	 * @return int
+	 * @since 0.2.0
+	 */
+	public function getConnectionNumRows ($resource)
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_num_rows($resource);
+		}
+		else
+		{
+			return $resource->num_rows;
+		}
+	}
+
+	/**
+	 * Возвращает экранированную строку, используя требуемый драйвер
+	 *
+	 * @param null|string $string Исходная строка
+	 *
+	 * @return string
+	 * @throws Exception\Db\DbException
+	 * @since 0.2.0
+	 */
+	public function getConnectionRealEscapeString ($string)
+	{
+		if (is_null($string) || $string == '')
+		{
+			return $string;
+		}
+		if ($this->driver == 'mysql')
+		{
+			if (!$res = mysql_real_escape_string($string,$this->db_conn))
+			{
+				throw new Exception\Db\DbException('Error escape string',mysql_error());
+			}
+			return $res;
+		}
+		else //mysqli
+		{
+			try {
+				if (!$res = $this->db_conn->real_escape_string($string))
+				{
+					throw new Exception\Db\DbException('Error escape string',$this->db_conn->error);
+				}
+				return $res;
+			}
+			catch (Exception\Db\DbException $e)
+			{
+				die($e->showException());
+			}
+		}
 	}
 
 	/**
@@ -258,25 +243,6 @@ class DataBase {
 			.$this->user.' -p'
 			.$this->pass.' create '
 			.$dbName;
-
-		return $comm;
-	}
-
-	/**
-	 * Возвращает команду shell для восстановления базы из бекапа
-	 *
-	 * @param string $filePath
-	 *
-	 * @return string
-	 */
-	public function getBackupCommand ($filePath)
-	{
-		//gunzip < /path/to/filename.sql.gz | mysql -uroot -prootpsw msergeev
-		$comm = 'sudo gunzip < '
-			.$filePath.' | mysql -u'
-			.$this->user.' -p'
-			.$this->pass.' '
-			.$this->base;
 
 		return $comm;
 	}
@@ -368,6 +334,16 @@ class DataBase {
 	}
 
 	/**
+	 * Возвращает время выполнения последнего SQL запроса
+	 *
+	 * @return float
+	 */
+	public function getLastQueryTime ()
+	{
+		return floatval($this->db_last_query_time);
+	}
+
+	/**
 	 * Возвращает массив всех SQL запросов текущей сессии
 	 *
 	 * @return array
@@ -376,6 +352,263 @@ class DataBase {
 	public function getSqlLogs()
 	{
 		return $this->arLog;
+	}
+
+	/**
+	 * Осуществляет запрос к базе данных, используя данные объекта Query
+	 *
+	 * @api
+	 *
+	 * @param Query\QueryBase $obQuery Объект, содержащий SQL запрос
+	 *
+	 * @return DBResult Результат MYSQL запроса
+	 */
+	public function query (Query\QueryBase $obQuery)
+	{
+		$sql = $obQuery->getSql();
+		$queryHash = $this->getQueryHash($sql);
+		$this->setQueryStart($queryHash);
+		//$db_res = mysql_query($sql, $this->db_conn);
+		$db_res = $this->getConnectionQuery($sql);
+		$this->setQueryStop($queryHash);
+
+		$res = new DBResult($db_res,$obQuery);
+		//$res->setAffectedRows(mysql_affected_rows($this->db_conn));
+		$res->setAffectedRows($this->getConnectionAffectedRows());
+		if ($obQuery instanceof Query\QueryInsert)
+		{
+			//$res->setInsertId(mysql_insert_id($this->db_conn));
+			$res->setInsertId($this->getInsertId());
+		}
+		if (!$res->getResult())
+		{
+			//$res->setResultErrorNumber(mysql_errno($this->db_conn));
+			$res->setResultErrorNumber($this->getConnectionErrorNo());
+			//$res->setResultErrorText(mysql_error($this->db_conn));
+			$res->setResultErrorText($this->getConnectionError());
+		}
+
+		return $res;
+	}
+
+	/**
+	 * Выполняет произвольный SQL запрос
+	 *
+	 * @param string $sql
+	 *
+	 * @return int
+	 */
+	public function querySQL ($sql)
+	{
+		//mysql_query($sql,$this->db_conn);
+		$this->getConnectionQuery($sql);
+		//return mysql_affected_rows($this->db_conn);
+		return $this->getConnectionAffectedRows();
+	}
+
+	/**
+	 * Стартует транзакцию
+	 *
+	 * @return DataBase
+	 */
+	public function startTransaction ()
+	{
+		$this->querySQL ('START TRANSACTION');
+
+		return $this;
+	}
+
+	/**
+	 * Откатывает транзакцию
+	 *
+	 * @return DataBase
+	 */
+	public function rollbackTransaction ()
+	{
+		$this->querySQL ('ROLLBACK');
+
+		return $this;
+	}
+
+	/**
+	 * Подтверждает транзакцию
+	 *
+	 * @return DataBase
+	 */
+	public function commitTransaction ()
+	{
+		$this->querySQL ('COMMIT');
+
+		return $this;
+	}
+
+	/**
+	 * Восстанавливает базу данных из последнего существующего backup
+	 *
+	 * @return bool
+	 */
+	public function restoreDB ()
+	{
+		$documentRoot = Application::getInstance()->getDocumentRoot();
+		$dirBackupDb = Application::getInstance()->getSettings()->getDirBackupDb();
+
+		if (!$documentRoot || !$dirBackupDb || file_exists($documentRoot.'/backup'))
+		{
+			return false;
+		}
+
+		//Создаем файл backup в корне, чтобы система понимала, что идет процесс восстановления БД
+		$f1 = fopen($documentRoot.'/backup','w');
+		fwrite($f1,date('Y-m-d H:i:s'));
+		fclose($f1);
+
+		$comm = $this->getCreateDbCommand($this->base);
+		exec($comm);
+		$fileTime = null;
+		$filePath = null;
+		$dir=$dirBackupDb;
+		if (is_dir($dir)) {
+			if ($dh = opendir($dir)) {
+				while (($file = readdir($dh)) !== false) {
+					if (!is_dir($dir.$file) && $file != "." && $file != ".." && $file != ".htaccess")
+					{
+						if (strstr($file,$this->base)!==false)
+						{
+							if (is_null($fileTime))
+							{
+								$fileTime = filemtime($dir.$file);
+								$filePath = $dir.$file;
+							}
+							elseif (filemtime($dir.$file) > $fileTime)
+							{
+								$fileTime = filemtime($dir.$file);
+								$filePath = $dir.$file;
+							}
+						}
+					}
+				}
+				closedir($dh);
+			}
+		}
+		if (!is_null($filePath))
+		{
+			$comm = $this->getBackupCommand($filePath);
+			exec($comm);
+			//после завершения восстановления, удаляем файл backup
+			unlink($documentRoot.'/backup');
+			return true;
+		}
+
+		unlink($documentRoot.'/backup');
+		return false;
+	}
+//</editor-fold>3
+
+//<editor-fold defaultstate="collapse" desc=">>> Приватные методы">
+	/**
+	 * Возвращает затронутые запросом ряды, используя требуемый драйвер
+	 *
+	 * @return int
+	 * @since 0.2.0
+	 */
+	private function getConnectionAffectedRows ()
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_affected_rows($this->db_conn);
+		}
+		else //mysqli
+		{
+			return $this->db_conn->affected_rows;
+		}
+	}
+
+	/**
+	 * Возвращает текст произошедшей в запросе ошибки, используя требуемый драйвер
+	 *
+	 * @return string
+	 */
+	private function getConnectionError()
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_error($this->db_conn);
+		}
+		else //mysqli
+		{
+			return $this->db_conn->error;
+		}
+	}
+
+	/**
+	 * Возвращает номер произошедшей в запросе ошибки, используя требуемый драйвер
+	 *
+	 * @return int
+	 * @since 0.2.0
+	 */
+	private function getConnectionErrorNo ()
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_errno($this->db_conn);
+		}
+		else //mysqli
+		{
+			return $this->db_conn->errno;
+		}
+	}
+
+	/**
+	 * Осуществляет запрос к БД, через требуемый драйвер
+	 *
+	 * @param string $sql Текст SQL запроса
+	 *
+	 * @return resource|\mysqli_result
+	 * @since 0.2.0
+	 */
+	private function getConnectionQuery($sql)
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_query($sql, $this->db_conn);
+		}
+		else //mysqli
+		{
+			return $this->db_conn->query($sql);
+		}
+	}
+
+	/**
+	 * Возвращает ID добавленной записи, используя требуемый драйвер
+	 *
+	 * @return int
+	 * @since 0.2.0
+	 */
+	private function getInsertId ()
+	{
+		if ($this->driver == 'mysql')
+		{
+			return mysql_insert_id($this->db_conn);
+		}
+		else //mysqli
+		{
+			return $this->db_conn->insert_id;
+		}
+	}
+
+	/**
+	 * Возвращает созданный hash SQL запроса
+	 *
+	 * @param string $sql SQL запрос
+	 *
+	 * @return string
+	 */
+	private function getQueryHash ($sql)
+	{
+		$hash = md5($sql.time().microtime(true));
+		$this->arLog[$hash]['SQL'] = $sql;
+
+		return $hash;
 	}
 
 	/**
@@ -479,211 +712,6 @@ class DataBase {
 	}
 
 	/**
-	 * Осуществляет запрос к БД, через требуемый драйвер
-	 *
-	 * @param string $sql Текст SQL запроса
-	 *
-	 * @return resource|\mysqli_result
-	 * @since 0.2.0
-	 */
-	private function getConnectionQuery($sql)
-	{
-		if ($this->driver == 'mysql')
-		{
-			return mysql_query($sql, $this->db_conn);
-		}
-		else //mysqli
-		{
-			return $this->db_conn->query($sql);
-		}
-	}
-
-	/**
-	 * Возвращает затронутые запросом ряды, используя требуемый драйвер
-	 *
-	 * @return int
-	 * @since 0.2.0
-	 */
-	private function getConnectionAffectedRows ()
-	{
-		if ($this->driver == 'mysql')
-		{
-			return mysql_affected_rows($this->db_conn);
-		}
-		else //mysqli
-		{
-			return $this->db_conn->affected_rows;
-		}
-	}
-
-	/**
-	 * Возвращает ID добавленной записи, используя требуемый драйвер
-	 *
-	 * @return int
-	 * @since 0.2.0
-	 */
-	private function getInsertId ()
-	{
-		if ($this->driver == 'mysql')
-		{
-			return mysql_insert_id($this->db_conn);
-		}
-		else //mysqli
-		{
-			return $this->db_conn->insert_id;
-		}
-	}
-
-	/**
-	 * Возвращает номер произошедшей в запросе ошибки, используя требуемый драйвер
-	 *
-	 * @return int
-	 * @since 0.2.0
-	 */
-	private function getConnectionErrorNo ()
-	{
-		if ($this->driver == 'mysql')
-		{
-			return mysql_errno($this->db_conn);
-		}
-		else //mysqli
-		{
-			return $this->db_conn->errno;
-		}
-	}
-
-	/**
-	 * Возвращает текст произошедшей в запросе ошибки, используя требуемый драйвер
-	 *
-	 * @return string
-	 */
-	private function getConnectionError()
-	{
-		if ($this->driver == 'mysql')
-		{
-			return mysql_error($this->db_conn);
-		}
-		else //mysqli
-		{
-			return $this->db_conn->error;
-		}
-	}
-
-	/**
-	 * Возвращает число столбцов, затронутых последним запросом, для требуемого драйвера
-	 *
-	 * @param resource $resource
-	 *
-	 * @return int
-	 * @since 0.2.0
-	 */
-	public function getConnectionNumFields ($resource)
-	{
-		if ($this->driver == 'mysql')
-		{
-			return mysql_num_fields($resource);
-		}
-		else
-		{
-			return $this->db_conn->field_count;
-		}
-	}
-
-	/**
-	 * Получает число рядов в результирующей выборке, для требуемого драйвера
-	 *
-	 * @param resource|\mysqli_result $resource
-	 *
-	 * @return int
-	 * @since 0.2.0
-	 */
-	public function getConnectionNumRows ($resource)
-	{
-		if ($this->driver == 'mysql')
-		{
-			return mysql_num_rows($resource);
-		}
-		else
-		{
-			return $resource->num_rows;
-		}
-	}
-
-	/**
-	 * Извлекает результирующий ряд в виде ассоциативного массива, для требуемого драйвера
-	 *
-	 * @param resource|\mysqli_result $resource
-	 *
-	 * @return array
-	 * @since 0.2.0
-	 */
-	public function getConnectionFetchArray ($resource)
-	{
-		if ($this->driver == 'mysql')
-		{
-			return mysql_fetch_assoc($resource);
-		}
-		else
-		{
-			return $resource->fetch_array();
-		}
-	}
-
-	/**
-	 * Возвращает экранированную строку, используя требуемый драйвер
-	 *
-	 * @param null|string $string Исходная строка
-	 *
-	 * @return string
-	 * @throws Exception\Db\DbException
-	 * @since 0.2.0
-	 */
-	public function getConnectionRealEscapeString ($string)
-	{
-		if (is_null($string) || $string == '')
-		{
-			return $string;
-		}
-		if ($this->driver == 'mysql')
-		{
-			if (!$res = mysql_real_escape_string($string,$this->db_conn))
-			{
-				throw new Exception\Db\DbException('Error escape string',mysql_error());
-			}
-			return $res;
-		}
-		else //mysqli
-		{
-			try {
-				if (!$res = $this->db_conn->real_escape_string($string))
-				{
-					throw new Exception\Db\DbException('Error escape string',$this->db_conn->error);
-				}
-				return $res;
-			}
-			catch (Exception\Db\DbException $e)
-			{
-				die($e->showException());
-			}
-		}
-	}
-
-	/**
-	 * Возвращает созданный hash SQL запроса
-	 *
-	 * @param string $sql SQL запрос
-	 *
-	 * @return string
-	 */
-	private function getQueryHash ($sql)
-	{
-		$hash = md5($sql.time().microtime(true));
-		$this->arLog[$hash]['SQL'] = $sql;
-
-		return $hash;
-	}
-
-	/**
 	 * Устанавливает начальное время SQL запроса
 	 *
 	 * @param string $hash HASH запроса
@@ -709,4 +737,5 @@ class DataBase {
 
 		$this->db_all_query_time += $this->db_last_query_time;
 	}
+//</editor-fold>4
 }

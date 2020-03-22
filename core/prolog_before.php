@@ -25,7 +25,7 @@ require_once(dirname(__FILE__).'/tools/tools.msdebug.php');
 require_once(dirname(__FILE__).'/entity/settings.php');
 require_once(dirname(__FILE__).'/entity/application.php');
 require_once(dirname(__FILE__).'/lib/events.php');
-require_once(dirname(__FILE__).'/interfaces/all_errors.php');
+require_once(dirname(__FILE__).'/interfaces/i_all_errors.php');
 require_once(dirname(__FILE__).'/lib/errors.php');
 require_once(dirname(__FILE__).'/lib/data_manager.php');
 require_once(dirname(__FILE__).'/tables/event_handlers.php');

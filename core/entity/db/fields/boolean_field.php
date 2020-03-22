@@ -11,6 +11,8 @@
 
 namespace Ms\Core\Entity\Db\Fields;
 
+use Ms\Core\Exception\ArgumentTypeException;
+
 /**
  * Class BooleanField
  * @package Ms\Core
@@ -101,6 +103,44 @@ class BooleanField extends ScalarField {
 		{
 			$this->values = $parameters['values'];
 		}
+
+		return $this;
+	}
+
+	public function setDefaultValue ($defaultValue)
+	{
+		if (!is_bool($defaultValue) && !is_string($defaultValue))
+		{
+			throw new ArgumentTypeException('$defaultValue','bool|string');
+		}
+		return parent::setDefaultValue($defaultValue);
+	}
+
+	public function setDefaultCreate ($defaultCreate)
+	{
+		if (!is_bool($defaultCreate) && !is_string($defaultCreate))
+		{
+			throw new ArgumentTypeException('$defaultCreate','bool|string');
+		}
+		return parent::setDefaultCreate($defaultCreate);
+	}
+
+	public function setDefaultInsert ($defaultInsert)
+	{
+		if (!is_bool($defaultInsert) && !is_string($defaultInsert))
+		{
+			throw new ArgumentTypeException('$defaultInsert','bool|string');
+		}
+		return parent::setDefaultInsert($defaultInsert);
+	}
+
+	public function setDefaultUpdate ($defaultUpdate)
+	{
+		if (!is_bool($defaultUpdate) && !is_string($defaultUpdate))
+		{
+			throw new ArgumentTypeException('$defaultUpdate','bool|string');
+		}
+		return parent::setDefaultUpdate($defaultUpdate);
 	}
 
 

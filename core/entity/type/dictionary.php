@@ -7,7 +7,6 @@
  * @subpackage Entity\Type
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2018 Mikhail Sergeev
- * @since 0.2.0
  */
 
 namespace Ms\Core\Entity\Type;
@@ -23,7 +22,8 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 	 * Конструктор
 	 *
 	 * @param array $values
-	 * @since 0.2.0
+	 *
+	 * @return Dictionary
 	 */
 	public function __construct(array $values = null)
 	{
@@ -31,6 +31,8 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 		{
 			$this->values = $values;
 		}
+
+		return $this;
 	}
 
 	/**
@@ -54,42 +56,50 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 	 * Устанавливает все значения, переданные в массиве
 	 *
 	 * @param array $values
-	 * @since 0.2.0
+	 *
+	 * @return Dictionary
 	 */
 	public function set(array $values)
 	{
 		$this->values = $values;
+
+		return $this;
 	}
 
 	/**
 	 * Добавляет новое значение
 	 *
 	 * @param string $name
-	 * @param mixed $value
-	 * @since 0.2.0
+	 * @param mixed  $value
+	 *
+	 * @return Dictionary
 	 */
 	public function add ($name, $value)
 	{
 		$this->values[$name] = $value;
+
+		return $this;
 	}
 
 	/**
 	 * Очищает все значения
-	 * @since 0.2.0
+	 *
+	 * @return Dictionary
 	 */
 	public function clear()
 	{
 		$this->values = array();
+
+		return $this;
 	}
 
 	/**
 	 * Возвращает текущий элемент массива значений
 	 *
 	 * Обертка функции current для массива значений
-	 * @link http://php.net/manual/en/function.current.php
+	 * @link http://php.net/manual/ru/function.current.php
 	 *
 	 * @return mixed
-	 * @since 0.2.0
 	 */
 	public function current()
 	{
@@ -98,10 +108,9 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 
 	/**
 	 * Advance the internal array pointer of an array
-	 * @link http://php.net/manual/en/function.next.php
+	 * @link http://php.net/manual/ru/function.next.php
 	 *
 	 * @return mixed
-	 * @since 0.2.0
 	 */
 	public function next()
 	{
@@ -110,10 +119,9 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 
 	/**
 	 * Fetch a key from an array
-	 * @link http://php.net/manual/en/function.key.php
+	 * @link http://php.net/manual/ru/function.key.php
 	 *
 	 * @return mixed
-	 * @since 0.2.0
 	 */
 	public function key()
 	{
@@ -124,7 +132,6 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 	 * Проверяет $this->key() !== null
 	 *
 	 * @return bool
-	 * @since 0.2.0
 	 */
 	public function valid()
 	{
@@ -133,10 +140,9 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 
 	/**
 	 * Set the internal pointer of an array to its first element
-	 * @link http://php.net/manual/en/function.reset.php
+	 * @link http://php.net/manual/ru/function.reset.php
 	 *
 	 * @return mixed
-	 * @since 0.2.0
 	 */
 	public function rewind()
 	{
@@ -144,10 +150,11 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 	}
 
 	/**
+	 * Проверяет существование ключа
+	 *
 	 * @param mixed $offset
 	 *
 	 * @return bool
-	 * @since 0.2.0
 	 */
 	public function offsetExists($offset)
 	{
@@ -155,10 +162,11 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 	}
 
 	/**
+	 * Возвращает значение по ключу
+	 *
 	 * @param mixed $offset
 	 *
 	 * @return mixed|null
-	 * @since 0.2.0
 	 */
 	public function offsetGet($offset)
 	{
@@ -171,9 +179,12 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 	}
 
 	/**
+	 * Устанавливает значение по ключу
+	 *
 	 * @param mixed $offset
 	 * @param mixed $value
-	 * @since 0.2.0
+	 *
+	 * @return Dictionary
 	 */
 	public function offsetSet($offset, $value)
 	{
@@ -185,20 +196,28 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 		{
 			$this->values[$offset] = $value;
 		}
+
+		return $this;
 	}
 
 	/**
+	 * Удаляет значение по ключу
+	 *
 	 * @param mixed $offset
-	 * @since 0.2.0
+	 *
+	 * @return Dictionary
 	 */
 	public function offsetUnset($offset)
 	{
 		unset($this->values[$offset]);
+
+		return $this;
 	}
 
 	/**
+	 * Возвращает текущее количество значений
+	 *
 	 * @return int
-	 * @since 0.2.0
 	 */
 	public function count()
 	{
@@ -206,8 +225,9 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 	}
 
 	/**
+	 * Возвращает значения в виде массива
+	 *
 	 * @return array
-	 * @since 0.2.0
 	 */
 	public function toArray()
 	{
@@ -215,11 +235,34 @@ class Dictionary implements \ArrayAccess, \Iterator, \Countable
 	}
 
 	/**
+	 * Проверяет пуст ли список значений
+	 *
 	 * @return bool
-	 * @since 0.2.0
 	 */
 	public function isEmpty()
 	{
 		return empty($this->values);
+	}
+
+	/**
+	 * Возвращает первый элемент коллекции
+	 *
+	 * @return mixed
+	 */
+	public function getFirst ()
+	{
+		$this->rewind();
+
+		return $this->current();
+	}
+
+	/**
+	 * Возвращает последний элемент коллекции
+	 *
+	 * @return mixed
+	 */
+	public function getLast ()
+	{
+		return end($this->values);
 	}
 }

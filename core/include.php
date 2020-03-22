@@ -34,6 +34,7 @@ require($coreRoot.'/lib/loader.php');
 		$coreNamespace.'\Exception\ObjectException'               => $coreRoot.'/exception/object.php',
 		$coreNamespace.'\Exception\ObjectNotFoundException'       => $coreRoot.'/exception/object_not_found.php',
 		$coreNamespace.'\Exception\ObjectPropertyException'       => $coreRoot.'/exception/object_property.php',
+		$coreNamespace.'\Exception\SocketException'               => $coreRoot.'/exception/socket.php',
 		$coreNamespace.'\Exception\Db\DbException'                => $coreRoot.'/exception/db/db.php',
 		$coreNamespace.'\Exception\Db\ConnectionException'        => $coreRoot.'/exception/db/connection.php',
 		$coreNamespace.'\Exception\Db\SqlException'               => $coreRoot.'/exception/db/sql.php',
@@ -44,6 +45,7 @@ require($coreRoot.'/lib/loader.php');
 		$coreNamespace.'\Exception\Io\FileNotOpenedException'     => $coreRoot.'/exception/io/file_not_opened.php',
 		$coreNamespace.'\Exception\Io\FileOpenException'          => $coreRoot.'/exception/io/file_open.php',
 		$coreNamespace.'\Exception\Io\InvalidPathException'       => $coreRoot.'/exception/io/invalid_path.php',
+		$coreNamespace.'\Exception\ValidateException'             => $coreRoot.'/exception/validate.php',
 		/** Interfaces */
 		$coreNamespace.'\Interfaces\AllErrors' => $coreRoot.'/interfaces/all_errors.php',
 		/** Lib */

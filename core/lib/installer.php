@@ -23,7 +23,7 @@ class Installer
 	 *
 	 * @api
 	 *
-	 * @param string $strModuleName Имя пакета
+	 * @param string $strModuleName Имя модуля
 	 *
 	 * @return bool
 	 * @since 0.2.0

@@ -64,7 +64,14 @@ class Session
 	 */
 	public function get ($sName)
 	{
-		return $_SESSION[$sName];
+		if (isset($_SESSION[$sName]))
+		{
+			return $_SESSION[$sName];
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	/**

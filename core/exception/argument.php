@@ -28,18 +28,22 @@ class ArgumentException extends SystemException
 	/**
 	 * Конструктор. Создает объект исключения
 	 *
-	 * @param string $message               Сообщение исключения
+	 * @param string          $message      Сообщение исключения
 	 *                                      Необязательный, по-умолчанию пустая строка
-	 * @param string $parameter             Имя параметра, из-за которого произошло исключение
+	 * @param string          $parameter    Имя параметра, из-за которого произошло исключение
 	 *                                      Необязательный, по-умолчанию пустая строка
+	 * @param int             $code         Числовой код ошибки
+	 * @param string          $file         Путь к файлу, в котором произошла ошибка
+	 * @param int             $line         Строка в которой произошла ошибка
 	 * @param \Exception|null $previous     Предыдущее исключение
 	 *                                      Необязательный, по-умолчанию null
 	 *
 	 * @link https://api.dobrozhil.ru/methods/ms_core_exception_argument_exception_construct/
+	 * //TODO: Обновить документацию
 	 */
-	public function __construct($message = "", $parameter = "", \Exception $previous = null)
+	public function __construct($message = "", $parameter = "", $code=100, $file='', $line=0, \Exception $previous = null)
 	{
-		parent::__construct($message, 100, '', 0, $previous);
+		parent::__construct($message, $code, $file, $line, $previous);
 		$this->parameter = $parameter;
 	}
 

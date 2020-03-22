@@ -13,6 +13,7 @@
 
 namespace Ms\Core\Lib;
 
+use Ms\Core\Entity\Application;
 use Ms\Core\Exception;
 use Ms\Core\Entity\Db\Fields;
 use Ms\Core\Entity\Db;
@@ -20,7 +21,9 @@ use Ms\Core\Entity\Db\DBResult;
 
 abstract class DataManager
 {
-	protected static $sExpansionTableName='';
+	protected static $arExpansionTableName=[];
+
+	protected static $sBaseName = '';
 
 	/**
 	 * Возвращает имя текущего класса
@@ -47,6 +50,21 @@ abstract class DataManager
 	 */
 	final public static function getTableName()
 	{
+		//Получаем базовое имя таблицы
+		$name = static::getTableBaseName();
+		//Добавляем расширение имени таблицы, если оно задано
+		$name .= static::getExpansionTableName($name);
+
+		return $name;
+	}
+
+	/**
+	 * Генерирует и возвращает базовое название таблицы в БД
+	 *
+	 * @return string
+	 */
+	final protected static function getTableBaseName ()
+	{
 		//Разбираем Brand\ModuleName\Tables\NameTable
 		$arClass = explode('\\',static::getClassName());
 		//Сохраняем Brand
@@ -57,8 +75,6 @@ abstract class DataManager
 		$table = Tools::camelCaseToUnderscore($arClass[3]);
 		//Удаляем _table
 		$name .= str_replace('_table','',$table);
-		//Добавляем расширение имени таблицы, если оно задано
-		$name .= static::getExpansionTableName();
 
 		return $name;
 	}
@@ -71,8 +87,9 @@ abstract class DataManager
 	 * @throws Exception\ArgumentNullException
 	 * @throws Exception\ArgumentOutOfRangeException
 	 */
-	final public static function addExpansionTableName ($sName)
+	final public static function setExpansionTableName ($sName)
 	{
+		$baseName = static::getTableBaseName();
 		if (!isset($sName) || strlen((string)$sName)<=0)
 		{
 			throw new Exception\ArgumentNullException('sName');
@@ -83,20 +100,33 @@ abstract class DataManager
 		}
 		else
 		{
-			static::$sExpansionTableName = strtolower($sName);
+			static::$arExpansionTableName[$baseName] = strtolower($sName);
 		}
 	}
 
 	/**
 	 * Возвращает расширение имени таблицы, если оно задано
 	 *
+	 * @param bool $bAddPrefix
+	 *
 	 * @return string
 	 */
-	final public static function getExpansionTableName ()
+	final public static function getExpansionTableName (bool $bAddPrefix = true)
 	{
-		if (strlen((string)self::$sExpansionTableName) > 1 && strlen((string)self::$sExpansionTableName) <= 42)
+		$baseName = static::getTableBaseName();
+		if (array_key_exists($baseName,self::$arExpansionTableName))
 		{
-			return '_'.self::$sExpansionTableName;
+			if (strlen((string)self::$arExpansionTableName[$baseName]) > 1 && strlen((string)self::$arExpansionTableName[$baseName]) <= 42)
+			{
+				if ($bAddPrefix)
+				{
+					return '_'.self::$arExpansionTableName[$baseName];
+				}
+				else
+				{
+					return self::$arExpansionTableName[$baseName];
+				}
+			}
 		}
 
 		return '';
@@ -107,7 +137,8 @@ abstract class DataManager
 	 */
 	final public static function clearExpansionTableName ()
 	{
-		self::$sExpansionTableName = '';
+		$baseName = static::getTableBaseName();
+		self::$arExpansionTableName[$baseName] = '';
 	}
 
 	/**
@@ -164,7 +195,7 @@ abstract class DataManager
 	 * @api
 	 *
 	 * @return false|Fields\ScalarField
-	 * @since 0.2.0
+	 * 
 	 */
 	public static function getPrimaryField ()
 	{
@@ -197,14 +228,14 @@ abstract class DataManager
 	 * Возвращает массив описывающий связанные с таблицей другие таблицы
 	 * и объединяющие их поля
 	 *
-	 * @api
+	 * @deprecated 1.0.0
 	 *
 	 * @return array Массив связей таблиц
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_get_table_links
 	 */
 	public static function getTableLinks ()
 	{
-		return array();
+		return [];
 	}
 
 	/**
@@ -291,7 +322,7 @@ abstract class DataManager
 	 * Можно использовать для добавления индексов
 	 *
 	 * @return null|string
-	 * @since 0.2.0
+	 * 
 	 */
 	public static function getInnerCreateSql ()
 	{
@@ -304,7 +335,7 @@ abstract class DataManager
 	 * @param string|array $mFields Один или несколько полей для каждого из которых создаются индексы
 	 *
 	 * @return null|string
-	 * @since 0.2.0
+	 * 
 	 */
 	public static function addIndexes ($mFields)
 	{
@@ -397,7 +428,7 @@ abstract class DataManager
 	 * @param array &$arAdd Массив полей таблицы
 	 *
 	 * @return mixed|false Для отмены добавления необходимо передать FALSE
-	 * @since 0.2.0
+	 * 
 	 */
 	protected static function OnBeforeAdd (&$arAdd)
 	{
@@ -409,7 +440,7 @@ abstract class DataManager
 	 *
 	 * @param array    $arAdd Массив полей таблицы
 	 * @param DBResult $res   Результат выполнения запроса
-	 * @since 0.2.0
+	 * 
 	 */
 	protected static function OnAfterAdd ($arAdd, $res) {}
 
@@ -422,7 +453,7 @@ abstract class DataManager
 	 *
 	 * @return mixed|false Для отмены обновления необходимо передать FALSE
 	 *
-	 * @since 0.2.0
+	 * 
 	 */
 	protected static function OnBeforeUpdate ($primary, &$arUpdate, &$sSqlWhere=null)
 	{
@@ -435,7 +466,7 @@ abstract class DataManager
 	 * @param mixed    $primary  Значение поля PRIMARY таблицы
 	 * @param array    $arUpdate Массив обновляемых полей таблицы
 	 * @param DBResult $res      Результат выполнения запроса
-	 * @since 0.2.0
+	 * 
 	 */
 	protected static function OnAfterUpdate ($primary, $arUpdate, $res) {}
 
@@ -443,13 +474,14 @@ abstract class DataManager
 	 * Обработчки события перед удалением записи из таблицы
 	 *
 	 * @param mixed $primary Значение PRIMARY поля таблицы
-	 * @param bool  $confirm Флаг подтверждения удаления связанных записей
+	 * @param bool  $confirm Флаг подтверждения удаления связанных записей. Устарел с 1.0.0
 	 *
 	 * @return mixed|false Для отмены удаления необходимо передать FALSE
-	 * @since 0.2.0
+	 * 
 	 */
-	protected static function OnBeforeDelete ($primary, $confirm)
+	protected static function OnBeforeDelete ($primary, $confirm = false)
 	{
+		$confirm = false;
 		return true;
 	}
 
@@ -457,9 +489,9 @@ abstract class DataManager
 	 * Обработчки события после попытки удаления записи из таблицы
 	 *
 	 * @param mixed    $primary Значение PRIMARY поля таблицы
-	 * @param bool     $confirm Флаг подтверждения удаления связанных записей
+	 * @param bool     $confirm Флаг подтверждения удаления связанных записей. Устарел с 1.0.0
 	 * @param DBResult $res     Результат выполнения запроса
-	 * @since 0.2.0
+	 * 
 	 */
 	protected static function OnAfterDelete ($primary, $confirm, $res) {}
 
@@ -478,22 +510,43 @@ abstract class DataManager
 	{
 		if (!is_null($obField))
 		{
-			//Если есть список допустимых значений, проверяем их
-			$arAllowedValues = $obField->getAllowedValues();
-			if (!is_null($arAllowedValues))
+			if ($obField->isRequired ())
 			{
-				if (in_array($mValue, $arAllowedValues))
+				//Если поле обязательно и если есть список допустимых значений, проверяем их
+				$arAllowedValues = $obField->getAllowedValues();
+				$arAllowedValuesRange = $obField->getAllowedValuesRange();
+				if (!is_null($arAllowedValues))
 				{
-					return true;
+					if (in_array($mValue, $arAllowedValues))
+					{
+						return true;
+					}
+					else
+					{
+						throw new Exception\ValidateException(
+							$sFieldName,
+							$mValue,
+							$arAllowedValues
+						);
+					}
 				}
-				else
-				{
-					throw new Exception\ValidateException(
-						'Значение не совпадает с возможными вариантами значений',
-						$sFieldName,
-						$mValue,
-						$arAllowedValues
-					);
+				elseif (
+					!is_null($arAllowedValuesRange)
+					&& array_key_exists('min',$arAllowedValuesRange)
+					&& array_key_exists('max',$arAllowedValuesRange)
+				) {
+					if ($mValue >= $arAllowedValuesRange['min'] && $mValue <= $arAllowedValuesRange['max'])
+					{
+						return true;
+					}
+					else
+					{
+						throw new Exception\ValidateException(
+							$sFieldName,
+							$mValue,
+							$arAllowedValuesRange
+						);
+					}
 				}
 			}
 
@@ -508,12 +561,17 @@ abstract class DataManager
 				{
 					return true;
 				}
+				elseif (!is_null($obField->getDefaultValue($actionType)))
+				{
+					return true;
+				}
 				else
 				{
 					throw new Exception\ValidateException(
-						'Тип поля boolean, значение другого типа',
 						$sFieldName,
-						$mValue
+						$mValue,
+						null,
+						'Тип поля boolean, значение другого типа'
 					);
 				}
 			}
@@ -538,9 +596,10 @@ abstract class DataManager
 					else
 					{
 						throw new Exception\ValidateException(
-							'Передано значение null, однако поле не может быть null, не является автозаполняемым и не имеет значения по-умолчанию',
 							$sFieldName,
-							$mValue
+							$mValue,
+							null,
+							'Передано значение null, однако поле не может быть null, не является автозаполняемым и не имеет значения по-умолчанию'
 						);
 					}
 				}
@@ -583,9 +642,23 @@ abstract class DataManager
 		$arMap = static::getMapArray();
 		if (!empty($arMap))
 		{
-			foreach ($arMap as $fieldName => $obField)
+			if (isset($arAdd[0]) && is_array($arAdd[0]))
 			{
-				$bValidate = static::validateFields ($fieldName, $arAdd[$fieldName], 'insert', $obField);
+				//обрабатываем массив массивов
+				for ($i=0; $i<count($arAdd); $i++)
+				{
+					foreach ($arMap as $fieldName => $obField)
+					{
+						$bValidate = static::validateFields ($fieldName, $arAdd[$i][$fieldName], 'insert', $obField);
+					}
+				}
+			}
+			else
+			{
+				foreach ($arMap as $fieldName => $obField)
+				{
+					$bValidate = static::validateFields ($fieldName, $arAdd[$fieldName], 'insert', $obField);
+				}
 			}
 		}
 		if (!$bValidate)
@@ -638,7 +711,7 @@ abstract class DataManager
 	 * @param mixed  $primary   Поле PRIMARY таблицы
 	 * @param array  $arUpdate  Массив значений таблицы в поле 'VALUES'
 	 * @param bool   $bShowSql  Флаг, показать SQL запрос вместо выполнения
-	 * @param string $sSqlWhere SQL код WHERE, если нужно обновить не по primary полю @since 0.2.0
+	 * @param string $sSqlWhere SQL код WHERE, если нужно обновить не по primary полю 
 	 *
 	 * @return Db\DBResult|string Результат mysql запроса, либо текст запроса
 	 * @throws Exception\ValidateException
@@ -713,29 +786,31 @@ abstract class DataManager
 	 * @ignore
 	 *
 	 * @param mixed $primary Поле PRIMARY таблицы
-	 * @param bool  $confirm Флаг, подтверждающий удаление всех связанных записей в других таблицах
+	 * @param bool  $confirm Флаг, подтверждающий удаление всех связанных записей в других таблицах (параметер устарел с 1.0.0)
 	 *
 	 * @return Db\DBResult Результат mysql запроса
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_delete
+	 * TODO: обновить документацию
 	 */
-	final public static function delete ($primary, $confirm=false)
+	final public static function delete ($primary, $confirm = false)
 	{
-		$query = new Db\Query\QueryDelete($primary,$confirm,static::getClassName());
-
+		$confirm=false;
 		$bDelete = true;
 		//Обрабатываем системное событие перед удалением записи из таблицы
-		$bDelete = Events::runEvents('core','OnBeforeDelete',[static::getClassName(),$primary, &$confirm]);
+		$bDelete = Events::runEvents('core','OnBeforeDelete',[static::getClassName(),$primary]);
 		if ($bDelete === false)
 		{
 			return new DBResult();
 		}
 
 		//Обрабатываем событие таблицы перед удалением записи из таблицы
-		$bDelete = static::OnBeforeDelete($primary,$confirm);
+		$bDelete = static::OnBeforeDelete($primary);
 		if ($bDelete === false)
 		{
 			return new DBResult();
 		}
+
+		$query = new Db\Query\QueryDelete($primary,static::getClassName());
 
 		$res = $query->exec();
 
@@ -922,16 +997,18 @@ abstract class DataManager
 	/**
 	 * Функция проверяет описанные связи таблицы, используя запросы к DB
 	 *
-	 * @api
+	 * @deprecated 1.0.0
 	 *
 	 * @return bool Связи существуют - true, инае - false
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/data_manager/method_check_table_links
+	 * TODO: обновить документацию
 	 */
 	final public static function checkTableLinks()
 	{
-		$bLinks = false;
+//		$bLinks = false;
+		return false;
 
-		$helper = new Db\SqlHelper();
+/*		$helper = new Db\SqlHelper();
 		$arLinks = static::getTableLinks();
 		$tableName = static::getTableName();
 		foreach ($arLinks as $field=>$arLink)
@@ -969,7 +1046,7 @@ abstract class DataManager
 			}
 		}
 
-		return $bLinks;
+		return $bLinks;*/
 	}
 
 	/**
@@ -1002,6 +1079,30 @@ abstract class DataManager
 		}
 
 		return $arRes;
+	}
+
+	/**
+	 * Возвращает количество записей в таблице
+	 *
+	 * @return int
+	 */
+	final public static function count()
+	{
+		$helper = new Db\SqlHelper(static::getTableName ());
+
+		$sql = 'SELECT COUNT(*) as '.$helper->wrapFieldQuotes ('COUNT').' FROM '.$helper->wrapTableQuotes ();
+		$query = new Db\Query\QueryBase($sql);
+
+		$res = $query->exec ();
+		if ($ar_res = $res->fetch ())
+		{
+			if (isset($ar_res['COUNT']) && (int)$ar_res['COUNT'] > 0)
+			{
+				return $ar_res['COUNT'];
+			}
+		}
+
+		return 0;
 	}
 
 	/**
@@ -1068,8 +1169,71 @@ abstract class DataManager
 		return static::getList($params[0]);
 	}
 
+	final public static function issetTable (string $tableName=null)
+	{
+		if (is_null($tableName))
+		{
+			$tableName = static::getTableName();
+		}
+		$query = new Db\Query\QueryBase("SHOW TABLES LIKE '".$tableName."'");
+		$res = $query->exec();
+
+		return ($res->getAffectedRows() > 0);
+	}
+
+	final public static function rename ($newTableName, $bUseIndex=false)
+	{
+		$helper = new Db\SqlHelper();
+		if (!static::issetTable($newTableName))
+		{
+			$sql = 'RENAME TABLE '.$helper->wrapQuotes(static::getTableName()).' TO '.$helper->wrapQuotes($newTableName);
+			$query = new Db\Query\QueryBase($sql);
+			$query->exec();
+
+			return (static::issetTable($newTableName) ? $newTableName : false);
+		}
+		elseif ($bUseIndex)
+		{
+			$i = 0;
+			do
+			{
+				$i++;
+				if ($i > 0 && $i < 10)
+				{
+					$expName = $newTableName . '0' . $i;
+				}
+				else
+				{
+					$expName = $newTableName . $i;
+				}
+				$res = static::issetTable($expName);
+			}
+			while ($res);
+
+			$sql = 'RENAME TABLE '.$helper->wrapQuotes(static::getTableName()).' TO '.$helper->wrapQuotes($expName);
+			$query = new Db\Query\QueryBase($sql);
+			$query->exec();
+
+			return (static::issetTable($expName) ? $expName : false);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	final public static function clearTable()
+	{
+		$helper = new Db\SqlHelper();
+		$sql = 'DELETE FROM ' . $helper->wrapQuotes(static::getTableName()) . ' WHERE 1';
+		$query = new Db\Query\QueryBase($sql);
+		$res = $query->exec();
+
+		return (!!$res->getResult());
+	}
 
 
+	//<editor-fold defaultstate="collapse" desc=">>> Заглушки методов, для защиты от использования">
 	/**
 	 * Заглушка, чтобы не использовали этот метод
 	 */
@@ -1099,5 +1263,5 @@ abstract class DataManager
 			die($e->showException());
 		}
 	}
-
+	//</editor-fold>
 }

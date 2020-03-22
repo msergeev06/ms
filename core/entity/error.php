@@ -12,6 +12,12 @@
 
 namespace Ms\Core\Entity;
 
+/**
+ * Class Error
+ * @package Ms\Core\Entity
+ * @deprecated 1.0.0
+ * @see \Ms\Core\Entity\Errors\Error
+ */
 class Error
 {
 	/**
@@ -39,6 +45,8 @@ class Error
 	{
 		$this->message = $message;
 		$this->code = $code;
+
+		return $this;
 	}
 
 	/**

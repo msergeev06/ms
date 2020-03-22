@@ -97,7 +97,60 @@ class StringField extends ScalarField
 		{
 			$this->size = intval($parameters['size']);
 		}
+
+		return $this;
 	}
+
+	public function setSize (int $size = 255)
+	{
+		if ((int)$size > 0 && (int)$size<=255)
+		{
+			$this->size = $size;
+		}
+		else
+		{
+			$this->size = 255;
+		}
+
+		return $this;
+	}
+
+	public function setDefaultValue ($defaultValue)
+	{
+		if (!is_string($defaultValue))
+		{
+			throw new Exception\ArgumentTypeException('$defaultValue','string');
+		}
+		return parent::setDefaultValue($defaultValue);
+	}
+
+	public function setDefaultInsert ($defaultInsert)
+	{
+		if (!is_string($defaultInsert))
+		{
+			throw new Exception\ArgumentTypeException('$defaultInsert','string');
+		}
+		return parent::setDefaultInsert($defaultInsert);
+	}
+
+	public function setDefaultCreate ($defaultCreate)
+	{
+		if (!is_string($defaultCreate))
+		{
+			throw new Exception\ArgumentTypeException('$defaultCreate','string');
+		}
+		return parent::setDefaultCreate($defaultCreate);
+	}
+
+	public function setDefaultUpdate ($defaultUpdate)
+	{
+		if (!is_string($defaultUpdate))
+		{
+			throw new Exception\ArgumentTypeException('$defaultUpdate','string');
+		}
+		return parent::setDefaultUpdate($defaultUpdate);
+	}
+
 
 	/**
 	 * Возвращает размер поля в базе данных (в символах)

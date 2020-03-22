@@ -196,6 +196,7 @@ class Loader
 		{
 			$name = Tools::camelCaseToUnderscore($name);
 			$name = str_replace('_table','',$name);
+			$name = str_replace('_exception','',$name);
 			$filename .= '/'.$name;
 		}
 

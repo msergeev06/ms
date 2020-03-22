@@ -86,5 +86,6 @@ class TextField extends StringField
 
 		$this->dataType = $this->fieldType = 'text';
 
+		return $this;
 	}
 }

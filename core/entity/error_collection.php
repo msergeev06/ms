@@ -17,6 +17,8 @@ namespace Ms\Core\Entity;
  * @package Ms\Core
  * @subpackage Entity
  * @extends Type\Dictionary
+ * @deprecated 1.0.0
+ * @see \Ms\Core\Entity\Errors\ErrorCollection
  */
 class ErrorCollection extends Type\Dictionary
 {

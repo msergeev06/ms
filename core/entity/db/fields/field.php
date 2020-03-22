@@ -242,6 +242,168 @@ abstract class Field
 		{
 			$this->parentField = $parameters['parent'];
 		}
+
+		return $this;
+	}
+
+
+	//<editor-fold defaultstate="collapse" desc=">>> Main Setters">
+	public function setLink (string $link)
+	{
+		if (strpos($link,'.') !== false)
+		{
+			$this->link = $link;
+		}
+		else
+		{
+			throw new Exception\ArgumentOutOfRangeException('link','table.field');
+		}
+
+		return $this;
+	}
+
+	public function setForeignOnUpdate (string $linkOnUpdate = 'cascade')
+	{
+		$linkOnUpdate = strtolower($linkOnUpdate);
+		if (in_array($linkOnUpdate,['cascade','set_null','no_action','restrict','set_default']))
+		{
+			$this->linkOnUpdate = $linkOnUpdate;
+		}
+		else
+		{
+			throw new Exception\ArgumentOutOfRangeException('linkOnUpdate','cascade|set_null|no_action|restrict|set_default');
+		}
+
+		return $this;
+	}
+
+	public function setForeignOnUpdateCascade ()
+	{
+		$this->linkOnUpdate = 'cascade';
+
+		return $this;
+	}
+
+	public function setForeignOnUpdateSetNull ()
+	{
+		$this->linkOnUpdate = 'set_null';
+
+		return $this;
+	}
+
+	public function setForeignOnUpdateNoAction ()
+	{
+		$this->linkOnUpdate = 'no_action';
+
+		return $this;
+	}
+
+	public function setForeignOnUpdateRestrict ()
+	{
+		$this->linkOnUpdate = 'restrict';
+
+		return $this;
+	}
+
+	public function setForeignOnUpdateSetDefault ()
+	{
+		$this->linkOnUpdate = 'set_default';
+
+		return $this;
+	}
+
+	public function setForeignOnDelete (string $linkOnDelete = 'restrict')
+	{
+		$linkOnDelete = strtolower($linkOnDelete);
+		if (in_array($linkOnDelete,['cascade','set_null','no_action','restrict','set_default']))
+		{
+			$this->linkOnDelete = $linkOnDelete;
+		}
+		else
+		{
+			throw new Exception\ArgumentOutOfRangeException('linkOnDelete','cascade|set_null|no_action|restrict|set_default');
+		}
+
+		return $this;
+	}
+
+	public function setForeignOnDeleteCascade ()
+	{
+		$this->linkOnDelete = 'cascade';
+
+		return $this;
+	}
+
+	public function setForeignOnDeleteSetNull ()
+	{
+		$this->linkOnDelete = 'set_null';
+
+		return $this;
+	}
+
+	public function setForeignOnDeleteNoAction ()
+	{
+		$this->linkOnDelete = 'no_action';
+
+		return $this;
+	}
+
+	public function setForeignOnDeleteRestrict ()
+	{
+		$this->linkOnDelete = 'restrict';
+
+		return $this;
+	}
+
+	public function setForeignOnDeleteSetDefault ()
+	{
+		$this->linkOnDelete = 'set_default';
+
+		return $this;
+	}
+
+	public function setLinkNotForeignKey ($linkNotForeignKey = true)
+	{
+		$this->linkNotForeignKey = $linkNotForeignKey;
+
+		return $this;
+	}
+	//</editor-fold>
+
+	public function setTitle (string $title)
+	{
+		$this->title = $title;
+
+		return $this;
+	}
+
+	public function setFetchDataModification (string $methodName)
+	{
+		$this->fetchDataModification = $methodName;
+
+		return $this;
+	}
+
+	public function setSaveDataModification (string $methodName)
+	{
+		$this->fetchDataModification = $methodName;
+
+		return $this;
+	}
+
+	public function setSerialized (bool $isSerialized = true)
+	{
+		$this->isSerialized = $isSerialized;
+
+		return $this;
+	}
+
+	public function setParentField (string $parentField)
+	{
+		//TODO: Что это и для чего?
+		$this->parentField = $parentField;
+
+		return $this;
 	}
 
 	/**

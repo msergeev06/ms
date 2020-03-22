@@ -15,6 +15,7 @@ namespace Ms\Core\Lib;
 
 use Ms\Core\Entity\Db\Query;
 use Ms\Core\Entity\Application;
+use Ms\Core\Exception\ValidateException;
 use Ms\Core\Tables;
 
 class Options
@@ -121,6 +122,31 @@ class Options
 	}
 
 	/**
+	 * Функция обертка, возвращающая значение указанной опции в виде булевого значения
+	 *
+	 * @api
+	 *
+	 * @param string   $optionName         Имя опции
+	 * @param null|int $optionDefaultValue Значение опции по-умолчанию, где (1 = true, 0 = false)
+	 *
+	 * @return bool
+	 */
+	public static function getOptionBool ($optionName, $optionDefaultValue = null)
+	{
+		$optionName = strtoupper($optionName);
+		$optionVal = self::getOption($optionName, $optionDefaultValue);
+
+		if ($optionVal!==false)
+		{
+			return Tools::validateBoolVal($optionVal);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * Функция добавляющая опщии по-умолчанию, без записи новых в DB
 	 *
 	 * @api
@@ -167,26 +193,41 @@ class Options
 			);
 			if ($result)
 			{
-				$res = Tables\OptionsTable::update($result['ID'],$arInsert);
-				if ($res->getResult())
+				try
 				{
-					static::$arOptions[$optionName] = $optionValue;
-					return true;
+					$res = Tables\OptionsTable::update($result['ID'],$arInsert);
+					if ($res->getResult())
+					{
+						static::$arOptions[$optionName] = $optionValue;
+						return true;
+					}
+					else
+					{
+						return false;
+					}
 				}
-				else
+				catch (ValidateException $e)
 				{
 					return false;
 				}
 			}
 			else
 			{
-				$res = Tables\OptionsTable::add($arInsert);
-				if ($res->getResult())
+				try
 				{
-					static::$arOptions[$optionName] = $optionValue;
-					return true;
+					$res = Tables\OptionsTable::add($arInsert);
+					if ($res->getResult())
+					{
+						static::$arOptions[$optionName] = $optionValue;
+
+						return true;
+					}
+					else
+					{
+						return false;
+					}
 				}
-				else
+				catch (ValidateException $e)
 				{
 					return false;
 				}

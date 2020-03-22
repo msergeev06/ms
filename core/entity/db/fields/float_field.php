@@ -88,6 +88,20 @@ class FloatField extends ScalarField
 		{
 			$this->scale = intval($parameters['scale']);
 		}
+
+		return $this;
+	}
+
+	/**
+	 * @param int $scale
+	 *
+	 * @return FloatField
+	 */
+	public function setScale (int $scale)
+	{
+		$this->scale = $scale;
+
+		return $this;
 	}
 
 	/**

@@ -11,20 +11,44 @@
 
 namespace Ms\Core\Exception;
 
+use Ms\Core\Lib\Errors;
+
 class ValidateException extends ArgumentException
 {
 	protected $sFieldName = null;
 	protected $mValue = null;
 	protected $arAllowedValues = [];
 
-	public function __construct ($message, $sFieldName, $mValue=null, $arAllowedValues=[], \Exception $previous = null)
+	public function __construct ($sFieldName, $mValue=null, $arAllowedValues=[], $message='', $code=Errors::VALIDATION_EXCEPTION, $file='', $line='', \Exception $previous = null)
 	{
-		$message = 'Ошибка! Неверное значение поля "'.$sFieldName.'": '.$message;
 		$this->sFieldName = $sFieldName;
 		$this->mValue = $mValue;
 		$this->arAllowedValues = $arAllowedValues;
 
-		parent::__construct($message, $sFieldName, $previous);
+		if (array_key_exists('min',$this->arAllowedValues) && array_key_exists('max',$this->arAllowedValues))
+		{
+			$exceptionMessage = 'Значение ['.$mValue.'] не входит в допустимый диапазон значений (от '.$arAllowedValues['min'].' до '.$arAllowedValues['max'].'): '.$message;
+			parent::__construct($exceptionMessage, $sFieldName, $code, $file, $line, $previous);
+		}
+		elseif (array_key_exists('min',$this->arAllowedValues))
+		{
+			$exceptionMessage = 'Значение ['.$mValue.'] не входит в допустимый диапазон значений (от '.$arAllowedValues['min'].'): '.$message;
+			parent::__construct($exceptionMessage, $sFieldName, $code, $file, $line, $previous);
+		}
+		elseif (array_key_exists('max',$this->arAllowedValues))
+		{
+			$exceptionMessage = 'Значение ['.$mValue.'] не входит в допустимый диапазон значений (до '.$arAllowedValues['max'].'): '.$message;
+			parent::__construct($exceptionMessage, $sFieldName, $code, $file, $line, $previous);
+		}
+		elseif (!is_null($arAllowedValues) && !empty($arAllowedValues))
+		{
+			$exceptionMessage = 'Значение ['.$mValue.'] не совпадает с возможными вариантами значений ('.implode (', ',$arAllowedValues).'): '.$message;
+			parent::__construct($exceptionMessage, $sFieldName, $code, $file, $line, $previous);
+		}
+		else
+		{
+			parent::__construct($message, $sFieldName, $code, $file, $line, $previous);
+		}
 	}
 
 	public function getParameter ()

@@ -47,6 +47,25 @@ class Form
 	}
 
 	/**
+	 * Проверяет значение поля формы textarea на отсутствие спец символов
+	 *
+	 * @param string $value
+	 *
+	 * @return bool|string
+	 */
+	public static function checkTextArea ($value)
+	{
+		if ( preg_match( "/[\<|\>]/", $value) )
+		{
+			return Loc::getCoreMessage('error_wrong_symbols');
+		}
+		else
+		{
+			return true;
+		}
+	}
+
+	/**
 	 * Проверяет значение поля формы input type="number"
 	 *
 	 * @param string|float|int  $value

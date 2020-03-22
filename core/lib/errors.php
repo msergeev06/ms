@@ -2,9 +2,9 @@
 
 namespace Ms\Core\Lib;
 
-use Ms\Core\Interfaces\AllErrors;
+use Ms\Core\Interfaces\IAllErrors;
 
-class Errors implements AllErrors
+class Errors implements IAllErrors
 {
 	const ERROR_MODULE_WRONG_NAME                   = 100;
 	const ERROR_MODULE_NOT_INSTALLED                = 101;
@@ -15,6 +15,9 @@ class Errors implements AllErrors
 
 	const ERROR_CLASS_WRONG_NAME        = 110;
 	const ERROR_CLASS_NOT_AUTOLOAD      = 111;
+
+	const ARGUMENT_EXCEPTION                = 200;
+	const VALIDATION_EXCEPTION              = 210;
 
 
 	public static function getError ($iErrorCode, $arReplace=array())

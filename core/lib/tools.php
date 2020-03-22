@@ -15,6 +15,7 @@ namespace Ms\Core\Lib;
 
 use Ms\Core\Entity\Application;
 use Ms\Core\Entity\Type\Date;
+use Ms\Core\Exception\ArgumentOutOfRangeException;
 
 class Tools
 {
@@ -457,6 +458,30 @@ class Tools
 	}
 
 	/**
+	 * Возвращает первый символ указанной строки, если передана пустая строка выдает исключение
+	 *
+	 * @param string $str Исходная строка
+	 *
+	 * @return false|string
+	 * @throws ArgumentOutOfRangeException
+	 */
+	public static function getFirstChar ($str)
+	{
+		if (strlen($str)>0)
+		{
+			$str = iconv('utf-8','windows-1251',$str);
+			$ch = $str[0];
+			$str = iconv('windows-1251','utf-8',$ch);
+		}
+		else
+		{
+			throw new ArgumentOutOfRangeException('str',1);
+		}
+
+		return $str;
+	}
+
+	/**
 	 * Преобразует полученную строку к значению floatval,
 	 * убирая пробелы и заменяя запятую ',' точкой '.'
 	 *
@@ -509,7 +534,7 @@ class Tools
 	 *
 	 * @param $value
 	 *
-	 * @return bool|int
+	 * @return bool
 	 * @link http://docs.dobrozhil.ru/doku.php/ms/core/lib/tools/method_validate_bool_val
 	 */
 	public static function validateBoolVal ($value)
@@ -1133,5 +1158,55 @@ class Tools
 		}
 
 		return $userID;
+	}
+
+	/**
+	 * Проверяет, находится ли число между первым и вторым. Если стоит флаг "включительно" происходит сравнение >= и <=
+	 * Если и first и second равны null, вседа считается, что число попало в диапазон
+	 *
+	 * @param float      $value      Проверяемое значение
+	 * @param null|float $first      Начало диапазона, может быть null
+	 * @param null|float $second     Окончание диапазоне, может быть null
+	 * @param bool       $bInclusive Флаг "Включительно"
+	 *
+	 * @return bool
+	 */
+	public static function isBetween (float $value, float $first = null, float $second = null, bool $bInclusive = true)
+	{
+		if (is_null($first) && is_null($second))
+		{
+			return true;
+		}
+
+		if ($bInclusive)
+		{
+			if (!is_null($first) && !is_null($second))
+			{
+				return ($value >= $first && $value <= $second);
+			}
+			elseif (!is_null($first))
+			{
+				return ($value >= $first);
+			}
+			elseif (!is_null($second))
+			{
+				return ($value <= $second);
+			}
+		}
+		else
+		{
+			if (!is_null($first) && !is_null($second))
+			{
+				return ($value > $first && $value < $second);
+			}
+			elseif (!is_null($first))
+			{
+				return ($value > $first);
+			}
+			elseif (!is_null($second))
+			{
+				return ($value < $second);
+			}
+		}
 	}
 }

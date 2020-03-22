@@ -12,6 +12,7 @@
 namespace Ms\Core\Entity\Db\Fields;
 
 use Ms\Core\Entity\Type\Date;
+use Ms\Core\Exception\ArgumentTypeException;
 
 /**
  * Class DateTimeField
@@ -86,6 +87,43 @@ class DateTimeField extends ScalarField
 		$this->dataType = 'datetime';
 		$this->fieldType = 'Ms\Core\Entity\Type\Date';
 	}
+
+	public function setDefaultValue ($defaultValue)
+	{
+		if (!($defaultValue instanceof Date) && !is_string($defaultValue))
+		{
+			throw new ArgumentTypeException('$defaultValue', '\Ms\Core\Entity\Type\Date|string');
+		}
+		return parent::setDefaultValue($defaultValue);
+	}
+
+	public function setDefaultCreate ($defaultCreate)
+	{
+		if (!($defaultCreate instanceof Date) && !is_string($defaultCreate))
+		{
+			throw new ArgumentTypeException('$defaultCreate', '\Ms\Core\Entity\Type\Date|string');
+		}
+		return parent::setDefaultCreate($defaultCreate);
+	}
+
+	public function setDefaultInsert ($defaultInsert)
+	{
+		if (!($defaultInsert instanceof Date) && !is_string($defaultInsert))
+		{
+			throw new ArgumentTypeException('$defaultInsert', '\Ms\Core\Entity\Type\Date|string');
+		}
+		return parent::setDefaultInsert($defaultInsert);
+	}
+
+	public function setDefaultUpdate ($defaultUpdate)
+	{
+		if (!is_null($defaultUpdate) && !($defaultUpdate instanceof Date) && !is_string($defaultUpdate))
+		{
+			throw new ArgumentTypeException('$defaultUpdate', '\Ms\Core\Entity\Type\Date|string');
+		}
+		return parent::setDefaultUpdate($defaultUpdate);
+	}
+
 
 	/**
 	 * Обрабатывает значение поля перед сохранением в базу данных

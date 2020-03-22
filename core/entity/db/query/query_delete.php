@@ -37,59 +37,47 @@ class QueryDelete extends QueryBase
 
 	/**
 	 * @var null
+	 * @deprecated 1.0.0
 	 */
 	private $massDeleteResult = null;
 
 	/**
 	 * Конструктор
 	 *
-	 * @param mixed $deletePrimary
-	 * @param bool $deleteConfirm
+	 * @param mixed  $deletePrimary
+	 *  param bool $deleteConfirm Устарел с 1.0.0
 	 * @param string $tableClass
-	 * @since 0.2.0
+	 *
+	 * @throws Exception\ArgumentNullException
+	 * @throws Exception\ArgumentTypeException
 	 */
-	public function __construct ($deletePrimary=null,$deleteConfirm=null,$tableClass=null)
+	public function __construct ($deletePrimary=null,$tableClass=null)
 	{
-		try
+		if (!is_null($deletePrimary))
 		{
-			if (!is_null($deletePrimary))
+			$this->deletePrimary = $deletePrimary;
+		}
+		else
+		{
+			throw new Exception\ArgumentNullException('$deletePrimary');
+		}
+		/** @var DataManager $tableClass */
+		if (!is_null($tableClass))
+		{
+			if (class_exists($tableClass))
 			{
-				$this->deletePrimary = $deletePrimary;
+				$this->setTableName($tableClass::getTableName());
+				$this->setTableMap($tableClass::getMapArray());
+//					$this->arTableLinks = $tableClass::getTableLinks();
 			}
 			else
 			{
-				throw new Exception\ArgumentNullException('$deletePrimary');
-			}
-			if (!is_null($deleteConfirm) && $deleteConfirm)
-			{
-				$this->deteteConfirm = true;
-			}
-			/** @var DataManager $tableClass */
-			if (!is_null($tableClass))
-			{
-				if (class_exists($tableClass))
-				{
-					$this->setTableName($tableClass::getTableName());
-					$this->setTableMap($tableClass::getMapArray());
-					$this->arTableLinks = $tableClass::getTableLinks();
-				}
-				else
-				{
-					throw new Exception\ArgumentTypeException('$tableClass','DataManager');
-				}
-			}
-			else
-			{
-				throw new Exception\ArgumentNullException('$tableClass');
+				throw new Exception\ArgumentTypeException('$tableClass','DataManager');
 			}
 		}
-		catch (Exception\ArgumentNullException $e)
+		else
 		{
-			die($e->showException());
-		}
-		catch (Exception\ArgumentTypeException $e2)
-		{
-			die($e2->showException());
+			throw new Exception\ArgumentNullException('$tableClass');
 		}
 
 		$this->buildQuery();
@@ -97,7 +85,6 @@ class QueryDelete extends QueryBase
 
 	/**
 	 * Собирает SQL запрос из параметров
-	 * @since 0.2.0
 	 */
 	protected function buildQuery ()
 	{
@@ -139,13 +126,19 @@ class QueryDelete extends QueryBase
 		$sql .= " LIMIT 1";
 		//msEchoVar($sql);
 		//msDebug($arTableLinks);
+
+		$this->setSql($sql);
+
+		//<editor-fold defaultstate="collapse" desc="Код устарел с 1.0.0. Теперь все проверки ложаться на программистов и на foreign key">
+		/*
 		if (empty($this->arTableLinks))
 		{
 			$this->setSql($sql);
 		}
 		elseif ($this->deleteConfirm)
 		{
-			$this->sqlMassDelete();
+//			$this->sqlMassDelete();
+			$this->setSql($sql);
 		}
 		else
 		{
@@ -155,24 +148,27 @@ class QueryDelete extends QueryBase
 			{
 				$this->setSql($sql);
 			}
+
+			$this->setSql($sql);
 		}
+		*/
+		//</editor-fold>
 	}
 
 	/**
 	 * Возвращает результат SQL запроса массового удаления данных
-	 *
+	 * @deprecated 1.0.0
 	 * @return null
-	 * @since 0.2.0
 	 */
 	public function getMassDeleteResult ()
 	{
-		return $this->massDeleteResult;
+//		return $this->massDeleteResult;
+		return null;
 	}
 
-	//TODO: Протестировать
 	/**
 	 * Функция массового удаления записи и всех связанных с ней записей
-	 * @since 0.2.0
+	 * @deprecated  1.0.0
 	 */
 	private function sqlMassDelete ()
 	{
@@ -222,7 +218,7 @@ class QueryDelete extends QueryBase
 						{
 							foreach ($arRes as $delID)
 							{
-								$deleteQuery = new QueryDelete($delID['ID'],true,$tableClassName);
+								$deleteQuery = new QueryDelete($delID['ID'],$tableClassName);
 								if (strlen($deleteQuery->getSql())>5)
 								{
 									$massSql .= $deleteQuery->getSql().";\n";
@@ -248,7 +244,7 @@ class QueryDelete extends QueryBase
 					{
 						foreach ($arRes as $delID)
 						{
-							$deleteQuery = new QueryDelete($delID['ID'],true,$tableClassName);
+							$deleteQuery = new QueryDelete($delID['ID'],$tableClassName);
 							if (strlen($deleteQuery->getSql())>5)
 							{
 								$massSql .= $deleteQuery->getSql().";\n";
@@ -305,12 +301,11 @@ class QueryDelete extends QueryBase
 		$this->massDeleteResult = $res;
 	}
 
-	//TODO: Протестировать
 	/**
 	 * Функция проверки возможности удаления записи. Проверяет нет ли записей, связанных с удаляемой
 	 *
 	 * @return bool
-	 * @since 0.2.0
+	 * @deprecated 1.0.0
 	 */
 	private function checkCanDelete()
 	{

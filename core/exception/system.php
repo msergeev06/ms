@@ -13,6 +13,7 @@
 namespace Ms\Core\Exception;
 
 use Ms\Core\Entity\Application;
+use Ms\Core\Interfaces\ILogger;
 use Ms\Core\Lib\IO\Files;
 
 /**
@@ -48,6 +49,11 @@ class SystemException extends \Exception
 			$this->file = $file;
 			$this->line = $line;
 		}
+
+		if (Application::getInstance()->getSettings()->isDebugMode())
+		{
+			$this->writeToSysLogFile();
+		}
 	}
 
 	/**
@@ -60,22 +66,6 @@ class SystemException extends \Exception
 	 */
 	public function showException()
 	{
-		$filename = Application::getInstance()->getSettings()->getSystemLogFile();
-		if (!is_null($filename))
-		{
-			Files::createDir(dirname($filename));
-			$f1 = fopen ($filename, 'a');
-			$tmp=explode(' ', microtime());
-			fwrite($f1, date("H:i:s ").$tmp[0]."\n");
-			fwrite($f1, $this->getClassName().': "'.$this->getMessage().'"'."\n");
-			fwrite($f1, "Stack trace:\n");
-			fwrite($f1, $this->getTraceAsString()."\n");
-			fwrite($f1, $this->getFile()." ".$this->getLine());
-			fwrite($f1, "\n------------------\n");
-			fclose ($f1);
-			@chmod($filename, Files::getFileChmod());
-		}
-
 		if (Application::getInstance()->getSettings()->isDebugMode())
 		{
 			$tmp=explode(' ', microtime());
@@ -90,6 +80,27 @@ class SystemException extends \Exception
 		return '';
 	}
 
+	public function writeToSysLogFile ()
+	{
+		$filename = Application::getInstance()->getSettings()->getSystemLogFile();
+		if (!is_null($filename))
+		{
+			Files::createDir(dirname($filename));
+			$f1 = fopen ($filename, 'a');
+			$tmp=explode(' ', microtime());
+			fwrite($f1, date("H:i:s ").$tmp[0]."\n");
+			fwrite($f1, $this->getFile().": ".$this->getLine()."\n");
+			fwrite($f1, $this->getClassName().': "'.$this->getMessage().'"'."\n");
+			fwrite($f1, "Stack trace:\n");
+			fwrite($f1, $this->getTraceAsString()."\n");
+			fwrite($f1, "------------------\n");
+			fclose ($f1);
+			@chmod($filename, Files::getFileChmod());
+		}
+
+		return $this;
+	}
+
 	/**
 	 * Возвращает имя (с пространством имен), вызвавшего его класса (используется get_called_class)
 	 *
@@ -102,5 +113,17 @@ class SystemException extends \Exception
 		return get_called_class();
 	}
 
+	public function addMessageToLog (ILogger $logger)
+	{
+		$logger->addMessage(
+			'ERROR [#CODE#]: #MESSAGE#',
+			[
+				'CODE'=>$this->getCode(),
+				'MESSAGE'=>$this->getMessage()
+			]
+		);
+
+		return $this;
+	}
 }
 

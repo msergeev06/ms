@@ -32,7 +32,7 @@ class QueryUpdate extends QueryBase
 	/**
 	 * @var null||string
 	 */
-	private $sSqlWhere = null;
+	protected $sSqlWhere = null;
 
 	/**
 	 * Конструктор
@@ -226,8 +226,16 @@ class QueryUpdate extends QueryBase
 		{
 			$sql .= $this->sSqlWhere;
 		}
-		$sql .= "\nLIMIT 1 ;";
+//		$sql .= "\nLIMIT 1 ;";
 
 		return $sql;
+	}
+
+	/**
+	 * @return null
+	 */
+	public function getSqlWhere ()
+	{
+		return $this->sSqlWhere;
 	}
 }

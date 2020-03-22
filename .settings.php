@@ -31,7 +31,9 @@ return array(
 		'DebugMode' => true,
 		'DirLogs' => $documentRoot.'/logs',
 		'SystemLogFile' => $documentRoot.'/logs/sys_'.date('Ymd').'.log',
-		'ExpireLogFiles' => 10
+		'ExpireSystemLogFiles' => 14,
+		'ExpireDailyLogFiles' => 14,
+		'ExpireMonthlyLogFiles' => 6
 	),
 	'Time' => array(
 		'Timezone' => 'Europe/Moscow',

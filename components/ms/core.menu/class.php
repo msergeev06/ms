@@ -160,6 +160,7 @@ class MenuComponent extends Component
 		$arTmp['LINK'] = $arMenu[1];
 		if (strpos($app->getContext()->getServer()->getScriptName(),$arTmp['LINK'])===false)
 		{
+			msDebug($arTmp['LINK']);
 			$arTmp['SELECTED'] = false;
 		}
 		else

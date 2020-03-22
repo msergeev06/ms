@@ -19,9 +19,9 @@ use Ms\Core\Lib\Modules;
 
 class FormComponent extends Component
 {
-	public function __construct ($component, $template='.default', $arParams=array())
+	public function __construct ($component, $template='.default', $arParams=array(), Component $parentComponent = null)
 	{
-		parent::__construct($component,$template,$arParams);
+		parent::__construct($component,$template,$arParams, $parentComponent);
 	}
 
 	public function run ()
@@ -51,55 +51,7 @@ class FormComponent extends Component
 			}
 		}
 
-		$form_action = $this->getData('form_action');
-		if (!is_null($form_action) && intval($form_action)==1)
-		{
-			if (
-				is_null($arParams['FORM_HANDLER'])
-				||$arParams['FORM_HANDLER']==''
-				||(is_array($arParams['FORM_HANDLER'])&&empty($arParams['FORM_HANDLER']))
-			) {
-				//Если FORM_HANDLER не задан, значит обрабатывать форму будут в другом месте
-			}
-			else
-			{
-				if (is_array($arParams['FORM_HANDLER']))
-				{
-					$namespace = $arParams['FORM_HANDLER'][0];
-					$function = $arParams['FORM_HANDLER'][1];
-					$formHandler = $namespace.'::'.$function;
-				}
-				else
-				{
-					$formHandler = (string)$arParams['FORM_HANDLER'];
-					list($namespace,$function) = explode('::',$formHandler);
-				}
-				if (Loader::includeModule(Modules::getModuleFromNamespace ($namespace)))
-				{
-					$arResult['FORM_RESULT'] = $formHandler($arResult['FIELDS_VALUES']);
-				}
-
-				if ($arResult['FORM_RESULT'] !== false)
-				{
-					if ($arParams['SHOW_FORM_IF_OK']===true)
-					{
-						$this->includeTemplate();
-					}
-					elseif ($arParams['REDIRECT_IF_OK']!=='')
-					{
-						Application::getInstance()->setRefresh($arParams['REDIRECT_IF_OK']);
-					}
-				}
-				else
-				{
-					$arResult['FORM_ERRORS'] = $namespace::getErrorList();
-				}
-			}
-		}
-		else
-		{
-			$this->includeTemplate();
-		}
+		$this->includeTemplate();
 
 		//msDebug($arParams);
 		//msDebug($arResult);
@@ -108,6 +60,7 @@ class FormComponent extends Component
 	protected function getData($fieldName)
 	{
 		$request = Application::getInstance()->getContext()->getRequest();
+//		msDebug($fieldName);
 		if (strtolower($this->arParams['FORM_METHOD']) == 'post')
 		{
 			return $request->getPost($fieldName);

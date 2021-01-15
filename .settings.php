@@ -58,7 +58,7 @@ if (empty($_SERVER["DOCUMENT_ROOT"]))
     $bEmptyDocumentRoot = true;
     $_SERVER["DOCUMENT_ROOT"] = str_replace($arSettings['Paths']['InstalledDir'] . '/ms', '', dirname(__FILE__));
 }
-$arSettings['Site']['DocumentRoot'] = $_SERVER["DOCUMENT_ROOT"];
-$arSettings['Site']['NeedCheckAuth'] = !$bEmptyDocumentRoot;
+$arSettings['Paths']['DocumentRoot'] = $_SERVER["DOCUMENT_ROOT"];
+$arSettings['System']['NeedCheckAuth'] = !$bEmptyDocumentRoot;
 
 return $arSettings;

@@ -3,7 +3,7 @@ use Ms\Core\Lib\Loader;
 use Ms\Core\Lib\Modules;
 
 $app = \Ms\Core\Entity\Application::getInstance();
-$request = $app->getContext()->getRequest();
+$request = $app->getRequest();
 header('Content-Type: application/json');
 
 $arReturn = array(

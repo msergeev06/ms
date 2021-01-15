@@ -1,6 +1,16 @@
 <?php
+/**
+ * Компонент ядра ms:code.breadcrumbs
+ *
+ * @package    Ms\Core
+ * @subpackage Entity\Components
+ * @author     Mikhail Sergeev <msergeev06@gmail.com>
+ * @copyright  2018 Mikhail Sergeev
+ */
 
-$arNav = \Ms\Core\Entity\Application::getInstance()->getBreadcrumbs()->getNavArray();
+use \Ms\Core\Entity\System\Breadcrumbs;
+
+$arNav = Breadcrumbs::getInstance()->getNavArray();
 
 ?>
 <?if (!empty($arNav)):?>

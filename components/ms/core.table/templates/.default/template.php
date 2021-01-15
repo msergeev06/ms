@@ -6,7 +6,6 @@
  * @subpackage Entity\Components
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2018 Mikhail Sergeev
- * @since 0.2.0
  */
 
 $arParams = &$this->arParams;

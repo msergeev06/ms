@@ -9,24 +9,27 @@
  * @since 0.2.0
  */
 
-use Ms\Core\Lib\Loc;
+use Ms\Core\Entity\Components\Parameters;
 
-Loc::includeLocFile(__FILE__);
+IncludeLangFile(__FILE__);
 
-return array(
-	'MAIN_MENU_TYPE' => array(
-		'NAME' => Loc::getCoreMessage('main_menu_type'),
-		'TYPE' => 'STRING',
-		'DEFAULT' => 'top'
-	),
-	'SECOND_MENU_TYPE' => array(
-		'NAME' => Loc::getCoreMessage('second_menu_type'),
-		'TYPE' => 'STRING',
-		'DEFAULT' => NULL
-	),
-	'THIRD_MENU_TYPE' => array(
-		'NAME' => Loc::getCoreMessage('third_menu_type'),
-		'TYPE' => 'STRING',
-		'DEFAULT' => NULL
-	)
-);
+return (new Parameters\ParameterGroupCollection())
+    ->addGroup(
+        (new Parameters\ParameterGroup())
+        ->addParameter(
+            (new Parameters\StringParameter('MAIN_MENU_TYPE'))
+            ->setName(GetCoreMessage('main_menu_type'))
+            ->setDefaultValue('top')
+        )
+        ->addParameter(
+            (new Parameters\StringParameter('SECOND_MENU_TYPE'))
+            ->setName(GetCoreMessage('second_menu_type'))
+            ->setDefaultValue(null)
+        )
+        ->addParameter(
+            (new Parameters\StringParameter('THIRD_MENU_TYPE'))
+            ->setName(GetCoreMessage('third_menu_type'))
+            ->setDefaultValue(null)
+        )
+    )
+;

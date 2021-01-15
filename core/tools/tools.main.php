@@ -2,104 +2,188 @@
 /**
  * Функции обертки основного функционала системы
  *
- * @package Ms\Core
- * @author Mikhail Sergeev
- * @copyright 2018 Mikhail Sergeev
+ * @package    SHF "Доброжил"
+ * @subpackage Ms\Core
+ * @author     Mikhail Sergeev <msergeev06@gmail.com>
+ * @copyright  2018 Mikhail Sergeev
+ * @copyright  2020 Mikhail Sergeev
  */
 
-if (!function_exists('IncludeLocFile'))
+if (!function_exists('IncludeLangFile'))
 {
-	function IncludeLocFile ($path)
-	{
-		return \Ms\Core\Lib\Loc::includeLocFile($path);
-	}
+    /**
+     * Подключает языковой файл для указанного файла
+     *
+     * @param string $path Путь файлу, требующему локализацию
+     *
+     * @return bool
+     */
+    function IncludeLangFile ($path)
+    {
+        return \Ms\Core\Entity\Localization\Loc::getInstance()->includeLocalizationForThisFile($path);
+    }
+}
+
+if (!function_exists('IncludeLocalizationFile'))
+{
+    /**
+     * Подключает указанный языковой файл
+     *
+     * @param string $path Путь к языковому файлу
+     *
+     * @return bool|\Ms\Core\Entity\Localization\MessagesCollection
+     */
+    function IncludeLocalizationFile ($path)
+    {
+        return \Ms\Core\Entity\Localization\Loc::getInstance()->includeLocalizationFile($path);
+    }
 }
 
 if (!function_exists('GetMessage'))
 {
-	function GetMessage ($name, $arReplace = array ())
-	{
-		return \Ms\Core\Lib\Loc::getMessage($name, $arReplace);
-	}
+    /**
+     * Возвращает локализованный текст, заменяя теги указанными значениями
+     *
+     * @param string $name      Код сообщения
+     * @param array  $arReplace Массив замен вида код_тега=>замена
+     *
+     * @return string
+     */
+    function GetMessage (string $name, array $arReplace = [])
+    {
+        return \Ms\Core\Entity\Localization\Loc::getInstance()->getMessage($name, $arReplace);
+    }
 }
 
 if (!function_exists('GetModuleMessage'))
 {
-	function GetModuleMessage ($module, $name, $arReplace = array ())
-	{
-		return \Ms\Core\Lib\Loc::getModuleMessage($module,$name,$arReplace);
-	}
+    /**
+     * Функция обертка для getMessage для модулей.
+     * Собирает код текстового сообщения из префикса, названия модуля и кода сообщения
+     *
+     * @param string $module    Имя модуля
+     * @param string $name      Код локализованной фразы
+     * @param array  $arReplace Массив замен
+     *
+     * @return mixed
+     */
+    function GetModuleMessage (string $module, string $name, array $arReplace = [])
+    {
+        return \Ms\Core\Entity\Localization\Loc::getInstance()->getModuleMessage($module, $name, $arReplace);
+    }
+}
+
+if (!function_exists('GetCoreMessage'))
+{
+    /**
+     * Возвращает локализованный текст для ядра, заменяя теги указанными значениями
+     *
+     * @param string $name      Код языковой фразы
+     * @param array  $arReplace Массив замен
+     *
+     * @return string
+     */
+    function GetCoreMessage (string $name, array $arReplace = [])
+    {
+        return \Ms\Core\Entity\Localization\Loc::getInstance()->getCoreMessage($name, $arReplace);
+    }
+}
+
+if (!function_exists('GetComponentMessage'))
+{
+    /**
+     * Возвращает локализованный текст для компонента, заменяя теги указанными значениями
+     *
+     * @param string $fullComponentName Полное имя компонента вида бренд:компонент
+     * @param string $name              Код языковой фразы
+     * @param array  $arReplace         Массив замен
+     *
+     * @return string
+     */
+    function GetComponentMessage (string $fullComponentName, string $name, array $arReplace = [])
+    {
+        return \Ms\Core\Entity\Localization\Loc::getInstance()->getComponentMessage
+        (
+            $fullComponentName,
+            $name,
+            $arReplace
+        );
+    }
 }
 
 if (!function_exists('IssetModule'))
 {
-	function IssetModule ($nameModule, $requiredVersion = null)
-	{
-		return \Ms\Core\Lib\Loader::issetModule($nameModule, $requiredVersion);
-	}
+    /**
+     * Возвращает TRUE, если модуль существует и его версия соответствует условию, иначе FALSE
+     *
+     * @param string      $moduleName            Имя модуля
+     * @param string|null $needVersionExpression Выражение требуемой версии, не обязательное
+     *
+     * @return bool
+     */
+    function IssetModule (string $moduleName, string $needVersionExpression = null)
+    {
+        return \Ms\Core\Entity\Modules\Loader::issetModule($moduleName, $needVersionExpression);
+    }
 }
 
 if (!function_exists('IncludeModule'))
 {
-	function IncludeModule ($nameModule)
-	{
-		return \Ms\Core\Lib\Loader::includeModule($nameModule);
-	}
+    /**
+     * Инициирует указанный модуль.
+     * В настоящее время не требуется явно инициировать модуль, так как это происходит автоматически при первом
+     * вызове любого метода любого класса.
+     *
+     * @param string $moduleName Имя модуля
+     *
+     * @return bool
+     * @throws \Ms\Core\Exceptions\Modules\LoaderException
+     * @throws \Ms\Core\Exceptions\Modules\ModuleDoesNotExistsException
+     */
+    function IncludeModule (string $moduleName)
+    {
+        return \Ms\Core\Entity\System\Modules\Loader::includeModule($moduleName);
+    }
 }
 
-if (!function_exists('Write2DebugLog'))
+if (!function_exists('DebMess'))
 {
-	function Write2DebugLog ($strMessage, $arReplace=array (),&$errorCollection)
-	{
-		\Ms\Core\Lib\Logs::setDebug($strMessage,$arReplace,$errorCollection);
-	}
-}
-
-if (!function_exists('Write2InfoLog'))
-{
-	function Write2InfoLog ($strMessage, $arReplace=array (),&$errorCollection)
-	{
-		\Ms\Core\Lib\Logs::setInfo($strMessage,$arReplace,$errorCollection);
-	}
-}
-
-if (!function_exists('Write2NoticeLog'))
-{
-	function Write2NoticeLog ($strMessage, $arReplace=array (),&$errorCollection)
-	{
-		\Ms\Core\Lib\Logs::setNotice($strMessage,$arReplace,$errorCollection);
-	}
-}
-
-if (!function_exists('Write2WarningLog'))
-{
-	function Write2WarningLog ($strMessage, $arReplace=array (),&$errorCollection)
-	{
-		\Ms\Core\Lib\Logs::setWarning($strMessage,$arReplace,$errorCollection);
-	}
-}
-
-if (!function_exists('Write2ErrorLog'))
-{
-	function Write2ErrorLog ($strMessage, $arReplace=array (),&$errorCollection)
-	{
-		\Ms\Core\Lib\Logs::setError($strMessage,$arReplace,$errorCollection);
-	}
-}
-
-if (!function_exists('Write2CriticalLog'))
-{
-	function Write2CriticalLog ($strMessage, $arReplace=array (),&$errorCollection)
-	{
-		\Ms\Core\Lib\Logs::setCritical($strMessage,$arReplace,$errorCollection);
-	}
+    /**
+     * Добавляет сообщение в лог отладки. При этом заменяет в тексте сообщения все вхождения из массива замен arReplace.
+     * Если третьим параметром передана коллекция ошибок, добавляет ошибку в нее.
+     *
+     * @param string                                      $strMessage
+     * @param array                                       $arReplace
+     * @param \Ms\Core\Entity\Errors\ErrorCollection|null $errorCollection
+     */
+    function DebMess (string $strMessage, array $arReplace = [], \Ms\Core\Entity\Errors\ErrorCollection $errorCollection = null)
+    {
+        $logger = new \Ms\Core\Entity\Errors\FileLogger('system','debug');
+        $logger->addMessage($strMessage, $arReplace);
+        if (!is_null($errorCollection))
+        {
+            $errorCollection->addError(
+                new \Ms\Core\Entity\Errors\Error(
+                    \Ms\Core\Lib\Tools::strReplace(
+                        $arReplace,
+                        $strMessage
+                    )
+                )
+            );
+        }
+    }
 }
 
 if (!function_exists('ms_sessid'))
 {
-	function ms_sessid ()
-	{
-		return \Ms\Core\Entity\Application::getInstance()->getSession()->getSID();
-	}
+    /**
+     * Возвращает ID текущей сессии
+     *
+     * @return string
+     */
+    function ms_sessid ()
+    {
+        return \Ms\Core\Entity\System\Application::getInstance()->getSession()->getSID();
+    }
 }
 

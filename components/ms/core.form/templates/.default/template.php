@@ -9,14 +9,14 @@
  * @since 0.2.0
  */
 
-use Ms\Core\Entity;
+use Ms\Core\Entity\System\Application;
 
 $arResult = &$this->arResult;
 $arParams = &$this->arParams;
 //msDebug($arResult);
 //msDebug($arParams);
 //msDebug($this);
-$app = Entity\Application::getInstance();
+$app = Application::getInstance();
 $componentPath = $app->getSitePath($app->getSettings()->getComponentsRoot())
     . '/' . $this->namespace . '/' . $this->componentName;
 //msDebug($componentPath);

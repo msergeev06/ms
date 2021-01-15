@@ -9,32 +9,36 @@
  * @since 0.2.0
  */
 
-use Ms\Core\Entity\Application;
-use Ms\Core\Lib\Loc;
-$request = Application::getInstance()->getContext()->getRequest();
+use \Ms\Core\Entity\Components\Parameters;
 
-$page = $request->get('page');
-if (is_null($page))
+if (isset($_REQUEST['page']))
+{
+    $page = $_REQUEST['page'];
+}
+else
 {
 	$page = 1;
 }
 
-Loc::includeLocFile(__FILE__);
+IncludeLangFile(__FILE__);
 
-return array(
-	'TABLE_HEADER' => array(
-		'NAME' => Loc::getCoreMessage('table_header'),
-		'TYPE' => 'STRING',
-		'DEFAULT' => array()
-	),
-	'TABLE_DATA' => array(
-		'NAME' => Loc::getCoreMessage('table_data'),
-		'TYPE' => 'STRING',
-		'DEFAULT' => array()
-	),
-	'TABLE_FOOTER' => array(
-		'NAME'=> Loc::getCoreMessage('table_footer'),
-		'TYPE' => 'STRING',
-		'DEFAULT' => array()
-	)
-);
+return (new Parameters\ParameterGroupCollection())
+    ->addGroup(
+        (new Parameters\ParameterGroup())
+        ->addParameter(
+            (new Parameters\Parameter('TABLE_HEADER'))
+            ->setName(GetCoreMessage('table_header'))
+            ->setDefaultValue([])
+        )
+        ->addParameter(
+            (new Parameters\Parameter('TABLE_DATA'))
+            ->setName(GetCoreMessage('table_data'))
+            ->setDefaultValue([])
+        )
+        ->addParameter(
+            (new Parameters\Parameter('TABLE_FOOTER'))
+            ->setName(GetCoreMessage('table_footer'))
+            ->setDefaultValue([])
+        )
+    )
+;

@@ -11,8 +11,7 @@
 
 namespace Ms\Core\Entity\Components;
 
-use Ms\Core\Entity\Application;
-use Ms\Core\Entity\Component;
+use Ms\Core\Entity\System\Application;
 
 class MenuComponent extends Component
 {
@@ -158,7 +157,7 @@ class MenuComponent extends Component
 
 		$arTmp['TEXT'] = $arMenu[0];
 		$arTmp['LINK'] = $arMenu[1];
-		if (strpos($app->getContext()->getServer()->getScriptName(),$arTmp['LINK'])===false)
+		if (strpos($app->getServer()->getScriptName(),$arTmp['LINK'])===false)
 		{
 			msDebug($arTmp['LINK']);
 			$arTmp['SELECTED'] = false;

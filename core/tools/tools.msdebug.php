@@ -1,6 +1,6 @@
 <?php
 
-use \Ms\Core\Entity\Application;
+use Ms\Core\Entity\System\Application;
 
 /**
  * nf_pp
@@ -824,7 +824,6 @@ function msEchoVar ($str, $name=null)
 	echo '<div style="border: 1px solid black; background-color: white; padding: 10px;">';
 	echo "<b>".$backtrace[0]['file'].' '.$backtrace[0]['line'].':</b><br>';
 	if (!is_null($name)) echo '<span><strong>'.$name.':</strong></span><br>';
-	//echo "<pre>"; echo $str; echo "</pre>";
-	echo "<xmp>"; echo $str; echo "</xmp>";
+	echo "<pre>"; echo $str; echo "</pre>";
 	echo "</div><br>";
 }

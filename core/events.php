@@ -1,359 +1,347 @@
 <?php
 
-/** OnBeforeUploadNewFile */
-$arReturn['OnBeforeUploadNewFile'] = array(
-	'DESCRIPTION' => 'Вызывается перед загрузкой нового файла',
-	'PARAMETERS' => array(
-		'arFile' => array(
-			'NAME' => 'Массив с параметрами файла из суперглобального массива файлов $_FILE',
-			'TYPE' => 'array',
-			'MODIFIED' => true,
-			'DESCRIPTION' => 'список полей смотрите в документации по $_FILE'
-		),
-		'arAdd' => array(
-			'NAME' => 'Массив с параметрами, добавляемыми в базу данных',
-			'MODIFIED' => true, //передача по ссылке
-			'TYPE' => 'array',
-			'FIELDS' => array(
-				'ID' => array(
-					'NAME' => 'ID файла',
-					'TYPE' => 'int',
-					'REQUIRED' => true,
-					'DESCRIPTION' => 'PRIMARY KEY'
-				),
-				'MODULE' => array(
-					'NAME' => 'Имя модуля, чей файл',
-					'TYPE' => 'string'
-				),
-				'HEIGHT' => array(
-					'NAME' => 'Высота изображения',
-					'TYPE' => 'int'
-				),
-				'WIDTH' => array(
-					'NAME' => 'Ширина изображения',
-					'TYPE' => 'int'
-				),
-				'FILE_SIZE' => array(
-					'NAME' => 'Размер файла в байтах',
-					'TYPE' => 'int'
-				),
-				'CONTENT_TYPE' => array(
-					'NAME' => 'Тип файла',
-					'TYPE' => 'STRING',
-					'DESCRIPTION' => 'content type файла, например image/jpeg'
-				),
-				'SUBDIR' => array(
-					'NAME' => 'Поддиректория',
-					'TYPE' => 'string',
-					'DESCRIPTION' => 'поддиректория относительно папки upload'
-				),
-				'FILE_NAME' => array(
-					'NAME' => 'Имя файла',
-					'TYPE' => 'string',
-					'REQUIRED' => true,
-					'DESCRIPTION' => 'Назначенное уникальное имя файла'
-				),
-				'ORIGINAL_NAME' => array(
-					'NAME' => 'Оригинальное имя файла',
-					'TYPE' => 'string',
-					'DESCRIPTION' => 'Как назывался файл у пользователя'
-				),
-				'DESCRIPTION' => array(
-					'NAME' => 'Описание файла (примечание)',
-					'TYPE' => 'string'
-				),
-				'HANDLER_ID' => array(
-					'NAME' => 'ID обработчика',
-					'TYPE' => 'int'
-				),
-				'EXTERNAL_ID' => array(
-					'NAME' => 'Внешний код',
-					'TYPE' => 'string'
-				)
-			)
-		)
-	)
-);
+use \Ms\Core\Entity\Events\Info;
 
-/** OnAfterUploadNewFile */
-$arReturn['OnAfterUploadNewFile'] = $arReturn['OnBeforeUploadNewFile'];
-$arReturn['OnAfterUploadNewFile']['DESCRIPTION'] = 'Вызывается после загрузки нового файла';
+$parameterArAddFields = (new Info\Parameters\ArrayParameter('arAdd'))
+    ->setTitle('Массив с параметрами, добавляемыми в базу данных')
+    ->setModified()
+    ->addField(
+        (new Info\Fields\IntField('ID'))
+            ->setTitle('ID файла')
+            ->setRequired()
+            ->setDescription('PRIMARY KEY')
+    )
+    ->addField(
+        (new Info\Fields\StringField('MODULE'))
+            ->setTitle('Имя модуля, чей файл')
+    )
+    ->addField(
+        (new Info\Fields\IntField('HEIGHT'))
+            ->setTitle('Высота изображения')
+    )
+    ->addField(
+        (new Info\Fields\IntField('WIDTH'))
+            ->setTitle('Ширина изображения')
+    )
+    ->addField(
+        (new Info\Fields\IntField('FILE_SIZE'))
+            ->setTitle('Размер файла в байтах')
+    )
+    ->addField(
+        (new Info\Fields\StringField('CONTENT_TYPE'))
+            ->setTitle('Тип файла')
+            ->setDescription('content type файла, например image/jpeg')
+    )
+    ->addField(
+        (new Info\Fields\StringField('SUBDIR'))
+            ->setTitle('Поддиректория')
+            ->setDescription('поддиректория относительно папки upload')
+    )
+    ->addField(
+        (new Info\Fields\StringField('FILE_NAME'))
+            ->setTitle('Имя файла')
+            ->setRequired()
+            ->setDescription('Назначенное уникальное имя файла')
+    )
+    ->addField(
+        (new Info\Fields\StringField('ORIGINAL_NAME'))
+            ->setTitle('Оригинальное имя файла')
+            ->setDescription('Как назывался файл у пользователя')
+    )
+    ->addField(
+        (new Info\Fields\StringField('DESCRIPTION'))
+            ->setTitle('Описание файла (примечание)')
+    )
+    ->addField(
+        (new Info\Fields\IntField('HANDLER_ID'))
+            ->setTitle('ID обработчика')
+    )
+    ->addField(
+        (new Info\Fields\StringField('EXTERNAL_ID'))
+            ->setTitle('Внешний код')
+    )
+;
 
-/** OnBeforeAddNewFile */
-$arReturn['OnBeforeAddNewFile'] = $arReturn['OnBeforeUploadNewFile'];
-$arReturn['OnBeforeAddNewFile']['DESCRIPTION'] = 'Вызывается перед добавлением нового файла в базу данных';
+$collection = (new Info\Collection())
+    ->setModuleName('core')
+    ->addEventInfo(
+        (new Info\Event('OnBeforeUploadNewFile'))
+            ->setDescription('Вызывается перед загрузкой нового файла')
+            ->addParameter(
+                (new Info\Parameters\ArrayParameter('arFile'))
+                    ->setTitle('Массив с параметрами файла из суперглобального массива файлов $_FILE')
+                    ->setModified()
+                    ->setDescription('список полей смотрите в документации по $_FILE')
+            )
+            ->addParameter($parameterArAddFields)
+    )
 
-/** OnAfterAddNewFile */
-$arReturn['OnAfterAddNewFile'] = array(
-	'DESCRIPTION' => 'Вызывается после добавления нового файла в базу данных',
-	'PARAMETERS' => array(
-		'arFile' => array(
-			'NAME' => 'Массив с параметрами файла из суперглобального массива файлов $_FILE',
-			'TYPE' => 'array',
-			'DESCRIPTION' => 'список полей смотрите в документации по $_FILE'
-		),
-		'insertID' => array(
-			'NAME' => 'ID только что добавленного файла',
-			'TYPE' => 'int'
-		)
-	)
-);
 
-/** OnPrologBefore */
-$arReturn['OnPrologBefore'] = array(
-	'DESCRIPTION' => 'Вызывается в файле prolog_before.php перед подключением обязательных модулей'
-);
+    ->addEventInfo(
+        (new Info\Event('OnAfterUploadNewFile'))
+            ->setDescription('Вызывается после загрузки нового файла')
+            ->addParameter(
+                (new Info\Parameters\ArrayParameter('arFile'))
+                    ->setTitle('Массив с параметрами файла из суперглобального массива файлов $_FILE')
+                    ->setModified()
+                    ->setDescription('список полей смотрите в документации по $_FILE')
+            )
+            ->addParameter($parameterArAddFields)
+    )
 
-/** OnProlog */
-$arReturn['OnProlog'] = array(
-	'DESCRIPTION' => 'Вызывается в файле prolog_before.php после выполнения всех действий'
-);
 
-/** OnPrologAfter */
-$arReturn['OnPrologAfter'] = array(
-	'DESCRIPTION' => 'Вызывается в файле prolog_after.php перед подключением шаблона',
-	'PARAMETERS' => array(
-		'templatePath' => array(
-			'NAME' => 'Текущий шаблон страницы',
-			'TYPE' => 'string',
-			'MODIFIED' => true,
-			'DESCRIPTION' => 'Можно изменить'
-		)
-	)
-);
+    ->addEventInfo(
+        (new Info\Event('OnBeforeAddNewFile'))
+            ->setDescription('Вызывается перед добавлением нового файла в базу данных')
+            ->addParameter(
+                (new Info\Parameters\ArrayParameter('arFile'))
+                    ->setTitle('Массив с параметрами файла из суперглобального массива файлов $_FILE')
+                    ->setModified()
+                    ->setDescription('список полей смотрите в документации по $_FILE')
+            )
+            ->addParameter($parameterArAddFields)
+    )
 
-$arReturn['OnAddDebugMessageToLog'] = array (
-	'DESCRIPTION' => 'Вызывается при добавлении отладочного сообщения в логи',
-	'PARAMETERS' => array (
-		array (
-			'NAME' => 'Добавляемое сообщение',
-			'TYPE' => 'string',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'В сообщении все #шаблоны# уже заменены на значения'
-		)
-	)
-);
 
-$arReturn['OnAddInfoMessageToLog'] = array (
-	'DESCRIPTION' => 'Вызывается при добавлении информационного сообщения в логи',
-	'PARAMETERS' => array (
-		array (
-			'NAME' => 'Добавляемое сообщение',
-			'TYPE' => 'string',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'В сообщении все #шаблоны# уже заменены на значения'
-		)
-	)
-);
+    ->addEventInfo(
+        (new Info\Event('OnAfterAddNewFile'))
+            ->setDescription('Вызывается после добавления нового файла в базу данных')
+            ->addParameter(
+                (new Info\Parameters\ArrayParameter('arFile'))
+                    ->setTitle('Массив с параметрами файла из суперглобального массива файлов $_FILE')
+                    ->setDescription('список полей смотрите в документации по $_FILE')
+            )
+            ->addParameter(
+                (new Info\Parameters\IntParameter('insertID'))
+                    ->setTitle('ID только что добавленного файла')
+            )
+    )
 
-$arReturn['OnAddNoticeMessageToLog'] = array (
-	'DESCRIPTION' => 'Вызывается при добавлении уведомительного сообщения в логи',
-	'PARAMETERS' => array (
-		array (
-			'NAME' => 'Добавляемое сообщение',
-			'TYPE' => 'string',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'В сообщении все #шаблоны# уже заменены на значения'
-		)
-	)
-);
 
-$arReturn['OnAddWarningMessageToLog'] = array (
-	'DESCRIPTION' => 'Вызывается при добавлении предупреждающего сообщения в логи',
-	'PARAMETERS' => array (
-		array (
-			'NAME' => 'Добавляемое сообщение',
-			'TYPE' => 'string',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'В сообщении все #шаблоны# уже заменены на значения'
-		)
-	)
-);
+    ->addEventInfo(
+        (new Info\Event('OnPrologBefore'))
+            ->setDescription('Вызывается в файле prolog_before.php перед подключением обязательных модулей')
+    )
 
-$arReturn['OnAddCriticalMessageToLog'] = array (
-	'DESCRIPTION' => 'Вызывается при добавлении критического сообщения в логи',
-	'PARAMETERS' => array (
-		array (
-			'NAME' => 'Добавляемое сообщение',
-			'TYPE' => 'string',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'В сообщении все #шаблоны# уже заменены на значения'
-		)
-	)
-);
 
-$arReturn['OnAddErrorMessageToLog'] = array (
-	'DESCRIPTION' => 'Вызывается при добавлении сообщения об ошибке в логи',
-	'PARAMETERS' => array (
-		array (
-			'NAME' => 'Добавляемое сообщение',
-			'TYPE' => 'string',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'В сообщении все #шаблоны# уже заменены на значения'
-		)
-	)
-);
+    ->addEventInfo(
+        (new Info\Event('OnProlog'))
+            ->setDescription('Вызывается в файле prolog_before.php после выполнения всех действий')
+    )
 
-$arReturn['OnBeforeInsert'] = [
-	'DESCRIPTION' => 'Вызывается при попытке добавления информации в таблицу',
-	'PARAMETERS' => [
-		[
-			'NAME' => 'Класс таблицы, в которую происходит добавление',
-			'TYPE' => 'string',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'Через имя класса можно получить доступ к другим параметрам таблицы'
-		],
-		[
-			'NAME' => 'Массив значений полей таблицы',
-			'TYPE' => 'array',
-			'MODIFIED' => true,
-			'DESCRIPTION' => 'Добавляемые значения в таблицу, без значений, устанавливаемых по-умолчанию'
-		]
-	],
-	'STOPPED' => true
-];
 
-$arReturn['OnAfterInsert'] = [
-	'DESCRIPTION' => 'Вызывается после попытки добавления инфомации в таблицу',
-	'PARAMETERS' => [
-		[
-			'NAME' => 'Класс таблицы, в которую была попытка добавить значения',
-			'TYPE' => 'string',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'Через имя класса можно получить доступ к другим параметрам таблицы'
-		],
-		[
-			'NAME' => 'Массив значений полей таблицы',
-			'TYPE' => 'array',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'Добавляемые значения в таблицу, без значений, устанавливаемых по-умолчанию'
-		],
-		[
-			'NAME' => 'Объект DBResult',
-			'TYPE' => '\Ms\Core\Entity\Db\DBResult',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'Через объект можно получить информацию о результате попытки добавления данных'
-		]
-	],
-	'STOPPED' => false
-];
+    ->addEventInfo(
+        (new Info\Event('OnPrologAfter'))
+            ->setDescription('Вызывается в файле prolog_after.php перед подключением шаблона')
+            ->addParameter(
+                (new Info\Parameters\StringParameter('templatePath'))
+                    ->setTitle('Текущий шаблон страницы')
+                    ->setModified()
+                    ->setDescription('Можно изменить')
+            )
+    )
 
-$arReturn['OnBeforeUpdate'] = [
-	'DESCRIPTION' => 'Вызывается перед попыткой обновить запись в таблице',
-	'PARAMETERS' => [
-		[
-			'NAME' => 'Класс таблицы, в которой происходит попытка изменения значения',
-			'TYPE' => 'string',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'Через имя класса можно получить доступ к другим параметрам таблицы'
-		],
-		[
-			'NAME' => 'Значение primary поля таблицы',
-			'TYPE' => 'string|int',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'По primary полю можно получить текущие значения в таблице'
-		],
-		[
-			'NAME' => 'Массив обновляемых полей с новыми значениями',
-			'TYPE' => 'array',
-			'MODIFIED' => true,
-			'DESCRIPTION' => 'Массив новых значений записи - можно удалять, можно добавлять свои поля и значения'
-		],
-		[
-			'NAME' => 'SQL код для запроса WHERE',
-			'TYPE' => 'string',
-			'MODIFIED' => true,
-			'DESCRIPTION' => 'Можно изменить часть запроса перед обновлением значения'
-		]
-	],
-	'STOPPED' => true
-];
 
-$arReturn['OnAfterUpdate'] = [
-	'DESCRIPTION' => 'Вызывается после попытки обновить запись в таблице',
-	'PARAMETERS' => [
-		[
-			'NAME' => 'Класс таблицы, в которой происходит попытка изменения значения',
-			'TYPE' => 'string',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'Через имя класса можно получить доступ к другим параметрам таблицы'
-		],
-		[
-			'NAME' => 'Значение primary поля таблицы',
-			'TYPE' => 'string|int',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'По primary полю можно получить текущие значения в таблице'
-		],
-		[
-			'NAME' => 'Массив обновляемых полей с новыми значениями',
-			'TYPE' => 'array',
-			'MODIFIED' => true,
-			'DESCRIPTION' => 'Массив новых значений записи - можно удалять, можно добавлять свои поля и значения'
-		],
-		[
-			'NAME' => 'Объект DBResult',
-			'TYPE' => '\Ms\Core\Entity\Db\DBResult',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'Через объект можно получить информацию о результате попытки изменения данных'
-		]
-	],
-	'STOPPED' => false
-];
+    ->addEventInfo(
+        (new Info\Event('OnAddDebugMessageToLog'))
+            ->setDescription('Вызывается при добавлении отладочного сообщения в логи')
+            ->addParameter(
+                (new Info\Parameters\StringParameter('message'))
+                    ->setTitle('Добавляемое сообщение')
+                    ->setDescription('В сообщении все #шаблоны# уже заменены на значения')
+            )
+    )
 
-$arReturn['OnBeforeDelete'] = [
-	'DESCRIPTION' => 'Вызывается перед попыткой удаления записи из таблицы',
-	'PARAMETERS' => [
-		[
-			'NAME' => 'Класс таблицы, в которой происходит попытка удаления записи',
-			'TYPE' => 'string',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'Через имя класса можно получить доступ к другим параметрам таблицы'
-		],
-		[
-			'NAME' => 'Значение primary поля таблицы',
-			'TYPE' => 'string|int',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'По primary полю можно получить текущие значения в таблице'
-		],
-		[
-			'NAME' => 'Флаг, подтверждающий удаление всех связанных значений в других таблицах',
-			'TYPE' => 'bool',
-			'MODIFIED' => true,
-			'DESCRIPTION' => 'Если true, все значения в других таблицах, связанных с удаляемой записью также будут удалены'
-		]
-	],
-	'STOPPED' => true,
-];
 
-$arReturn['OnAfterDelete'] = [
-	'DESCRIPTION' => 'Вызывается после попытки удаления записи из таблицы',
-	'PARAMETERS' => [
-		[
-			'NAME' => 'Класс таблицы, в которой происходит попытка удаления записи',
-			'TYPE' => 'string',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'Через имя класса можно получить доступ к другим параметрам таблицы'
-		],
-		[
-			'NAME' => 'Значение primary поля таблицы',
-			'TYPE' => 'string|int',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'По primary полю можно получить текущие значения в таблице'
-		],
-		[
-			'NAME' => 'Флаг, подтверждающий удаление всех связанных значений в других таблицах',
-			'TYPE' => 'bool',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'Если true, все значения в других таблицах, связанных с удаляемой записью также будут удалены'
-		],
-		[
-			'NAME' => 'Объект DBResult',
-			'TYPE' => '\Ms\Core\Entity\Db\DBResult',
-			'MODIFIED' => false,
-			'DESCRIPTION' => 'Через объект можно получить информацию о результате попытки изменения данных'
-		]
-	],
-	'STOPPED' => false
-];
+    ->addEventInfo(
+        (new Info\Event('OnAddInfoMessageToLog'))
+            ->setDescription('Вызывается при добавлении информационного сообщения в логи')
+            ->addParameter(
+                (new Info\Parameters\StringParameter('message'))
+                    ->setTitle('Добавляемое сообщение')
+                    ->setDescription('В сообщении все #шаблоны# уже заменены на значения')
+            )
+    )
 
-return $arReturn;
+
+    ->addEventInfo(
+        (new Info\Event('OnAddNoticeMessageToLog'))
+            ->setDescription('Вызывается при добавлении уведомительного сообщения в логи')
+            ->addParameter(
+                (new Info\Parameters\StringParameter('message'))
+                    ->setTitle('Добавляемое сообщение')
+                    ->setDescription('В сообщении все #шаблоны# уже заменены на значения')
+            )
+    )
+
+
+    ->addEventInfo(
+        (new Info\Event('OnAddWarningMessageToLog'))
+            ->setDescription('Вызывается при добавлении предупреждающего сообщения в логи')
+            ->addParameter(
+                (new Info\Parameters\StringParameter('message'))
+                    ->setTitle('Добавляемое сообщение')
+                    ->setDescription('В сообщении все #шаблоны# уже заменены на значения')
+            )
+    )
+
+
+    ->addEventInfo(
+        (new Info\Event('OnAddCriticalMessageToLog'))
+            ->setDescription('Вызывается при добавлении критического сообщения в логи')
+            ->addParameter(
+                (new Info\Parameters\StringParameter('message'))
+                    ->setTitle('Добавляемое сообщение')
+                    ->setDescription('В сообщении все #шаблоны# уже заменены на значения')
+            )
+    )
+
+
+    ->addEventInfo(
+        (new Info\Event('OnAddErrorMessageToLog'))
+            ->setDescription('Вызывается при добавлении сообщения об ошибке в логи')
+            ->addParameter(
+                (new Info\Parameters\StringParameter('message'))
+                    ->setTitle('Добавляемое сообщение')
+                    ->setDescription('В сообщении все #шаблоны# уже заменены на значения')
+            )
+    )
+
+
+    ->addEventInfo(
+        (new Info\Event('OnBeforeInsert'))
+            ->setDescription('Вызывается при попытке добавления информации в таблицу')
+            ->addParameter(
+                (new Info\Parameters\StringParameter('classTable'))
+                    ->setTitle('Класс таблицы, в которую происходит добавление')
+                    ->setDescription('Через имя класса можно получить доступ к другим параметрам таблицы')
+            )
+            ->addParameter(
+                (new Info\Parameters\ArrayParameter('arAdd'))
+                    ->setTitle('Массив значений полей таблицы')
+                    ->setModified(true)
+                    ->setDescription('Добавляемые значения в таблицу, без значений, устанавливаемых по-умолчанию')
+            )
+            ->setStopped(true)
+    )
+
+
+    ->addEventInfo(
+        (new Info\Event('OnAfterInsert'))
+            ->setDescription('Вызывается после попытки добавления инфомации в таблицу')
+            ->addParameter(
+                (new Info\Parameters\StringParameter('classTable'))
+                    ->setTitle('Класс таблицы, в которую была попытка добавить значения')
+                    ->setDescription('Через имя класса можно получить доступ к другим параметрам таблицы')
+            )
+            ->addParameter(
+                (new Info\Parameters\ArrayParameter('arAdd'))
+                    ->setTitle('Массив значений полей таблицы')
+                    ->setDescription('Добавляемые значения в таблицу, без значений, устанавливаемых по-умолчанию')
+            )
+            ->addParameter(
+                (new Info\Parameters\ObjectParameter('dbResult'))
+                    ->setTitle('Объект DBResult')
+                    ->setType(\Ms\Core\Entity\Db\Result\DBResult::class)
+                    ->setDescription('Через объект можно получить информацию о результате попытки добавления данных')
+            )
+    )
+
+
+    ->addEventInfo(
+        (new Info\Event('OnBeforeUpdate'))
+            ->setDescription('Вызывается перед попыткой обновить запись в таблице')
+            ->addParameter(
+                (new Info\Parameters\StringParameter('classTable'))
+                    ->setTitle('Класс таблицы, в которой происходит попытка изменения значения')
+                    ->setDescription('Через имя класса можно получить доступ к другим параметрам таблицы')
+            )
+            ->addParameter(
+                (new Info\Parameters\StringParameter('primary'))
+                    ->setTitle('Значение primary поля таблицы')
+                    ->setDescription('По primary полю можно получить текущие значения в таблице')
+            )
+            ->addParameter(
+                (new Info\Parameters\ArrayParameter('arUpdate'))
+                    ->setTitle('Массив обновляемых полей с новыми значениями')
+                    ->setModified(true)
+                    ->setDescription('Массив новых значений записи - можно удалять, можно добавлять свои поля и значения')
+            )
+            ->addParameter(
+                (new Info\Parameters\StringParameter('sqlWhere'))
+                    ->setTitle('SQL код для запроса WHERE')
+                    ->setModified(true)
+                    ->setDescription('Можно изменить часть запроса перед обновлением значения')
+            )
+            ->setStopped(true)
+    )
+
+
+    ->addEventInfo(
+        (new Info\Event('OnAfterUpdate'))
+            ->setDescription('Вызывается после попытки обновить запись в таблице')
+            ->addParameter(
+                (new Info\Parameters\StringParameter('classTable'))
+                    ->setTitle('Класс таблицы, в которой происходит попытка изменения значения')
+                    ->setDescription('Через имя класса можно получить доступ к другим параметрам таблицы')
+            )
+            ->addParameter(
+                (new Info\Parameters\StringParameter('primary'))
+                    ->setTitle('Значение primary поля таблицы')
+                    ->setDescription('По primary полю можно получить текущие значения в таблице')
+            )
+            ->addParameter(
+                (new Info\Parameters\ArrayParameter('arUpdate'))
+                    ->setTitle('Массив обновляемых полей с новыми значениями')
+                    ->setModified(true)
+                    ->setDescription('Массив новых значений записи - можно удалять, можно добавлять свои поля и значения')
+            )
+            ->addParameter(
+                (new Info\Parameters\ObjectParameter('dbResult'))
+                    ->setTitle('Объект DBResult')
+                    ->setType(\Ms\Core\Entity\Db\Result\DBResult::class)
+                    ->setDescription('Через объект можно получить информацию о результате попытки изменения данных')
+            )
+    )
+
+
+    ->addEventInfo(
+        (new Info\Event('OnBeforeDelete'))
+            ->setDescription('Вызывается перед попыткой удаления записи из таблицы')
+            ->addParameter(
+                (new Info\Parameters\StringParameter('classTable'))
+                    ->setTitle('Класс таблицы, в которой происходит попытка удаления записи')
+                    ->setDescription('Через имя класса можно получить доступ к другим параметрам таблицы')
+            )
+            ->addParameter(
+                (new Info\Parameters\StringParameter('primary'))
+                    ->setTitle('Значение primary поля таблицы')
+                    ->setDescription('По primary полю можно получить текущие значения в таблице')
+            )
+            ->setStopped(true)
+    )
+
+
+    ->addEventInfo(
+        (new Info\Event('OnAfterDelete'))
+            ->setDescription('Вызывается после попытки удаления записи из таблицы')
+            ->addParameter(
+                (new Info\Parameters\StringParameter('classTable'))
+                    ->setTitle('Класс таблицы, в которой происходит попытка удаления записи')
+                    ->setDescription('Через имя класса можно получить доступ к другим параметрам таблицы')
+            )
+            ->addParameter(
+                (new Info\Parameters\StringParameter('primary'))
+                    ->setTitle('Значение primary поля таблицы')
+                    ->setDescription('По primary полю можно получить текущие значения в таблице')
+            )
+            ->addParameter(
+                (new Info\Parameters\ObjectParameter('dbResult'))
+                    ->setTitle('Объект DBResult')
+                    ->setType(\Ms\Core\Entity\Db\Result\DBResult::class)
+                    ->setDescription('Через объект можно получить информацию о результате попытки изменения данных')
+            )
+    )
+;
+
+return $collection;

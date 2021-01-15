@@ -2,7 +2,8 @@
 /**
  * Опции по-умолчанию для ядра
  *
- * @package Ms\Core
+ * @package SHF "Доброжил"
+ * @subpackage Ms\Core
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2017 Mikhail Sergeev
  */

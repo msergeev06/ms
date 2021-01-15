@@ -9,6 +9,6 @@
  * @since 0.2.0
  */
 
-return array(
-	'CLASS_NAME' => 'Ms\\Core\\Entity\\Components\\FormComponent'
+return new \Ms\Core\Entity\Components\ComponentDescription(
+    'Ms\\Core\\Entity\\Components\\FormComponent'
 );

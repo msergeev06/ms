@@ -11,8 +11,7 @@
 
 namespace Ms\Core\Entity\Components;
 
-use Ms\Core\Entity\Application;
-use Ms\Core\Entity\Component;
+use Ms\Core\Entity\System\Application;
 
 class TableComponent extends Component
 {

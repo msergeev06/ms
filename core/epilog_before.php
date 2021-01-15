@@ -7,14 +7,13 @@
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2017 Mikhail Sergeev
  */
-use Ms\Core\Entity\Application;
+use Ms\Core\Entity\System\Application;
 
-/*$footer = Application::getInstance()->getSettings()->getTemplatesRoot().'/'
-	.Application::getInstance()->getSiteTemplate().'/footer.php';*/
+$siteTemplatePath = Application::getInstance()->getAppParam('site_template_path');
 
-if (file_exists($_SERVER['DOCUMENT_ROOT'].SITE_TEMPLATE_PATH.'/footer.php'))
+if (file_exists($_SERVER['DOCUMENT_ROOT'] . $siteTemplatePath . '/footer.php'))
 {
-	include($_SERVER['DOCUMENT_ROOT'].SITE_TEMPLATE_PATH.'/footer.php');
+	include($_SERVER['DOCUMENT_ROOT'] . $siteTemplatePath . '/footer.php');
 }
 
 Application::getInstance()->endBufferPage();
